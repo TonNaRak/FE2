@@ -1,0 +1,20 @@
+.checkout-page-bg {
+    background-color: #f8f9fa;
+    min-height: calc(100vh - 60px);
+    padding: 1rem 0;
+}
+
+.checkout-container .card {
+    border: none;
+    border-radius: 0.5rem;
+}
+
+.checkout-container .card-header {
+    background-color: white;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.summary-card {
+    position: sticky;
+    top: 20px;
+}

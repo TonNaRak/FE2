@@ -1,0 +1,165 @@
+:root {
+  --primary-color: #007bff;
+  --primary-light-color: #e6f2ff;
+  --text-dark-color: #212529;
+  --text-light-color: #6c757d;
+  --background-color: #f8f9fa;
+  --card-bg-color: #ffffff;
+  --card-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  --card-hover-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.index-page {
+  background-color: var(--background-color);
+  min-height: 100vh;
+}
+
+.page-header h2 {
+  font-weight: 700;
+  color: var(--text-dark-color);
+}
+
+.product-link,
+.product-link:hover {
+  text-decoration: none;
+  color: inherit;
+}
+
+.filter-bar-container {
+  display: flex;
+  gap: 12px;
+  padding-bottom: 10px;
+  overflow-x: auto;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.filter-bar-container::-webkit-scrollbar {
+  display: none;
+}
+
+.filter-btn {
+  white-space: nowrap;
+  padding: 8px 20px;
+  border-radius: 20px;
+  border: 1px solid #dee2e6;
+  background-color: var(--card-bg-color);
+  color: var(--text-light-color);
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.filter-btn:hover {
+  background-color: var(--primary-light-color);
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+.filter-btn.active {
+  background-color: var(--primary-color);
+  color: #fff;
+  border-color: var(--primary-color);
+}
+
+.product-card {
+  border: none;
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: var(--card-shadow);
+  transition: all 0.3s ease;
+}
+
+.product-card:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--card-hover-shadow);
+}
+
+.product-image-wrapper {
+  position: relative;
+  overflow: hidden;
+}
+
+.product-image {
+  /* height: 250px; */
+  max-height: 40vh;
+  width: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.product-card:hover .product-image {
+  transform: scale(1.05);
+}
+
+.product-card .card-body {
+  padding: 1.25rem;
+}
+
+.product-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-dark-color);
+  margin-bottom: 0.5rem;
+}
+
+.product-price {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+.add-to-cart-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 1rem;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.4), transparent);
+  transform: translateY(100%);
+  transition: transform 0.3s ease-in-out;
+}
+
+.product-card:hover .add-to-cart-overlay {
+  transform: translateY(0);
+}
+
+.add-to-cart-btn {
+  width: 100%;
+  font-weight: 600;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+/* ... (โค้ด CSS เดิม) ... */
+
+/* --- Search Bar --- */
+.search-bar-wrapper {
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* สำหรับมือถือ */
+.search-bar-mobile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 15px;
+  background-color: var(--card-bg-color);
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  color: var(--text-light-color);
+  cursor: pointer;
+}
+
+/* สำหรับคอมพิวเตอร์ */
+.search-bar-wrapper .form-control {
+  padding: 0.75rem 1rem;
+}
+
+.search-bar-wrapper .btn {
+  padding: 0.75rem 1.5rem;
+}

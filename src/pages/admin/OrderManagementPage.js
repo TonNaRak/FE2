@@ -1,0 +1,269 @@
+// src/pages/admin/OrderManagementPage.js (โค้ดฉบับเต็ม)
+import React, { useState, useEffect } from "react";
+import {
+  Table,
+  Button,
+  Spinner,
+  Alert,
+  Badge,
+  Image,
+  Modal,
+} from "react-bootstrap";
+import axios from "axios";
+import { useAuth } from "../../context/AuthContext";
+
+const OrderManagementPage = () => {
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  // State สำหรับ Modal รายละเอียด
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+
+  // State สำหรับ Modal สลิป
+  const [showReceiptModal, setShowReceiptModal] = useState(false);
+  const [selectedReceipt, setSelectedReceipt] = useState("");
+
+  const { token } = useAuth();
+  const API_CONFIG = { headers: { Authorization: `Bearer ${token}` } };
+
+  const fetchOrders = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get("https://api.souvenir-from-lagoon-thailand.com/api/admin/orders", API_CONFIG);
+      setOrders(response.data);
+    } catch (err) {
+      setError("ไม่สามารถดึงข้อมูลคำสั่งซื้อได้");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchOrders();
+  }, []);
+
+  // --- จุดที่แก้ไข ---
+  const handleUpdateStatus = async (orderId, newStatus) => {
+    // ลบบรรทัด window.confirm ออกไปจากตรงนี้
+    try {
+      await axios.put(
+        `https://api.souvenir-from-lagoon-thailand.com/api/admin/orders/${orderId}/status`,
+        { status: newStatus },
+        API_CONFIG
+      );
+      fetchOrders(); // Refresh the list
+      if (showDetailModal) {
+        // ถ้า Modal เปิดอยู่ ให้รีเฟรชข้อมูลใน Modal ด้วย
+        viewOrderDetails(orderId);
+      }
+    } catch (err) {
+      alert("เกิดข้อผิดพลาดในการอัปเดตสถานะ");
+    }
+  };
+  // --- จบจุดที่แก้ไข ---
+
+  const viewReceipt = (imageUrl) => {
+    setSelectedReceipt(imageUrl);
+    setShowReceiptModal(true);
+  };
+
+  const viewOrderDetails = async (orderId) => {
+    try {
+      const response = await axios.get(
+        `https://api.souvenir-from-lagoon-thailand.com/api/admin/orders/${orderId}`,
+        API_CONFIG
+      );
+      setSelectedOrder(response.data);
+      setShowDetailModal(true);
+    } catch (err) {
+      alert("ไม่สามารถโหลดรายละเอียดออเดอร์ได้");
+    }
+  };
+
+  const getStatusBadge = (status) => {
+    const styles = {
+      pending_verification: { bg: "warning", text: "รอตรวจสอบ" },
+      processing: { bg: "info", text: "กำลังจัดเตรียม" },
+      shipped: { bg: "primary", text: "จัดส่งแล้ว" },
+      completed: { bg: "success", text: "เสร็จสมบูรณ์" },
+      cancelled: { bg: "danger", text: "ยกเลิก" },
+    };
+    return styles[status] || { bg: "secondary", text: status };
+  };
+
+  if (loading) return <Spinner animation="border" />;
+  if (error) return <Alert variant="danger">{error}</Alert>;
+
+  return (
+    <div>
+      <h1>จัดการคำสั่งซื้อ</h1>
+      <Table striped bordered hover responsive>
+        <thead>
+          <tr>
+            <th>#ID</th>
+            <th>ลูกค้า</th>
+            <th>วันที่สั่ง</th>
+            <th>ยอดรวม</th>
+            <th>สถานะ</th>
+            <th>จัดการ</th>
+          </tr>
+        </thead>
+        <tbody>
+          {orders.map((order) => {
+            const badge = getStatusBadge(order.status);
+            return (
+              <tr key={order.order_id}>
+                <td>{order.order_id}</td>
+                <td>{order.username}</td>
+                <td>
+                  {new Date(order.order_date).toLocaleDateString("th-TH")}
+                </td>
+                <td>{order.total_price.toLocaleString()}</td>
+                <td>
+                  <Badge bg={badge.bg}>{badge.text}</Badge>
+                </td>
+                <td>
+                  <Button
+                    variant="info"
+                    size="sm"
+                    onClick={() => viewOrderDetails(order.order_id)}
+                  >
+                    ดูรายละเอียด
+                  </Button>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </Table>
+
+      {/* Modal for viewing receipt */}
+      <Modal
+        show={showReceiptModal}
+        onHide={() => setShowReceiptModal(false)}
+        centered
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>สลิปการชำระเงิน</Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="text-center">
+          <Image src={selectedReceipt} fluid />
+        </Modal.Body>
+      </Modal>
+
+      {/* Modal for viewing order details */}
+      <Modal
+        show={showDetailModal}
+        onHide={() => setShowDetailModal(false)}
+        size="lg"
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>
+            รายละเอียดคำสั่งซื้อ #{selectedOrder?.order_id}
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {selectedOrder && (
+            <div>
+              <h5>ข้อมูลลูกค้าและการจัดส่ง</h5>
+              <p>
+                <strong>ลูกค้า:</strong> {selectedOrder.username}
+              </p>
+              <p>
+                <strong>ชื่อผู้รับ:</strong> {selectedOrder.shipping_name}
+              </p>
+              <p>
+                <strong>ที่อยู่สำหรับจัดส่ง:</strong>{" "}
+                {selectedOrder.shipping_address}
+              </p>
+              <p>
+                <strong>เบอร์โทรศัพท์ผู้รับ:</strong>{" "}
+                {selectedOrder.shipping_phone}
+              </p>
+              <hr />
+              <h5>รายการสินค้าที่ต้องจัดส่ง</h5>
+              <Table>
+                <thead>
+                  <tr>
+                    <th>สินค้า</th>
+                    <th>ราคาต่อชิ้น (ณ วันที่ซื้อ)</th>
+                    <th>จำนวน</th>
+                    <th>ราคารวม</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {selectedOrder.items.map((item) => (
+                    <tr key={item.order_item_id}>
+                      <td>{item.product_name}</td>
+                      <td>{item.current_price.toLocaleString()}</td>
+                      <td>{item.quantity}</td>
+                      <td>
+                        {(item.current_price * item.quantity).toLocaleString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+              <hr />
+              <h5>หลักฐานการชำระเงิน</h5>
+              {selectedOrder.receipt_image_url ? (
+                <Image
+                  src={selectedOrder.receipt_image_url}
+                  fluid
+                  thumbnail
+                  style={{ maxHeight: "400px", cursor: "pointer" }}
+                  onClick={() => viewReceipt(selectedOrder.receipt_image_url)}
+                />
+              ) : (
+                <p>ยังไม่มีการแนบสลิป</p>
+              )}
+            </div>
+          )}
+        </Modal.Body>
+        <Modal.Footer className="justify-content-between">
+          <div>
+            {selectedOrder?.status === "pending_verification" && (
+              <Button
+                variant="success"
+                onClick={() =>
+                  handleUpdateStatus(selectedOrder.order_id, "processing")
+                }
+              >
+                ยืนยันการชำระเงิน
+              </Button>
+            )}
+            {selectedOrder?.status === "processing" && (
+              <Button
+                variant="primary"
+                onClick={() =>
+                  handleUpdateStatus(selectedOrder.order_id, "shipped")
+                }
+              >
+                แจ้งว่าจัดส่งแล้ว
+              </Button>
+            )}
+            {(selectedOrder?.status === "pending_verification" ||
+              selectedOrder?.status === "processing") && (
+              <Button
+                variant="danger"
+                className="ms-2"
+                onClick={() =>
+                  handleUpdateStatus(selectedOrder.order_id, "cancelled")
+                }
+              >
+                ยกเลิกออเดอร์
+              </Button>
+            )}
+          </div>
+          <Button variant="secondary" onClick={() => setShowDetailModal(false)}>
+            ปิด
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    </div>
+  );
+};
+
+export default OrderManagementPage;

@@ -1,0 +1,67 @@
+
+.profile-page-bg {
+  background-color: #f8f9fa;
+  min-height: calc(100vh - 60px); 
+  padding-top: 2rem;
+  padding-bottom: 80px; 
+}
+
+.profile-container {
+  max-width: 800px;
+}
+
+.profile-header-card,
+.profile-menu-card {
+  border: none;
+  border-radius: 0.75rem;
+}
+
+.profile-avatar {
+  font-size: 4rem; 
+  color: #6c757d;
+}
+
+.points-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: #e9f5ff;
+  color: #007bff;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+}
+
+.points-icon {
+  font-size: 1.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.profile-menu-item {
+  display: flex;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #495057;
+  border-bottom: 1px solid #f1f1f1 !important;
+}
+
+.profile-menu-item:last-child {
+  border-bottom: none !important;
+}
+
+.profile-menu-item .menu-icon {
+  font-size: 1.5rem;
+  margin-right: 1rem;
+  color: #6c757d;
+}
+
+.profile-menu-item.text-danger .menu-icon {
+  color: #dc3545;
+}
+
+.profile-menu-item:hover {
+    background-color: #f8f9fa;
+}
