@@ -1,0 +1,15 @@
+.edit-profile-page-bg {
+  background-color: #f8f9fa;
+  min-height: calc(100vh - 60px); 
+  padding-top: 2rem;
+  padding-bottom: 80px; 
+}
+
+.edit-profile-container {
+  max-width: 900px;
+}
+
+.edit-profile-container .card {
+    border: none;
+    border-radius: 0.75rem;
+}

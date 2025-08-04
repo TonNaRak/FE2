@@ -1,4 +1,4 @@
-.bottom-nav {
+/* .bottom-nav {
   position: fixed;
   bottom: 0;
   left: 0;
@@ -35,4 +35,87 @@
 
 .bottom-nav-item.active {
   color: #007bff;
+} */
+
+:root {
+  --nav-icon-color: #555;
+  --nav-active-color: #007bff;
+  /* ปรับสีพื้นหลัง Indicator ให้นุ่มนวลขึ้น */
+  --nav-indicator-color: rgba(0, 123, 255, 0.2);
+  --nav-height: 65px; /* เพิ่มความสูงเล็กน้อย */
+}
+
+.bottom-nav {
+  position: fixed;
+  bottom: 15px; /* ยกระดับขึ้นมาจากขอบล่าง */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 95%; /* ไม่เต็มความกว้าง */
+  max-width: 500px; /* จำกัดความกว้างสูงสุด */
+  height: var(--nav-height);
+
+  /* --- Glassmorphism Effect --- */
+  background: rgba(255, 255, 255, 0.6); /* 1. พื้นหลังโปร่งแสง */
+  backdrop-filter: blur(15px); /* 2. เอฟเฟกต์เบลอ */
+  -webkit-backdrop-filter: blur(15px); /* สำหรับ Safari */
+  border: 1px solid rgba(255, 255, 255, 0.2); /* 3. เส้นขอบบางๆ */
+  border-radius: 30px; /* ทำให้ขอบมนสวยงาม */
+  /* --- End Glassmorphism Effect --- */
+
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  overflow: hidden; /* ป้องกันไม่ให้ indicator ล้นออกมา */
+
+  padding: 0 10px; /* เพิ่ม Padding แนวนอน 10px */
+}
+
+.bottom-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--nav-icon-color);
+  text-decoration: none;
+  flex-grow: 1;
+  height: 100%;
+  transition: color 0.3s ease-in-out, transform 0.2s ease;
+  z-index: 2;
+}
+
+.bottom-nav-icon {
+  font-size: 24px;
+  margin-bottom: 3px;
+  transition: transform 0.3s ease;
+}
+
+.bottom-nav-label {
+  font-size: 11px;
+  font-weight: 500;
+  transition: opacity 0.3s ease;
+}
+
+/* --- Active State --- */
+.bottom-nav-item.active {
+  color: var(--nav-active-color);
+  transform: translateY(-2px);
+}
+
+.bottom-nav-item.active .bottom-nav-icon {
+  transform: scale(1.1);
+}
+
+/* --- Sliding Indicator --- */
+.nav-indicator {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 70%; /* ปรับขนาดให้พอดี */
+  background-color: var(--nav-indicator-color);
+  border-radius: 18px; /* ปรับความมน */
+  z-index: 1;
+  transition: left 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+    width 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }

@@ -1,0 +1,90 @@
+.glass-lang-switcher {
+  position: relative;
+  font-family: 'Prompt', sans-serif;
+}
+
+.glass-lang-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+
+  /* Glassmorphism Effect */
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+
+  color: #333;
+  font-weight: 500;
+  font-size: 14px;
+  transition: background 0.2s ease;
+}
+
+.glass-lang-button:hover {
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.glass-lang-button .chevron-icon {
+  transition: transform 0.3s ease;
+  font-size: 12px;
+}
+
+.glass-lang-button .chevron-icon.open {
+  transform: rotate(180deg);
+}
+
+.glass-lang-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 100%;
+  border-radius: 15px;
+  padding: 8px;
+  z-index: 1100;
+  display: flex;
+  flex-direction: column;
+  gap: 4px; /* เพิ่มช่องว่างระหว่างปุ่ม */
+
+  /* Glassmorphism Effect */
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+/* --- เพิ่ม Style สำหรับปุ่มใน Dropdown --- */
+.glass-lang-dropdown .dropdown-item {
+  background: none;
+  border: none;
+  padding: 8px 16px;
+  width: 100%;
+  border-radius: 10px;
+  cursor: pointer;
+  color: #333;
+  font-weight: 500;
+  font-size: 14px;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  display: flex;
+  justify-content: space-between; /* จัดให้ชื่อภาษากับไอคอนอยู่คนละฝั่ง */
+  align-items: center;
+}
+
+.glass-lang-dropdown .dropdown-item:hover {
+  background-color: rgba(0, 123, 255, 0.1);
+}
+
+.glass-lang-dropdown .dropdown-item.active {
+  color: #007bff;
+  font-weight: 700;
+  background-color: rgba(0, 123, 255, 0.15);
+}
+
+.glass-lang-dropdown .check-icon {
+  font-size: 18px;
+}

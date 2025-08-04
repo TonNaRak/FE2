@@ -22,6 +22,7 @@ import ProductDetailPage from "./pages/ProductDetailPage";
 import CheckoutPage from "./pages/CheckoutPage";
 import PaymentConfirmationPage from "./pages/PaymentConfirmationPage";
 import OrderHistoryPage from "./pages/OrderHistoryPage";
+import EditProfilePage from "./pages/EditProfilePage";
 
 // Admin Pages
 import DashboardPage from "./pages/admin/DashboardPage";
@@ -51,6 +52,7 @@ function App() {
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/order-history" element={<OrderHistoryPage />} />
             <Route path="/product/:productId" element={<ProductDetailPage />} />
+            <Route path="/profile/edit" element={<EditProfilePage />} />
             {/* <Route path="/checkout" element={<CheckoutPage />} /> */}
             <Route
               path="/payment-confirmation/:orderId"

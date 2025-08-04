@@ -9,6 +9,7 @@ import {
   BsQuestionCircle,
   BsBoxArrowRight,
   BsAward,
+  BsPencilSquare,
 } from "react-icons/bs";
 import "./ProfilePage.css";
 
@@ -61,9 +62,14 @@ const ProfilePage = () => {
 
         <Card className="profile-menu-card shadow-sm">
           <ListGroup variant="flush">
-            <ListGroup.Item action href="#" className="profile-menu-item">
-              <BsPersonVcard className="menu-icon" />
-              ข้อมูลผู้ใช้
+            <ListGroup.Item
+              action
+              as={Link}
+              to="/profile/edit"
+              className="profile-menu-item"
+            >
+              <BsPencilSquare className="menu-icon" />
+              แก้ไขข้อมูลส่วนตัว
             </ListGroup.Item>
 
             <ListGroup.Item

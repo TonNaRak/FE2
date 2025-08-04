@@ -25,6 +25,10 @@ const RegisterPage = () => {
         setError('กรุณากรอกรหัสผ่าน');
         return;
     }
+    if (password.length < 6) {
+        setError('รหัสผ่านต้องมีความยาวอย่างน้อย 6 ตัวอักษร');
+        return;
+    }
 
     try {
       const response = await axios.post('https://api.souvenir-from-lagoon-thailand.com/api/register', {
