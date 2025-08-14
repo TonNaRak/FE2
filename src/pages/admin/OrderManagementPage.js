@@ -1,4 +1,3 @@
-// src/pages/admin/OrderManagementPage.js (โค้ดฉบับเต็ม)
 import React, { useState, useEffect } from "react";
 import {
   Table,
@@ -17,11 +16,9 @@ const OrderManagementPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // State สำหรับ Modal รายละเอียด
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
 
-  // State สำหรับ Modal สลิป
   const [showReceiptModal, setShowReceiptModal] = useState(false);
   const [selectedReceipt, setSelectedReceipt] = useState("");
 
@@ -31,7 +28,10 @@ const OrderManagementPage = () => {
   const fetchOrders = async () => {
     try {
       setLoading(true);
-      const response = await axios.get("https://api.souvenir-from-lagoon-thailand.com/api/admin/orders", API_CONFIG);
+      const response = await axios.get(
+        "https://api.souvenir-from-lagoon-thailand.com/api/admin/orders",
+        API_CONFIG
+      );
       setOrders(response.data);
     } catch (err) {
       setError("ไม่สามารถดึงข้อมูลคำสั่งซื้อได้");
@@ -44,25 +44,21 @@ const OrderManagementPage = () => {
     fetchOrders();
   }, []);
 
-  // --- จุดที่แก้ไข ---
   const handleUpdateStatus = async (orderId, newStatus) => {
-    // ลบบรรทัด window.confirm ออกไปจากตรงนี้
     try {
       await axios.put(
         `https://api.souvenir-from-lagoon-thailand.com/api/admin/orders/${orderId}/status`,
         { status: newStatus },
         API_CONFIG
       );
-      fetchOrders(); // Refresh the list
+      fetchOrders();
       if (showDetailModal) {
-        // ถ้า Modal เปิดอยู่ ให้รีเฟรชข้อมูลใน Modal ด้วย
         viewOrderDetails(orderId);
       }
     } catch (err) {
       alert("เกิดข้อผิดพลาดในการอัปเดตสถานะ");
     }
   };
-  // --- จบจุดที่แก้ไข ---
 
   const viewReceipt = (imageUrl) => {
     setSelectedReceipt(imageUrl);
@@ -84,6 +80,7 @@ const OrderManagementPage = () => {
 
   const getStatusBadge = (status) => {
     const styles = {
+      pending_payment: { bg: "secondary", text: "รอชำระเงิน" }, // เพิ่มสถานะนี้
       pending_verification: { bg: "warning", text: "รอตรวจสอบ" },
       processing: { bg: "info", text: "กำลังจัดเตรียม" },
       shipped: { bg: "primary", text: "จัดส่งแล้ว" },
@@ -118,7 +115,13 @@ const OrderManagementPage = () => {
                 <td>{order.order_id}</td>
                 <td>{order.username}</td>
                 <td>
-                  {new Date(order.order_date).toLocaleDateString("th-TH")}
+                  {new Date(order.order_date).toLocaleDateString("th-TH", {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
                 </td>
                 <td>{order.total_price.toLocaleString()}</td>
                 <td>
@@ -196,7 +199,28 @@ const OrderManagementPage = () => {
                 <tbody>
                   {selectedOrder.items.map((item) => (
                     <tr key={item.order_item_id}>
-                      <td>{item.product_name}</td>
+                      <td>
+                        {/* --- START: จุดที่แก้ไข --- */}
+                        {item.product_name}
+                        {item.selected_options &&
+                          typeof item.selected_options === "object" && (
+                            <div
+                              className="text-muted"
+                              style={{ fontSize: "0.85rem" }}
+                            >
+                              {Object.entries(item.selected_options).map(
+                                ([key, value]) => (
+                                  <div key={key}>
+                                    <small>
+                                      {key}: {value}
+                                    </small>
+                                  </div>
+                                )
+                              )}
+                            </div>
+                          )}
+                        {/* --- END: จุดที่แก้ไข --- */}
+                      </td>
                       <td>{item.current_price.toLocaleString()}</td>
                       <td>{item.quantity}</td>
                       <td>
@@ -245,7 +269,8 @@ const OrderManagementPage = () => {
               </Button>
             )}
             {(selectedOrder?.status === "pending_verification" ||
-              selectedOrder?.status === "processing") && (
+              selectedOrder?.status === "processing" ||
+              selectedOrder?.status === "pending_payment") && ( // เพิ่มเงื่อนไขให้ยกเลิกได้แม้ยังไม่จ่าย
               <Button
                 variant="danger"
                 className="ms-2"

@@ -107,9 +107,13 @@ const CheckoutPage = () => {
           paymentMethod,
           shippingInfo,
         };
-        response = await axios.post("https://api.souvenir-from-lagoon-thailand.com/api/orders/buy-now", orderData, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        response = await axios.post(
+          "https://api.souvenir-from-lagoon-thailand.com/api/orders/buy-now",
+          orderData,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
       } else {
         // กรณีมาจาก "ตะกร้าสินค้า"
         const orderData = {
@@ -118,9 +122,13 @@ const CheckoutPage = () => {
           paymentMethod,
           shippingInfo,
         };
-        response = await axios.post("https://api.souvenir-from-lagoon-thailand.com/api/orders", orderData, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        response = await axios.post(
+          "https://api.souvenir-from-lagoon-thailand.com/api/orders",
+          orderData,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
       }
 
       const newOrderId = response.data.orderId;
@@ -245,6 +253,18 @@ const CheckoutPage = () => {
                         <p className="mb-0">
                           <strong>{item.name}</strong>
                         </p>
+                        {item.selected_options &&
+                          typeof item.selected_options === "object" && (
+                            <div className="text-muted small">
+                              {Object.entries(item.selected_options).map(
+                                ([key, value]) => (
+                                  <span key={key} className="me-2">
+                                    {key}: {value}
+                                  </span>
+                                )
+                              )}
+                            </div>
+                          )}
                         <p className="text-muted small mb-0">
                           จำนวน: {item.quantity}
                         </p>

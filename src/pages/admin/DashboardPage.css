@@ -1,0 +1,17 @@
+.dashboard-coming-soon {
+  min-height: calc(100vh - 56px); 
+  padding: 20px;
+}
+
+.coming-soon-title {
+  font-size: 4.5rem; /* ทำให้ตัวอักษรใหญ่มาก */
+  font-weight: 700;
+  color: #ced4da; /* สีเทาอ่อน */
+  text-transform: uppercase; /* ทำให้เป็นตัวพิมพ์ใหญ่ทั้งหมด */
+  letter-spacing: 2px;
+}
+
+.coming-soon-subtitle {
+  font-size: 1.25rem;
+  color: #6c757d; /* สีเทาเข้ม */
+}

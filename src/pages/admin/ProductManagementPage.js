@@ -13,6 +13,7 @@ import {
 } from "react-bootstrap";
 import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
+import "./ProductOptions.css"; 
 
 const ProductManagementPage = () => {
   const [products, setProducts] = useState([]);
@@ -22,7 +23,8 @@ const ProductManagementPage = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
-  const [currentProduct, setCurrentProduct] = useState({
+
+  const initialProductState = {
     name: "",
     name_en: "",
     price: "",
@@ -32,9 +34,12 @@ const ProductManagementPage = () => {
     image_url: "",
     recommend_status: 0,
     sales_status: 1,
-  });
+    options: [],
+  };
+  const [currentProduct, setCurrentProduct] = useState(initialProductState);
 
   const { token } = useAuth();
+  const API_CONFIG = { headers: { Authorization: `Bearer ${token}` } };
 
   useEffect(() => {
     fetchProducts();
@@ -44,9 +49,10 @@ const ProductManagementPage = () => {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const response = await axios.get("https://api.souvenir-from-lagoon-thailand.com/api/admin/products", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await axios.get(
+        "https://api.souvenir-from-lagoon-thailand.com/api/admin/products",
+        API_CONFIG
+      );
       setProducts(response.data);
     } catch (err) {
       setError("ไม่สามารถดึงข้อมูลสินค้าได้");
@@ -57,9 +63,10 @@ const ProductManagementPage = () => {
 
   const fetchCategories = async () => {
     try {
-      const response = await axios.get("https://api.souvenir-from-lagoon-thailand.com/api/categories", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await axios.get(
+        "https://api.souvenir-from-lagoon-thailand.com/api/categories",
+        API_CONFIG
+      );
       setCategories(response.data);
     } catch (err) {
       console.error("Could not fetch categories", err);
@@ -78,18 +85,80 @@ const ProductManagementPage = () => {
     setSelectedFile(e.target.files[0]);
   };
 
+  // --- START: ฟังก์ชันจัดการตัวเลือกสินค้า (เวอร์ชันสองภาษา) ---
+  const handleAddVariation = () => {
+    setCurrentProduct((prev) => ({
+      ...prev,
+      options: [...prev.options, { name: "", name_en: "", values: [] }], // เพิ่ม name_en
+    }));
+  };
+
+  const handleRemoveVariation = (index) => {
+    setCurrentProduct((prev) => ({
+      ...prev,
+      options: prev.options.filter((_, i) => i !== index),
+    }));
+  };
+
+  const handleVariationNameChange = (e, index) => {
+    const { name, value } = e.target;
+    const newOptions = [...currentProduct.options];
+    newOptions[index][name] = value; // name สามารถเป็น 'name' หรือ 'name_en'
+    setCurrentProduct((prev) => ({ ...prev, options: newOptions }));
+  };
+  
+  const handleOptionValueKeyDown = (e, index) => {
+    if (e.key === "Enter" || e.key === ",") {
+      e.preventDefault();
+      const value = e.target.value.trim();
+      if (value) {
+        const newOptions = [...currentProduct.options];
+        if (!newOptions[index].values.some((v) => v.name === value)) {
+          // เพิ่มทั้ง name (ไทย) และ name_en (อังกฤษ) ที่เป็นค่าว่าง
+          newOptions[index].values.push({ name: value, name_en: "" });
+          setCurrentProduct((prev) => ({ ...prev, options: newOptions }));
+        }
+        e.target.value = "";
+      }
+    }
+  };
+
+  // ฟังก์ชันใหม่สำหรับอัปเดต name_en ของค่าตัวเลือก
+  const handleOptionValueEnChange = (e, groupIndex, valueIndex) => {
+    const newOptions = [...currentProduct.options];
+    newOptions[groupIndex].values[valueIndex].name_en = e.target.value;
+    setCurrentProduct(prev => ({ ...prev, options: newOptions }));
+  };
+
+  const removeOptionValue = (groupIndex, valueIndex) => {
+    const newOptions = [...currentProduct.options];
+    newOptions[groupIndex].values.splice(valueIndex, 1);
+    setCurrentProduct((prev) => ({ ...prev, options: newOptions }));
+  };
+  // --- END: ฟังก์ชันจัดการตัวเลือกสินค้า ---
+
   const handleFormSubmit = async (e) => {
     e.preventDefault();
 
     const formData = new FormData();
-    formData.append("name", currentProduct.name);
-    formData.append("name_en", currentProduct.name_en || "");
-    formData.append("price", currentProduct.price);
-    formData.append("description", currentProduct.description || "");
-    formData.append("description_en", currentProduct.description_en || "");
-    formData.append("category_id", currentProduct.category_id);
-    formData.append("recommend_status", currentProduct.recommend_status);
-    formData.append("sales_status", currentProduct.sales_status);
+    Object.keys(currentProduct).forEach((key) => {
+      if (
+        key !== "options" &&
+        key !== "category_name" &&
+        key !== "product_id"
+      ) {
+        formData.append(key, currentProduct[key]);
+      }
+    });
+
+    const cleanOptions = currentProduct.options
+      .filter((opt) => opt.name && opt.values.length > 0)
+      .map((opt) => ({
+        ...opt,
+        values: opt.values.filter((val) => val.name),
+      }));
+
+    formData.append("options", JSON.stringify(cleanOptions));
 
     if (isEditMode) {
       formData.append("existing_image_url", currentProduct.image_url || "");
@@ -105,12 +174,15 @@ const ProductManagementPage = () => {
 
     try {
       await axios[apiMethod](apiEndpoint, formData, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
       });
       setShowModal(false);
       fetchProducts();
     } catch (err) {
-      console.error("Form submission error", err);
+      console.error("Form submission error", err.response?.data || err.message);
       alert(
         `เกิดข้อผิดพลาด: ${err.response?.data?.message || "โปรดลองอีกครั้ง"}`
       );
@@ -119,34 +191,49 @@ const ProductManagementPage = () => {
 
   const openModalForAdd = () => {
     setIsEditMode(false);
-    setCurrentProduct({
-      name: "",
-      name_en: "",
-      price: "",
-      description: "",
-      description_en: "",
-      category_id: "",
-      image_url: "",
-      recommend_status: 0,
-      sales_status: 1,
-    });
+    setCurrentProduct(initialProductState);
     setSelectedFile(null);
     setShowModal(true);
   };
 
-  const openModalForEdit = (product) => {
-    setIsEditMode(true);
-    setCurrentProduct(product);
-    setSelectedFile(null);
-    setShowModal(true);
+  const openModalForEdit = async (product) => {
+    try {
+      const response = await axios.get(
+        `https://api.souvenir-from-lagoon-thailand.com/api/product/${product.product_id}`,
+        API_CONFIG
+      );
+      setIsEditMode(true);
+
+      const productData = response.data;
+      if (!productData.options) {
+        productData.options = [];
+      } else {
+        // แปลงโครงสร้างจาก DB ให้ตรงกับ UI (เพิ่ม _en)
+        productData.options = productData.options.map((opt) => ({
+          name: opt.option_name,
+          name_en: opt.option_name_en,
+          values: opt.values.map((val) => ({ 
+              name: val.value_name,
+              name_en: val.value_name_en 
+            })),
+        }));
+      }
+
+      setCurrentProduct(productData);
+      setSelectedFile(null);
+      setShowModal(true);
+    } catch (err) {
+      alert("ไม่สามารถโหลดข้อมูลตัวเลือกสินค้าได้");
+    }
   };
 
   const handleDelete = async (productId) => {
     if (window.confirm("คุณแน่ใจหรือไม่ว่าต้องการลบสินค้านี้?")) {
       try {
-        await axios.delete(`https://api.souvenir-from-lagoon-thailand.com/api/admin/products/${productId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        await axios.delete(
+          `https://api.souvenir-from-lagoon-thailand.com/api/admin/products/${productId}`,
+          API_CONFIG
+        );
         fetchProducts();
       } catch (err) {
         console.error("Delete error", err);
@@ -237,8 +324,8 @@ const ProductManagementPage = () => {
             {isEditMode ? "แก้ไขสินค้า" : "เพิ่มสินค้าใหม่"}
           </Modal.Title>
         </Modal.Header>
-        <Modal.Body>
-          <Form onSubmit={handleFormSubmit}>
+        <Form onSubmit={handleFormSubmit}>
+          <Modal.Body>
             <Row>
               <Col md={6}>
                 <Form.Group className="mb-3">
@@ -264,7 +351,6 @@ const ProductManagementPage = () => {
                 </Form.Group>
               </Col>
             </Row>
-
             <Form.Group className="mb-3">
               <Form.Label>ราคา</Form.Label>
               <Form.Control
@@ -276,7 +362,6 @@ const ProductManagementPage = () => {
                 required
               />
             </Form.Group>
-
             <Form.Group className="mb-3">
               <Form.Label>คำอธิบาย (ไทย)</Form.Label>
               <Form.Control
@@ -287,7 +372,6 @@ const ProductManagementPage = () => {
                 onChange={handleInputChange}
               />
             </Form.Group>
-
             <Form.Group className="mb-3">
               <Form.Label>คำอธิบาย (English)</Form.Label>
               <Form.Control
@@ -298,7 +382,6 @@ const ProductManagementPage = () => {
                 onChange={handleInputChange}
               />
             </Form.Group>
-
             <Form.Group className="mb-3">
               <Form.Label>ประเภทสินค้า</Form.Label>
               <Form.Select
@@ -315,7 +398,6 @@ const ProductManagementPage = () => {
                 ))}
               </Form.Select>
             </Form.Group>
-
             <Form.Group className="mb-3">
               <Form.Label>รูปภาพสินค้า</Form.Label>
               {isEditMode && currentProduct.image_url && (
@@ -338,6 +420,74 @@ const ProductManagementPage = () => {
               </Form.Text>
             </Form.Group>
 
+            <hr />
+            <h5>ประเภทตัวเลือกสินค้า (Variations)</h5>
+            <p className="text-muted small">
+              เพิ่มประเภทตัวเลือก เช่น ขนาด, สี
+              จากนั้นใส่ตัวเลือกย่อยโดยการพิมพ์แล้วกด Enter
+            </p>
+
+            {currentProduct.options.map((option, index) => (
+              <div key={index} className="variation-group">
+                <div className="variation-header">
+                    <Form.Control
+                        type="text"
+                        placeholder="ชื่อประเภท (ไทย)"
+                        name="name"
+                        value={option.name}
+                        onChange={(e) => handleVariationNameChange(e, index)}
+                        required
+                    />
+                      <Form.Control
+                        type="text"
+                        placeholder="ชื่อประเภท (Eng)"
+                        name="name_en"
+                        className="ms-2"
+                        value={option.name_en || ''}
+                        onChange={(e) => handleVariationNameChange(e, index)}
+                    />
+                    <Button variant="link" className="text-danger ms-2" style={{whiteSpace: 'nowrap'}} onClick={() => handleRemoveVariation(index)}>
+                        ลบ
+                    </Button>
+                </div>
+                <div className="tags-input-container">
+                    {option.values.map((value, valueIndex) => (
+                        <div key={valueIndex} className="d-flex align-items-center me-2 mb-1">
+                            <div className="tag-item">
+                                {value.name}
+                                <button type="button" onClick={() => removeOptionValue(index, valueIndex)}>
+                                    &times;
+                                </button>
+                            </div>
+                            <Form.Control
+                                type="text"
+                                placeholder="Eng"
+                                className="ms-1"
+                                style={{ width: '80px', fontSize: '14px', height: '31px', padding: '4px 8px' }}
+                                value={value.name_en || ''}
+                                onChange={(e) => handleOptionValueEnChange(e, index, valueIndex)}
+                            />
+                        </div>
+                    ))}
+                </div>
+                <input
+                    type="text"
+                    className="tags-input mt-2 form-control"
+                    placeholder="เพิ่มตัวเลือก (ไทย) แล้วกด Enter"
+                    onKeyDown={(e) => handleOptionValueKeyDown(e, index)}
+                />
+              </div>
+            ))}
+
+            <Button
+              variant="outline-success"
+              size="sm"
+              onClick={handleAddVariation}
+            >
+              + เพิ่มประเภทตัวเลือก
+            </Button>
+            <hr />
+
             <Form.Group className="mb-3">
               <Form.Check
                 type="switch"
@@ -358,21 +508,16 @@ const ProductManagementPage = () => {
                 onChange={handleInputChange}
               />
             </Form.Group>
-
-            <div className="text-end">
-              <Button
-                variant="secondary"
-                onClick={() => setShowModal(false)}
-                className="me-2"
-              >
-                ยกเลิก
-              </Button>
-              <Button variant="primary" type="submit">
-                บันทึก
-              </Button>
-            </div>
-          </Form>
-        </Modal.Body>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={() => setShowModal(false)}>
+              ยกเลิก
+            </Button>
+            <Button variant="primary" type="submit">
+              บันทึก
+            </Button>
+          </Modal.Footer>
+        </Form>
       </Modal>
     </div>
   );

@@ -1,5 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { Table, Button, Modal, Form, Spinner, Alert } from "react-bootstrap";
+import {
+  Table,
+  Button,
+  Modal,
+  Form,
+  Spinner,
+  Alert,
+  Image, // <-- เพิ่ม Image component
+} from "react-bootstrap";
 import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
 import { FaPlus, FaEdit, FaTrash, FaSave } from "react-icons/fa";
@@ -11,12 +19,17 @@ const CategoryManagementPage = () => {
   const [showModal, setShowModal] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
 
-  // 1. อัปเดต State ให้มี category_name_en
+  // --- START: จุดที่แก้ไข ---
+  // 1. อัปเดต State ให้มี icon_url
   const [currentCategory, setCurrentCategory] = useState({
     category_id: null,
     category_name: "",
     category_name_en: "",
+    icon_url: "", // เพิ่ม field นี้
   });
+  // 2. เพิ่ม State สำหรับเก็บไฟล์ที่เลือก
+  const [selectedFile, setSelectedFile] = useState(null);
+  // --- END: จุดที่แก้ไข ---
 
   const { token } = useAuth();
   const API_CONFIG = { headers: { Authorization: `Bearer ${token}` } };
@@ -24,7 +37,11 @@ const CategoryManagementPage = () => {
   const fetchCategories = async () => {
     try {
       setLoading(true);
-      const response = await axios.get("https://api.souvenir-from-lagoon-thailand.com/api/categories", API_CONFIG);
+      // ใช้ /api/admin/categories endpoint ใหม่ (ถ้ามี) หรืออันเดิมก็ได้
+      const response = await axios.get(
+        "https://api.souvenir-from-lagoon-thailand.com/api/admin/categories",
+        API_CONFIG
+      );
       setCategories(response.data);
     } catch (err) {
       setError("ไม่สามารถโหลดข้อมูลได้ หรือคุณไม่มีสิทธิ์เข้าถึง");
@@ -39,41 +56,57 @@ const CategoryManagementPage = () => {
 
   const handleShowAddModal = () => {
     setIsEditMode(false);
-    // 2. อัปเดต State เริ่มต้นสำหรับเพิ่มข้อมูลใหม่
+    // 3. อัปเดต State เริ่มต้นสำหรับเพิ่มข้อมูลใหม่
     setCurrentCategory({
       category_id: null,
       category_name: "",
       category_name_en: "",
+      icon_url: "",
     });
+    setSelectedFile(null); // เคลียร์ไฟล์ที่เลือกไว้
     setShowModal(true);
   };
 
   const handleShowEditModal = (category) => {
     setIsEditMode(true);
     setCurrentCategory(category);
+    setSelectedFile(null); // เคลียร์ไฟล์ที่เลือกไว้
     setShowModal(true);
   };
 
   const handleCloseModal = () => setShowModal(false);
 
+  // --- START: จุดที่แก้ไข ---
+  // 4. เพิ่ม function สำหรับจัดการไฟล์ที่เลือก
+  const handleFileChange = (e) => {
+    setSelectedFile(e.target.files[0]);
+  };
+
+  // 5. แก้ไข handleSave ให้รองรับการส่งไฟล์ (FormData)
   const handleSave = async (e) => {
     e.preventDefault();
-    // 3. เตรียมข้อมูลที่จะส่งให้มีทั้งสองภาษา
-    const dataToSave = {
-      category_name: currentCategory.category_name,
-      category_name_en: currentCategory.category_name_en,
-    };
+
+    const formData = new FormData();
+    formData.append("category_name", currentCategory.category_name);
+    formData.append("category_name_en", currentCategory.category_name_en);
+
+    // ถ้ามีการเลือกไฟล์ใหม่ ให้เพิ่มเข้าไปใน formData
+    if (selectedFile) {
+      formData.append("icon", selectedFile);
+    }
+    // ถ้าเป็นการแก้ไข ให้ส่ง URL ของไอคอนเดิมไปด้วย
+    if (isEditMode) {
+      formData.append("existing_icon_url", currentCategory.icon_url || "");
+    }
+
+    const apiEndpoint = isEditMode
+      ? `https://api.souvenir-from-lagoon-thailand.com/api/admin/categories/${currentCategory.category_id}`
+      : "https://api.souvenir-from-lagoon-thailand.com/api/admin/categories";
+    const apiMethod = isEditMode ? "put" : "post";
 
     try {
-      if (isEditMode) {
-        await axios.put(
-          `https://api.souvenir-from-lagoon-thailand.com/api/admin/categories/${currentCategory.category_id}`,
-          dataToSave,
-          API_CONFIG
-        );
-      } else {
-        await axios.post("https://api.souvenir-from-lagoon-thailand.com/api/admin/categories", dataToSave, API_CONFIG);
-      }
+      // ส่งข้อมูลเป็น formData
+      await axios[apiMethod](apiEndpoint, formData, API_CONFIG);
       fetchCategories();
       handleCloseModal();
     } catch (err) {
@@ -82,11 +115,15 @@ const CategoryManagementPage = () => {
       );
     }
   };
+  // --- END: จุดที่แก้ไข ---
 
   const handleDelete = async (categoryId) => {
     if (window.confirm("คุณแน่ใจหรือไม่ว่าต้องการลบประเภทสินค้านี้?")) {
       try {
-        await axios.delete(`https://api.souvenir-from-lagoon-thailand.com/api/admin/categories/${categoryId}`, API_CONFIG);
+        await axios.delete(
+          `https://api.souvenir-from-lagoon-thailand.com/api/admin/categories/${categoryId}`,
+          API_CONFIG
+        );
         fetchCategories();
       } catch (err) {
         alert(
@@ -112,6 +149,9 @@ const CategoryManagementPage = () => {
         <thead>
           <tr>
             <th>#ID</th>
+            {/* --- START: จุดที่แก้ไข --- */}
+            <th>ไอคอน</th>
+            {/* --- END: จุดที่แก้ไข --- */}
             <th>ชื่อประเภท (ไทย)</th>
             <th>ชื่อประเภท (English)</th>
             <th>จัดการ</th>
@@ -121,6 +161,20 @@ const CategoryManagementPage = () => {
           {categories.map((cat) => (
             <tr key={cat.category_id}>
               <td>{cat.category_id}</td>
+              <td>
+                <Image
+                  src={cat.icon_url}
+                  thumbnail
+                  style={{
+                    maxHeight: "40px",
+                    maxWidth: "40px",
+                    objectFit: "contain",
+                  }}
+                  onError={(e) => {
+                    e.target.style.display = "none";
+                  }}
+                />
+              </td>
               <td>{cat.category_name}</td>
               <td>{cat.category_name_en}</td>
               <td>
@@ -153,7 +207,6 @@ const CategoryManagementPage = () => {
         </Modal.Header>
         <Form onSubmit={handleSave}>
           <Modal.Body>
-            {/* 4. เพิ่มช่องกรอกสำหรับภาษาอังกฤษ */}
             <Form.Group className="mb-3">
               <Form.Label>ชื่อประเภท (ไทย)</Form.Label>
               <Form.Control
@@ -169,7 +222,7 @@ const CategoryManagementPage = () => {
                 autoFocus
               />
             </Form.Group>
-            <Form.Group>
+            <Form.Group className="mb-3">
               <Form.Label>ชื่อประเภท (English)</Form.Label>
               <Form.Control
                 type="text"
@@ -182,6 +235,31 @@ const CategoryManagementPage = () => {
                 }
               />
             </Form.Group>
+
+            {/* --- START: จุดที่แก้ไข --- */}
+            {/* 6. เพิ่มช่องสำหรับอัปโหลดไอคอน */}
+            <Form.Group className="mb-3">
+              <Form.Label>ไอคอน</Form.Label>
+              {isEditMode && currentCategory.icon_url && (
+                <div className="mb-2">
+                  <p className="mb-1 small text-muted">ไอคอนปัจจุบัน:</p>
+                  <Image
+                    src={currentCategory.icon_url}
+                    thumbnail
+                    style={{ maxHeight: "80px" }}
+                  />
+                </div>
+              )}
+              <Form.Control
+                type="file"
+                onChange={handleFileChange}
+                accept="image/*"
+              />
+              <Form.Text className="text-muted">
+                เลือกไฟล์ใหม่เพื่ออัปเดต หรือเว้นว่างไว้เพื่อใช้รูปเดิม
+              </Form.Text>
+            </Form.Group>
+            {/* --- END: จุดที่แก้ไข --- */}
           </Modal.Body>
           <Modal.Footer>
             <Button variant="secondary" onClick={handleCloseModal}>

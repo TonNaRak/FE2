@@ -13,7 +13,7 @@ import {
 } from "react-bootstrap";
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
-import { BsCartPlus, BsSearch } from "react-icons/bs";
+import { BsSearch, BsStarFill } from "react-icons/bs";
 import useMediaQuery from "../hooks/useMediaQuery";
 import { useTranslation } from "react-i18next";
 import LanguageSwitcher from "../components/LanguageSwitcher";
@@ -29,7 +29,7 @@ const IndexPage = () => {
   const [submittedSearchTerm, setSubmittedSearchTerm] = useState("");
   const [isSearched, setIsSearched] = useState(false);
 
-  const { t, i18n } = useTranslation(); // 1. ดึง i18n มาใช้เพิ่ม
+  const { t, i18n } = useTranslation();
   const { user, token } = useAuth();
   const navigate = useNavigate();
   const isMobile = useMediaQuery("(max-width: 768px)");
@@ -55,7 +55,8 @@ const IndexPage = () => {
       const params = {};
 
       if (isSearched && submittedSearchTerm.trim() !== "") {
-        url = "https://api.souvenir-from-lagoon-thailand.com/api/products/search";
+        url =
+          "https://api.souvenir-from-lagoon-thailand.com/api/products/search";
         params.q = submittedSearchTerm;
       } else {
         if (activeFilter.type === "category") {
@@ -90,9 +91,18 @@ const IndexPage = () => {
     setIsSearched(false);
   };
 
-  const handleAddToCart = async (e, productId) => {
+  // ฟังก์ชัน handleAddToCart ไม่จำเป็นต้องใช้อีกต่อไปในหน้านี้
+  // แต่จะเก็บโค้ดไว้เผื่อคุณอาจจะนำกลับมาใช้ในอนาคต
+  /*
+  const handleAddToCart = async (e, product) => {
     e.preventDefault();
     e.stopPropagation();
+
+    if (product.has_options) {
+      navigate(`/product/${product.product_id}`);
+      return;
+    }
+
     if (!user) {
       alert("กรุณาเข้าสู่ระบบเพื่อเพิ่มสินค้าลงตะกร้า");
       navigate("/login");
@@ -101,7 +111,7 @@ const IndexPage = () => {
     try {
       const response = await axios.post(
         "https://api.souvenir-from-lagoon-thailand.com/api/cart/add",
-        { productId, quantity: 1 },
+        { productId: product.product_id, quantity: 1 },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setCartMessage(response.data.message);
@@ -111,6 +121,7 @@ const IndexPage = () => {
       setTimeout(() => setCartMessage(""), 2000);
     }
   };
+  */
 
   return (
     <div className="index-page">
@@ -166,36 +177,55 @@ const IndexPage = () => {
 
         {!isSearched && (
           <div className="filter-bar-container mb-5">
-            <button
-              className={`filter-btn ${
+            <div
+              className={`filter-item ${
                 activeFilter.type === "all" ? "active" : ""
               }`}
               onClick={() => setActiveFilter({ type: "all" })}
             >
-              {t("All")}
-            </button>
-            <button
-              className={`filter-btn ${
+              <div className="category-icon-wrapper">
+                <span className="icon-text">All</span>
+              </div>
+              <span className="category-name">{t("All")}</span>
+            </div>
+
+            <div
+              className={`filter-item ${
                 activeFilter.type === "recommended" ? "active" : ""
               }`}
               onClick={() => setActiveFilter({ type: "recommended" })}
             >
-              ⭐ {t("Recommended_Products")}
-            </button>
+              <div className="category-icon-wrapper">⭐</div>
+              <span className="category-name">{t("Recommended_Products")}</span>
+            </div>
+
             {categories.map((cat) => (
-              <button
+              <div
                 key={cat.category_id}
-                className={`filter-btn ${
+                className={`filter-item ${
                   activeFilter.id === cat.category_id ? "active" : ""
                 }`}
                 onClick={() =>
                   setActiveFilter({ type: "category", id: cat.category_id })
                 }
               >
-                {i18n.language === "en" && cat.category_name_en
-                  ? cat.category_name_en
-                  : cat.category_name}
-              </button>
+                <div className="category-icon-wrapper">
+                  {cat.icon_url ? (
+                    <img
+                      src={cat.icon_url}
+                      alt={cat.category_name}
+                      className="category-icon"
+                    />
+                  ) : (
+                    <span className="icon-placeholder"></span>
+                  )}
+                </div>
+                <span className="category-name">
+                  {i18n.language === "en" && cat.category_name_en
+                    ? cat.category_name_en
+                    : cat.category_name}
+                </span>
+              </div>
             ))}
           </div>
         )}
@@ -205,7 +235,7 @@ const IndexPage = () => {
             <Spinner animation="border" variant="primary" />
           </div>
         ) : (
-          <Row xs={1} sm={2} md={3} lg={4} className="g-4">
+          <Row xs={2} sm={2} md={3} lg={4} className="g-3">
             {products.length > 0 ? (
               products.map((product) => (
                 <Col key={product.product_id}>
@@ -214,6 +244,12 @@ const IndexPage = () => {
                     className="product-link"
                   >
                     <Card className="product-card h-100">
+                      {product.recommend_status === 1 && (
+                        <div className="recommend-tag">
+                          <BsStarFill className="recommend-star-icon" /> แนะนำ
+                        </div>
+                      )}
+
                       <div className="product-image-wrapper">
                         <Card.Img
                           variant="top"
@@ -223,21 +259,10 @@ const IndexPage = () => {
                           }
                           className="product-image"
                         />
-                        <div className="add-to-cart-overlay">
-                          <Button
-                            variant="light"
-                            className="add-to-cart-btn"
-                            onClick={(e) =>
-                              handleAddToCart(e, product.product_id)
-                            }
-                          >
-                            <BsCartPlus /> {t("Add to Cart")}
-                          </Button>
-                        </div>
                       </div>
-                      <Card.Body className="text-center">
+
+                      <Card.Body>
                         <Card.Title className="product-title">
-                          {/* 2. เพิ่ม Logic สลับภาษาให้ชื่อสินค้า */}
                           {i18n.language === "en" && product.name_en
                             ? product.name_en
                             : product.name}

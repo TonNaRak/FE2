@@ -1,4 +1,3 @@
-// src/pages/OrderHistoryPage.js (โค้ดฉบับเต็ม)
 import React, { useState, useEffect } from "react";
 import {
   Container,
@@ -31,9 +30,12 @@ const OrderHistoryPage = () => {
       }
       try {
         setLoading(true);
-        const response = await axios.get("https://api.souvenir-from-lagoon-thailand.com/api/orders/my-history", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const response = await axios.get(
+          "https://api.souvenir-from-lagoon-thailand.com/api/orders/my-history",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
         setOrders(response.data);
       } catch (err) {
         setError("ไม่สามารถโหลดข้อมูลได้");
@@ -46,7 +48,7 @@ const OrderHistoryPage = () => {
 
   const getStatusBadge = (status) => {
     const styles = {
-      pending_payment: { bg: "danger", text: "รอชำระเงิน" }, // เพิ่มสถานะใหม่
+      pending_payment: { bg: "danger", text: "รอชำระเงิน" },
       pending_verification: { bg: "warning", text: "รอตรวจสอบ" },
       processing: { bg: "info", text: "กำลังจัดเตรียม" },
       shipped: { bg: "primary", text: "จัดส่งแล้ว" },
@@ -59,7 +61,6 @@ const OrderHistoryPage = () => {
   const handleGoToPayment = (orderId) => {
     navigate(`/payment-confirmation/${orderId}`);
   };
-
 
   if (loading)
     return (
@@ -121,6 +122,25 @@ const OrderHistoryPage = () => {
                         />
                         <div className="flex-grow-1">
                           <strong>{item.product_name}</strong>
+                          {/* --- START: จุดที่แก้ไข --- */}
+                          {item.selected_options &&
+                            typeof item.selected_options === "object" && (
+                              <div
+                                className="text-muted"
+                                style={{ fontSize: "0.85rem" }}
+                              >
+                                {Object.entries(item.selected_options).map(
+                                  ([key, value]) => (
+                                    <div key={key}>
+                                      <small>
+                                        {key}: {value}
+                                      </small>
+                                    </div>
+                                  )
+                                )}
+                              </div>
+                            )}
+                          {/* --- END: จุดที่แก้ไข --- */}
                           <p className="text-muted small mb-0">
                             {item.quantity} x{" "}
                             {item.current_price.toLocaleString()} บาท
@@ -138,18 +158,16 @@ const OrderHistoryPage = () => {
                   <hr />
                   <div className="text-end">
                     <h4>ยอดรวม: {order.total_price.toLocaleString()} บาท</h4>
-                    
-                    {/* --- ส่วนที่แก้ไข --- */}
-                    {/* ถ้าสถานะเป็น 'รอชำระเงิน' ให้แสดงปุ่มนี้ */}
-                    {order.status === 'pending_payment' && (
-                        <Button 
-                            variant="primary" 
-                            size="sm" 
-                            className="mt-2"
-                            onClick={() => handleGoToPayment(order.order_id)}
-                        >
-                            ไปที่หน้าชำระเงิน
-                        </Button>
+
+                    {order.status === "pending_payment" && (
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        className="mt-2"
+                        onClick={() => handleGoToPayment(order.order_id)}
+                      >
+                        ไปที่หน้าชำระเงิน
+                      </Button>
                     )}
                   </div>
                 </Accordion.Body>

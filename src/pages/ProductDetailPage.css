@@ -1,51 +1,268 @@
-/* src/pages/ProductDetailPage.css */
-
-.product-detail-page {
-  background-color: #fff;
-  min-height: calc(100vh - 80px); /* Adjust based on your navbar height */
+/* === สไตล์สำหรับ Desktop === */
+.product-detail-container {
+  max-width: 960px;
 }
 
 .product-main-image {
+  max-height: 500px;
   width: 100%;
-  aspect-ratio: 1 / 1;
   object-fit: cover;
-  border: 1px solid #f0f0f0;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  border-radius: 1rem; /* เพิ่มความโค้งมนให้รูปในจอคอม */
 }
 
 .product-info {
-  padding-left: 1rem;
-}
-
-@media (max-width: 767px) {
-  .product-info {
-    padding-left: 0;
-    margin-top: 2rem;
-  }
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .product-title-detail {
-  font-size: 2.5rem;
   font-weight: 700;
   margin-bottom: 1rem;
 }
 
 .product-price-detail {
   font-size: 2rem;
-  font-weight: 600;
-  color: #0d6efd;
+  font-weight: 700;
+  color: var(--primary-color);
   margin-bottom: 1.5rem;
 }
 
 .product-description {
-  font-size: 1rem;
-  line-height: 1.6;
   color: #6c757d;
-  white-space: pre-wrap; /* ทำให้ \n ขึ้นบรรทัดใหม่ได้ */
+  line-height: 1.6;
+  white-space: pre-wrap;
 }
 
-.add-to-cart-button {
-  padding: 12px;
-  font-size: 1.1rem;
-  font-weight: 500;
+/* === สไตล์ปุ่ม Glassmorphism (ปรับปรุงใหม่) === */
+.glass-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem; /* ระยะห่างระหว่างไอคอนกับข้อความ */
+  padding: 0.6rem 1.2rem; /* ใช้ padding แทนการกำหนดขนาดตายตัว */
+  border-radius: 50px; /* ทำให้เป็นทรงแคปซูล */
+
+  /* เอฟเฟกต์กระจกฝ้า */
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+
+  color: #333;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease-in-out;
+}
+.glass-btn:hover,
+.glass-btn:focus {
+  background: rgba(255, 255, 255, 0.9);
+  color: #000;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  border-color: rgba(0, 0, 0, 0.15);
+}
+
+/* === สไตล์สำหรับ Mobile (ใหม่) === */
+
+.mobile-product-page {
+  padding-bottom: 100px;
+}
+
+.mobile-header {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  right: 1rem;
+  z-index: 20;
+  display: flex;
+  justify-content: space-between;
+}
+
+/* ทำให้ปุ่มใน Header ของมือถือเป็นวงกลมเหมือนเดิม */
+.mobile-header .glass-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  padding: 0;
+}
+
+.mobile-product-image {
+  width: 100vh;
+  height: 40vh;
+  object-fit: cover;
+}
+
+.mobile-info-container {
+  background-color: #ffffff;
+  padding: 1.5rem;
+  border-radius: 24px 24px 0 0;
+  margin-top: -24px;
+  position: relative;
+  z-index: 10;
+}
+
+/* แถบปุ่ม Fixed ที่ขอบล่าง */
+.mobile-action-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  background-color: #ffffff;
+  padding: 1rem;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  display: flex;
+  gap: 1rem;
+}
+
+.mobile-action-bar .btn {
+  flex: 1;
+  padding: 0.75rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 8px;
+}
+
+.mobile-cart-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  flex-grow: 1.2;
+}
+
+.mobile-buy-btn {
+  flex-grow: 1;
+}
+
+/* --- START: เพิ่มโค้ด CSS สำหรับ Modal รูปภาพ --- */
+
+/* ทำให้รูปภาพดูเหมือนกดได้ โดยเปลี่ยน cursor เป็นรูปมือ */
+.product-main-image,
+.mobile-product-image {
+  cursor: pointer;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.product-main-image:hover,
+.mobile-product-image:hover {
+  opacity: 0.9;
+}
+
+/* สไตล์สำหรับ Modal แสดงภาพเต็ม */
+.image-modal .modal-content {
+  background-color: rgba(0, 0, 0, 0.8); /* พื้นหลังโปร่งแสงสีดำ */
+  border: none;
+  box-shadow: none;
+}
+
+.image-modal .modal-body {
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.image-modal .modal-header {
+  border-bottom: none; /* ลบเส้นคั่นออก */
+  position: absolute; /* ทำให้ปุ่มปิดลอยอยู่ด้านบน */
+  top: 0;
+  right: 0;
+  z-index: 1056; /* ให้อยู่เหนือรูปภาพ */
+}
+
+.image-modal .modal-body img {
+  max-width: 100%;
+  max-height: 90vh; /* ความสูงสูงสุดไม่เกิน 90% ของความสูงจอ */
+  object-fit: contain; /* ทำให้เห็นภาพเต็มๆ โดยไม่ถูกตัด */
+}
+
+/* ทำให้ปุ่มปิด (X) เป็นสีขาว */
+.image-modal .btn-close {
+  filter: brightness(0) invert(1);
+  opacity: 0.8;
+}
+
+/* --- END: เพิ่มโค้ด CSS --- */
+
+/* ====== ใหม่: ปุ่มตัวเลือกแบบ TILE ====== */
+.option-tiles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.tile-btn {
+  appearance: none;
+  border: 1px solid rgba(0,0,0,0.12);
+  background: #fff;
+  border-radius: 12px;
+  padding: 0.55rem 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: box-shadow 0.15s ease, border-color 0.15s ease, transform 0.05s;
+  user-select: none;
+  /* -webkit-appearance: none; 
+  appearance: none;
+  color: var(--bs-body-color, #212529);  */
+}
+.tile-btn:hover,
+.tile-btn:focus {
+  border-color: rgba(0,0,0,0.25);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+  outline: none;
+}
+.tile-btn:active {
+  transform: translateY(1px);
+}
+.tile-btn.active {
+  border-color: var(--primary-color, #0d6efd);
+  background: rgba(13, 110, 253, 0.08); /* เฉด primary อ่อน */
+  color: var(--primary-color, #0d6efd);
+}
+
+/* ให้ tile ขยายพอดีมือบนมือถือ */
+@media (max-width: 767px) {
+  .tile-btn {
+    padding: 0.6rem 1rem;
+    font-size: 1rem;
+  }
+}
+
+/* ====== ใหม่: ตัวเพิ่ม-ลดจำนวน ====== */
+.quantity-stepper {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(0,0,0,0.03);
+  border: 1px solid rgba(0,0,0,0.1);
+  border-radius: 999px;
+  padding: 0.2rem;
+}
+
+.qty-btn {
+  width: 2.25rem;
+  height: 2.25rem;
+  border: none;
+  background: #fff;
+  border-radius: 999px;
+  font-size: 1.25rem;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+  cursor: pointer;
+  transition: transform 0.05s ease, box-shadow 0.15s ease;
+}
+.qty-btn:active {
+  transform: translateY(1px);
+}
+.qty-value {
+  min-width: 2.5rem;
+  text-align: center;
+  font-weight: 700;
+  margin: 0 0.5rem;
+  font-variant-numeric: tabular-nums;
 }

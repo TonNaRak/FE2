@@ -1,92 +1,123 @@
-import React from "react";
+import React, { Suspense, lazy } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
+import { Spinner, Container } from "react-bootstrap";
 
 // Layouts & Protectors
 import AdminLayout from "./components/AdminLayout";
 import RoleProtectedRoute from "./components/RoleProtectedRoute";
 import CustomerLayout from "./components/CustomerLayout";
 
+
+const LoadingFallback = () => (
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      height: "100vh",
+    }}
+  >
+    <Spinner animation="border" variant="primary" />
+  </div>
+);
+
+// Lazy Loading
 // Public Pages
-import LandingPage from "./pages/LandingPage";
-import LoginPage from "./components/LoginForm";
-import RegisterPage from "./pages/RegisterPage";
+const LandingPage = lazy(() => import("./pages/LandingPage"));
+const LoginPage = lazy(() => import("./components/LoginForm"));
+const RegisterPage = lazy(() => import("./pages/RegisterPage"));
 
 // Customer Pages
-import IndexPage from "./pages/IndexPage";
-import SearchPage from "./pages/SearchPage";
-import CartPage from "./pages/CartPage";
-import LocationPage from "./pages/LocationPage";
-import ProfilePage from "./pages/ProfilePage";
-import ProductDetailPage from "./pages/ProductDetailPage";
-import CheckoutPage from "./pages/CheckoutPage";
-import PaymentConfirmationPage from "./pages/PaymentConfirmationPage";
-import OrderHistoryPage from "./pages/OrderHistoryPage";
-import EditProfilePage from "./pages/EditProfilePage";
+const IndexPage = lazy(() => import("./pages/IndexPage"));
+const SearchPage = lazy(() => import("./pages/SearchPage"));
+const CartPage = lazy(() => import("./pages/CartPage"));
+const LocationPage = lazy(() => import("./pages/LocationPage"));
+const ProfilePage = lazy(() => import("./pages/ProfilePage"));
+const ProductDetailPage = lazy(() => import("./pages/ProductDetailPage"));
+const CheckoutPage = lazy(() => import("./pages/CheckoutPage"));
+const PaymentConfirmationPage = lazy(() =>
+  import("./pages/PaymentConfirmationPage")
+);
+const OrderHistoryPage = lazy(() => import("./pages/OrderHistoryPage"));
+const EditProfilePage = lazy(() => import("./pages/EditProfilePage"));
 
 // Admin Pages
-import DashboardPage from "./pages/admin/DashboardPage";
-import ProductManagementPage from "./pages/admin/ProductManagementPage";
-import StoreSettingPage from "./pages/admin/StoreSettingPage";
-import OrderManagementPage from "./pages/admin/OrderManagementPage";
-import RoleManagementPage from "./pages/admin/RoleManagementPage";
-import CategoryManagementPage from "./pages/admin/CategoryManagementPage";
+const DashboardPage = lazy(() => import("./pages/admin/DashboardPage"));
+const ProductManagementPage = lazy(() =>
+  import("./pages/admin/ProductManagementPage")
+);
+const StoreSettingPage = lazy(() => import("./pages/admin/StoreSettingPage"));
+const OrderManagementPage = lazy(() =>
+  import("./pages/admin/OrderManagementPage")
+);
+const RoleManagementPage = lazy(() =>
+  import("./pages/admin/RoleManagementPage")
+);
+const CategoryManagementPage = lazy(() =>
+  import("./pages/admin/CategoryManagementPage")
+);
+
 
 function App() {
   return (
     <AuthProvider>
       <Router>
-        <Routes>
-          {/* Public Routes */}
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
+        <Suspense fallback={<LoadingFallback />}>
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
 
-          {/* Customer Routes */}
-          <Route element={<CustomerLayout />}>
-            <Route path="/index" element={<IndexPage />} />
-            <Route path="/search" element={<SearchPage />} />
-            <Route path="/cart" element={<CartPage />} />
-            <Route path="/checkout" element={<CheckoutPage />} />
-            <Route path="/location" element={<LocationPage />} />
-            <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/order-history" element={<OrderHistoryPage />} />
-            <Route path="/product/:productId" element={<ProductDetailPage />} />
-            <Route path="/profile/edit" element={<EditProfilePage />} />
-            {/* <Route path="/checkout" element={<CheckoutPage />} /> */}
-            <Route
-              path="/payment-confirmation/:orderId"
-              element={<PaymentConfirmationPage />}
-            />
-          </Route>
-
-          {/* Admin & Employee Protected Routes */}
-          <Route
-            element={
-              <RoleProtectedRoute allowedRoles={["admin", "employee"]} />
-            }
-          >
-            <Route element={<AdminLayout />}>
-              <Route path="/admin/dashboard" element={<DashboardPage />} />
+            {/* Customer Routes */}
+            <Route element={<CustomerLayout />}>
+              <Route path="/index" element={<IndexPage />} />
+              <Route path="/search" element={<SearchPage />} />
+              <Route path="/cart" element={<CartPage />} />
+              <Route path="/checkout" element={<CheckoutPage />} />
+              <Route path="/location" element={<LocationPage />} />
+              <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/order-history" element={<OrderHistoryPage />} />
               <Route
-                path="/admin/products"
-                element={<ProductManagementPage />}
+                path="/product/:productId"
+                element={<ProductDetailPage />}
               />
-              <Route path="/admin/orders" element={<OrderManagementPage />} />
+              <Route path="/profile/edit" element={<EditProfilePage />} />
               <Route
-                path="/admin/store-settings"
-                element={<StoreSettingPage />}
-              />
-              <Route path="/admin/roles" element={<RoleManagementPage />} />
-              <Route
-                path="/admin/categories"
-                element={<CategoryManagementPage />}
+                path="/payment-confirmation/:orderId"
+                element={<PaymentConfirmationPage />}
               />
             </Route>
-          </Route>
 
-          <Route path="*" element={<h1>404 Not Found</h1>} />
-        </Routes>
+            {/* Admin & Employee Protected Routes */}
+            <Route
+              element={
+                <RoleProtectedRoute allowedRoles={["admin", "employee"]} />
+              }
+            >
+              <Route element={<AdminLayout />}>
+                <Route path="/admin/dashboard" element={<DashboardPage />} />
+                <Route
+                  path="/admin/products"
+                  element={<ProductManagementPage />}
+                />
+                <Route path="/admin/orders" element={<OrderManagementPage />} />
+                <Route
+                  path="/admin/store-settings"
+                  element={<StoreSettingPage />}
+                />
+                <Route path="/admin/roles" element={<RoleManagementPage />} />
+                <Route
+                  path="/admin/categories"
+                  element={<CategoryManagementPage />}
+                />
+              </Route>
+            </Route>
+
+            <Route path="*" element={<h1>404 Not Found</h1>} />
+          </Routes>
+        </Suspense>
       </Router>
     </AuthProvider>
   );

@@ -1,0 +1,53 @@
+/* src/pages/admin/ProductOptions.css */
+.variation-group {
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.variation-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.tags-input-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  padding: 8px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  background-color: #fff;
+}
+
+.tag-item {
+  display: flex;
+  align-items: center;
+  background-color: #e9ecef;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 14px;
+}
+
+.tag-item button {
+  background: none;
+  border: none;
+  font-size: 16px;
+  margin-left: 6px;
+  padding: 0;
+  line-height: 1;
+  color: #6c757d;
+}
+
+.tags-input {
+  flex-grow: 1;
+  border: none;
+  outline: none;
+  padding: 4px;
+  min-width: 120px;
+}

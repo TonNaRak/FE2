@@ -33,9 +33,12 @@ const CartPage = () => {
     }
     try {
       setLoading(true);
-      const response = await axios.get("https://api.souvenir-from-lagoon-thailand.com/api/cart", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await axios.get(
+        "https://api.souvenir-from-lagoon-thailand.com/api/cart",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       setAllItems(response.data);
       setError("");
     } catch (err) {
@@ -182,6 +185,18 @@ const CartPage = () => {
                           ? item.name_en
                           : item.name}
                       </h5>
+                      {item.selected_options &&
+                        typeof item.selected_options === "object" && (
+                          <div className="text-muted small">
+                            {Object.entries(item.selected_options).map(
+                              ([key, value]) => (
+                                <span key={key} className="me-3">
+                                  <strong>{key}:</strong> {value}
+                                </span>
+                              )
+                            )}
+                          </div>
+                        )}
                       <p className="text-muted mb-0">
                         {t("price")}: {item.price.toLocaleString()} {t("baht")}
                       </p>

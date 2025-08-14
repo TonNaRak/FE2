@@ -25,41 +25,87 @@
   color: inherit;
 }
 
+/* --- START: โค้ด CSS ใหม่สำหรับ Filter Bar --- */
 .filter-bar-container {
   display: flex;
-  gap: 12px;
+  justify-content: center; /* จัดให้อยู่กลางจอ */
+  gap: 16px; /* ระยะห่างระหว่างไอคอน */
   padding-bottom: 10px;
-  overflow-x: auto;
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+  flex-wrap: wrap; /* ทำให้ขึ้นบรรทัดใหม่ได้ถ้าจอแคบ */
 }
 
-.filter-bar-container::-webkit-scrollbar {
-  display: none;
+/* ลบ .filter-btn เดิมทิ้ง แล้วใช้ .filter-item แทน */
+.filter-item {
+  display: flex;
+  flex-direction: column; /* จัดเรียงแนวตั้ง (ไอคอนบน ชื่อล่าง) */
+  align-items: center;
+  cursor: pointer;
+  text-align: center;
+  width: 100px; /* กำหนดความกว้างให้แต่ละรายการ */
 }
 
-.filter-btn {
-  white-space: nowrap;
-  padding: 8px 20px;
-  border-radius: 20px;
-  border: 1px solid #dee2e6;
-  background-color: var(--card-bg-color);
-  color: var(--text-light-color);
-  font-weight: 500;
+.category-icon-wrapper {
+  /* width: 64px;
+  height: 64px; */
+  width: 80px;
+  height: 80px;
+  border-radius: 50%; /* ทำให้เป็นวงกลม */
+  border: 2px solid #e0e0e0; /* เส้นขอบสีเทาอ่อน */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden; /* ป้องกันรูปภาพล้นกรอบ */
+  background-color: #ffffff;
   transition: all 0.3s ease;
+  margin-bottom: 8px; /* ระยะห่างระหว่างวงกลมกับชื่อ */
 }
 
-.filter-btn:hover {
-  background-color: var(--primary-light-color);
+.category-icon {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* ทำให้รูปเต็มวงกลมสวยงาม */
+}
+
+/* สำหรับปุ่ม All และ Recommended ที่เป็นตัวอักษร */
+.icon-text {
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--text-dark-color);
+}
+.category-icon-wrapper .icon-placeholder {
+  width: 100%;
+  height: 100%;
+  background-color: #f0f0f0;
+}
+
+.category-name {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-light-color);
+  transition: color 0.3s ease;
+}
+
+/* สไตล์เมื่อนำเมาส์ไปชี้ */
+.filter-item:hover .category-icon-wrapper {
   border-color: var(--primary-color);
+}
+
+.filter-item:hover .category-name {
   color: var(--primary-color);
 }
 
-.filter-btn.active {
-  background-color: var(--primary-color);
-  color: #fff;
+/* สไตล์เมื่อถูกเลือก (Active) */
+.filter-item.active .category-icon-wrapper {
   border-color: var(--primary-color);
+  border-width: 3px; /* ทำให้เส้นขอบหนาขึ้นเมื่อ active */
+  box-shadow: 0 0 10px rgba(0, 123, 255, 0.3);
 }
+
+.filter-item.active .category-name {
+  color: var(--primary-color);
+  font-weight: 700;
+}
+/* --- END: โค้ด CSS ใหม่ --- */
 
 .product-card {
   border: none;
@@ -77,22 +123,31 @@
 .product-image-wrapper {
   position: relative;
   overflow: hidden;
+  padding: 0.5rem 0.5rem 0;
 }
 
-.product-image {
-  /* height: 250px; */
-  max-height: 40vh;
+/* .product-image {
+  height: 250px;
   width: 100%;
   object-fit: cover;
   transition: transform 0.4s ease;
+} */
+
+.product-image {
+  width: 100%;
+  aspect-ratio: 1 / 1; /* กำหนดให้กรอบรูปเป็นสี่เหลี่ยมจัตุรัสเสมอ */
+  object-fit: cover;   /* ทำให้รูปเต็มกรอบโดยไม่เสียสัดส่วน (ซูมและ crop อัตโนมัติ) */
+  transition: transform 0.4s ease;
+  border-radius: 15px;
 }
 
 .product-card:hover .product-image {
   transform: scale(1.05);
 }
 
-.product-card .card-body {
-  padding: 1.25rem;
+/* .product-card .card-body {
+  padding: 1rem;
+  text-align: left;
 }
 
 .product-title {
@@ -106,7 +161,32 @@
   font-size: 1.1rem;
   font-weight: 700;
   color: var(--primary-color);
+} */
+
+/* --- START: จุดที่แก้ไข --- */
+.product-card .card-body {
+  padding: 1rem; /* ลด padding ลงเล็กน้อยสำหรับจอเล็ก */
+  text-align: left; /* จัดข้อความชิดซ้าย */
 }
+
+.product-title {
+  font-size: 0.9rem; /* ปรับขนาดให้พอดี */
+  font-weight: 600;
+  color: var(--text-dark-color);
+  margin-bottom: 0.25rem; /* ลดระยะห่างด้านล่าง */
+
+  /* ทำให้ข้อความตัดเมื่อยาวเกินไป */
+  /* white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis; */
+}
+
+.product-price {
+  font-size: 1rem; /* ปรับขนาดให้พอดี */
+  font-weight: 700;
+  color: var(--primary-color);
+}
+/* --- END: จุดที่แก้ไข --- */
 
 .add-to-cart-overlay {
   position: absolute;
@@ -132,8 +212,6 @@
   justify-content: center;
   gap: 8px;
 }
-
-/* ... (โค้ด CSS เดิม) ... */
 
 /* --- Search Bar --- */
 .search-bar-wrapper {
@@ -163,3 +241,32 @@
 .search-bar-wrapper .btn {
   padding: 0.75rem 1.5rem;
 }
+
+/* --- START: เพิ่มโค้ด CSS สำหรับป้าย Tag สินค้าแนะนำ --- */
+
+.product-card {
+  /* เพิ่ม position: relative; เพื่อให้ป้าย Tag ยึดตำแหน่งกับ Card นี้ */
+  position: relative;
+}
+
+.recommend-tag {
+  position: absolute; /* ทำให้ป้ายลอยอยู่เหนือ Card */
+  top: 12px; /* ระยะห่างจากขอบบน */
+  left: -5px; /* ทำให้ป้ายยื่นออกมาเล็กน้อย */
+  background-color: var(--primary-color); /* สีพื้นหลัง */
+  color: white; /* สีตัวอักษร */
+  padding: 5px 12px; /* ระยะห่างภายในป้าย */
+  font-size: 0.75rem; /* ขนาดตัวอักษร */
+  font-weight: 700; /* ความหนาตัวอักษร */
+  border-radius: 0 4px 4px 0; /* ทำให้มุมโค้งมนสวยงาม */
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2); /* เพิ่มเงาให้ดูมีมิติ */
+  z-index: 10; /* ทำให้อยู่เหนือรูปภาพ */
+}
+
+.recommend-tag .recommend-star-icon {
+  color: white;
+  margin-right: 4px; /* เพิ่มระยะห่างเล็กน้อยระหว่างดาวกับข้อความ */
+  vertical-align: middle; /* จัดให้ไอคอนอยู่กึ่งกลางแนวตั้งกับข้อความ */
+  margin-bottom: 2px; /* ขยับลงเล็กน้อยให้สวยงาม */
+}
+/* --- END: เพิ่มโค้ด CSS --- */
