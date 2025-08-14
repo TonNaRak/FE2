@@ -7,6 +7,9 @@ import {
   Badge,
   Image,
   Modal,
+  Form,
+  Row,
+  Col,
 } from "react-bootstrap";
 import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
@@ -15,6 +18,9 @@ const OrderManagementPage = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const [statusFilter, setStatusFilter] = useState("all"); // ค่าเริ่มต้นคือ 'แสดงทั้งหมด'
+  const [sortBy, setSortBy] = useState("desc"); // ค่าเริ่มต้นคือเรียงจาก 'ใหม่ไปเก่า'
 
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
@@ -28,9 +34,13 @@ const OrderManagementPage = () => {
   const fetchOrders = async () => {
     try {
       setLoading(true);
+      const params = {
+        status: statusFilter,
+        sortBy: sortBy,
+      };
       const response = await axios.get(
         "https://api.souvenir-from-lagoon-thailand.com/api/admin/orders",
-        API_CONFIG
+        { ...API_CONFIG, params }
       );
       setOrders(response.data);
     } catch (err) {
@@ -42,7 +52,7 @@ const OrderManagementPage = () => {
 
   useEffect(() => {
     fetchOrders();
-  }, []);
+  }, [statusFilter, sortBy]);
 
   const handleUpdateStatus = async (orderId, newStatus) => {
     try {
@@ -96,6 +106,47 @@ const OrderManagementPage = () => {
   return (
     <div>
       <h1>จัดการคำสั่งซื้อ</h1>
+
+      <Row className="mb-4 align-items-center">
+        <Col md={4}>
+          <Form.Group>
+            <Form.Label className="fw-bold">กรองตามสถานะ</Form.Label>
+            <Form.Select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <option value="all">แสดงทั้งหมด</option>
+              <option value="pending_payment">รอชำระเงิน</option>
+              <option value="pending_verification">รอตรวจสอบ</option>
+              <option value="processing">กำลังจัดเตรียม</option>
+              <option value="shipped">จัดส่งแล้ว</option>
+              <option value="completed">เสร็จสมบูรณ์</option>
+              <option value="cancelled">ยกเลิก</option>
+            </Form.Select>
+          </Form.Group>
+        </Col>
+        <Col md={8} className="d-flex justify-content-end align-items-end">
+          <div>
+            <Form.Label className="fw-bold">เรียงลำดับ</Form.Label>
+            <div>
+              <Button
+                variant={sortBy === "desc" ? "primary" : "outline-secondary"}
+                onClick={() => setSortBy("desc")}
+                className="me-2"
+              >
+                ใหม่ไปเก่า
+              </Button>
+              <Button
+                variant={sortBy === "asc" ? "primary" : "outline-secondary"}
+                onClick={() => setSortBy("asc")}
+              >
+                เก่าไปใหม่
+              </Button>
+            </div>
+          </div>
+        </Col>
+      </Row>
+
       <Table striped bordered hover responsive>
         <thead>
           <tr>

@@ -9,6 +9,7 @@ import {
   FaClipboardList,
   FaUsersCog,
   FaTags,
+  FaCashRegister,
 } from "react-icons/fa";
 import "./AdminSidebar.css";
 
@@ -33,6 +34,14 @@ const AdminSidebar = () => {
             className={({ isActive }) => (isActive ? "active" : "")}
           >
             <FaTachometerAlt /> <span>แดชบอร์ด</span>
+          </NavLink>
+        </li>
+        <li>
+          <NavLink
+            to="/admin/pos"
+            className={({ isActive }) => (isActive ? "active" : "")}
+          >
+            <FaCashRegister /> <span>ขายหน้าร้าน (POS)</span>
           </NavLink>
         </li>
         <li>

@@ -8,7 +8,6 @@ import AdminLayout from "./components/AdminLayout";
 import RoleProtectedRoute from "./components/RoleProtectedRoute";
 import CustomerLayout from "./components/CustomerLayout";
 
-
 const LoadingFallback = () => (
   <div
     style={{
@@ -57,7 +56,7 @@ const RoleManagementPage = lazy(() =>
 const CategoryManagementPage = lazy(() =>
   import("./pages/admin/CategoryManagementPage")
 );
-
+const POSPage = lazy(() => import("./pages/admin/POSPage"));
 
 function App() {
   return (
@@ -98,6 +97,7 @@ function App() {
             >
               <Route element={<AdminLayout />}>
                 <Route path="/admin/dashboard" element={<DashboardPage />} />
+                <Route path="/admin/pos" element={<POSPage />} />
                 <Route
                   path="/admin/products"
                   element={<ProductManagementPage />}

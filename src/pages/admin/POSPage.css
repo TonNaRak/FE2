@@ -1,0 +1,75 @@
+.pos-page {
+    /* ใช้ความสูงที่เหลือทั้งหมด หลังจากหักความสูงของ Navbar (ประมาณ 56px) */
+    height: calc(100vh - 35px);
+    overflow: hidden;
+    display: flex; /* เพิ่ม display flex เพื่อให้ row ทำงานถูกต้อง */
+}
+
+.product-grid-col, .cart-col {
+    /* ความสูงของคอลัมน์จะถูกควบคุมโดย .pos-page ที่เป็นแม่แล้ว */
+    height: 100%; 
+    display: flex;
+    flex-direction: column;
+}
+
+.product-grid {
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 1rem;
+  padding: 1rem 0;
+}
+
+.product-card-pos {
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.product-card-pos:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.product-card-pos .card-title {
+  font-size: 0.9rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.product-card-pos .card-text {
+  font-weight: bold;
+}
+
+.product-card-pos .card-img-top {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+}
+
+.cart-items-list {
+    overflow-y: auto; /* ทำให้มี scrollbar เมื่อเนื้อหาล้น */
+    flex-grow: 1;     /* สั่งให้ยืดขยายเต็มพื้นที่ว่าง */
+    height: 0;        /* << ส่วนสำคัญ: ทำให้ flex-grow คำนวณความสูงได้ถูกต้อง */
+}
+
+.customer-results {
+  position: absolute;
+  z-index: 1000;
+  width: 100%;
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+}
+
+.option-tiles-container-pos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.option-tile-pos {
+  border-radius: 8px;
+  font-weight: 600;
+  min-width: 50px;
+  text-align: center;
+}

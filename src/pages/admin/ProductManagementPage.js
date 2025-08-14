@@ -10,10 +10,12 @@ import {
   Image,
   Row,
   Col,
+  InputGroup,
 } from "react-bootstrap";
 import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
-import "./ProductOptions.css"; 
+import "./ProductOptions.css";
+import { BsSearch } from "react-icons/bs";
 
 const ProductManagementPage = () => {
   const [products, setProducts] = useState([]);
@@ -23,6 +25,9 @@ const ProductManagementPage = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const [submittedSearchTerm, setSubmittedSearchTerm] = useState("");
 
   const initialProductState = {
     name: "",
@@ -43,15 +48,23 @@ const ProductManagementPage = () => {
 
   useEffect(() => {
     fetchProducts();
+  }, [submittedSearchTerm]); // ให้ useEffect ทำงานใหม่ทุกครั้งที่มีการกดค้นหา
+
+  useEffect(() => {
     fetchCategories();
   }, []);
+  // --- END: จุดที่แก้ไข ---
 
   const fetchProducts = async () => {
     try {
       setLoading(true);
+      const params = {};
+      if (submittedSearchTerm) {
+        params.q = submittedSearchTerm;
+      }
       const response = await axios.get(
         "https://api.souvenir-from-lagoon-thailand.com/api/admin/products",
-        API_CONFIG
+        { ...API_CONFIG, params }
       );
       setProducts(response.data);
     } catch (err) {
@@ -71,6 +84,20 @@ const ProductManagementPage = () => {
     } catch (err) {
       console.error("Could not fetch categories", err);
     }
+  };
+
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+  };
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    setSubmittedSearchTerm(searchTerm);
+  };
+
+  const clearSearch = () => {
+    setSearchTerm("");
+    setSubmittedSearchTerm("");
   };
 
   const handleInputChange = (e) => {
@@ -106,7 +133,7 @@ const ProductManagementPage = () => {
     newOptions[index][name] = value; // name สามารถเป็น 'name' หรือ 'name_en'
     setCurrentProduct((prev) => ({ ...prev, options: newOptions }));
   };
-  
+
   const handleOptionValueKeyDown = (e, index) => {
     if (e.key === "Enter" || e.key === ",") {
       e.preventDefault();
@@ -127,7 +154,7 @@ const ProductManagementPage = () => {
   const handleOptionValueEnChange = (e, groupIndex, valueIndex) => {
     const newOptions = [...currentProduct.options];
     newOptions[groupIndex].values[valueIndex].name_en = e.target.value;
-    setCurrentProduct(prev => ({ ...prev, options: newOptions }));
+    setCurrentProduct((prev) => ({ ...prev, options: newOptions }));
   };
 
   const removeOptionValue = (groupIndex, valueIndex) => {
@@ -212,10 +239,10 @@ const ProductManagementPage = () => {
         productData.options = productData.options.map((opt) => ({
           name: opt.option_name,
           name_en: opt.option_name_en,
-          values: opt.values.map((val) => ({ 
-              name: val.value_name,
-              name_en: val.value_name_en 
-            })),
+          values: opt.values.map((val) => ({
+            name: val.value_name,
+            name_en: val.value_name_en,
+          })),
         }));
       }
 
@@ -255,6 +282,32 @@ const ProductManagementPage = () => {
           + เพิ่มสินค้าใหม่
         </Button>
       </div>
+
+      <Form onSubmit={handleSearchSubmit} className="mb-4">
+        <Row className="justify-content-end">
+          <Col md={5}>
+            <InputGroup>
+              <Form.Control
+                type="text"
+                placeholder="ค้นหาสินค้า (ชื่อไทย/Eng)..."
+                value={searchTerm}
+                onChange={handleSearchChange}
+              />
+              <Button type="submit" variant="primary">
+                <BsSearch /> ค้นหา
+              </Button>
+            </InputGroup>
+            {submittedSearchTerm && (
+              <div className="mt-2">
+                ผลการค้นหาสำหรับ: "{submittedSearchTerm}"
+                <Button variant="link" size="sm" onClick={clearSearch}>
+                  ล้างการค้นหา
+                </Button>
+              </div>
+            )}
+          </Col>
+        </Row>
+      </Form>
 
       <Table striped bordered hover responsive>
         <thead>
@@ -430,51 +483,69 @@ const ProductManagementPage = () => {
             {currentProduct.options.map((option, index) => (
               <div key={index} className="variation-group">
                 <div className="variation-header">
-                    <Form.Control
-                        type="text"
-                        placeholder="ชื่อประเภท (ไทย)"
-                        name="name"
-                        value={option.name}
-                        onChange={(e) => handleVariationNameChange(e, index)}
-                        required
-                    />
-                      <Form.Control
-                        type="text"
-                        placeholder="ชื่อประเภท (Eng)"
-                        name="name_en"
-                        className="ms-2"
-                        value={option.name_en || ''}
-                        onChange={(e) => handleVariationNameChange(e, index)}
-                    />
-                    <Button variant="link" className="text-danger ms-2" style={{whiteSpace: 'nowrap'}} onClick={() => handleRemoveVariation(index)}>
-                        ลบ
-                    </Button>
+                  <Form.Control
+                    type="text"
+                    placeholder="ชื่อประเภท (ไทย)"
+                    name="name"
+                    value={option.name}
+                    onChange={(e) => handleVariationNameChange(e, index)}
+                    required
+                  />
+                  <Form.Control
+                    type="text"
+                    placeholder="ชื่อประเภท (Eng)"
+                    name="name_en"
+                    className="ms-2"
+                    value={option.name_en || ""}
+                    onChange={(e) => handleVariationNameChange(e, index)}
+                  />
+                  <Button
+                    variant="link"
+                    className="text-danger ms-2"
+                    style={{ whiteSpace: "nowrap" }}
+                    onClick={() => handleRemoveVariation(index)}
+                  >
+                    ลบ
+                  </Button>
                 </div>
                 <div className="tags-input-container">
-                    {option.values.map((value, valueIndex) => (
-                        <div key={valueIndex} className="d-flex align-items-center me-2 mb-1">
-                            <div className="tag-item">
-                                {value.name}
-                                <button type="button" onClick={() => removeOptionValue(index, valueIndex)}>
-                                    &times;
-                                </button>
-                            </div>
-                            <Form.Control
-                                type="text"
-                                placeholder="Eng"
-                                className="ms-1"
-                                style={{ width: '80px', fontSize: '14px', height: '31px', padding: '4px 8px' }}
-                                value={value.name_en || ''}
-                                onChange={(e) => handleOptionValueEnChange(e, index, valueIndex)}
-                            />
-                        </div>
-                    ))}
+                  {option.values.map((value, valueIndex) => (
+                    <div
+                      key={valueIndex}
+                      className="d-flex align-items-center me-2 mb-1"
+                    >
+                      <div className="tag-item">
+                        {value.name}
+                        <button
+                          type="button"
+                          onClick={() => removeOptionValue(index, valueIndex)}
+                        >
+                          &times;
+                        </button>
+                      </div>
+                      <Form.Control
+                        type="text"
+                        placeholder="Eng"
+                        className="ms-1"
+                        style={{
+                          width: "80px",
+                          fontSize: "14px",
+                          height: "31px",
+                          padding: "4px 8px",
+                        }}
+                        value={value.name_en || ""}
+                        onChange={(e) =>
+                          handleOptionValueEnChange(e, index, valueIndex)
+                        }
+                      />
+                    </div>
+                  ))}
                 </div>
                 <input
-                    type="text"
-                    className="tags-input mt-2 form-control"
-                    placeholder="เพิ่มตัวเลือก (ไทย) แล้วกด Enter"
-                    onKeyDown={(e) => handleOptionValueKeyDown(e, index)}
+                  type="text"
+                  className="tags-input mt-2 form-control"
+                  placeholder="เพิ่มตัวเลือก (ไทย) แล้วกด Enter"
+                  onKeyDown={(e) => handleOptionValueKeyDown(e, index)}
                 />
               </div>
             ))}
