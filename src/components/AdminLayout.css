@@ -1,0 +1,19 @@
+.admin-layout {
+    display: flex;
+    min-height: 100vh;
+}
+
+.admin-main-content {
+    flex-grow: 1;
+    padding: 2rem;
+    background-color: #f4f7f6;
+    /* ระยะห่างจากด้านซ้ายเท่ากับความกว้างของ Sidebar ตอนขยาย */
+    margin-left: 250px; 
+    transition: margin-left 0.3s ease-in-out;
+}
+
+/* สไตล์เมื่อ Sidebar ถูกย่อ */
+.admin-layout.sidebar-collapsed .admin-main-content {
+    /* ระยะห่างจากด้านซ้ายเท่ากับความกว้างของ Sidebar ตอนย่อ */
+    margin-left: 80px; 
+}

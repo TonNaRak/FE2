@@ -10,10 +10,13 @@ import {
   FaUsersCog,
   FaTags,
   FaCashRegister,
+  FaChevronLeft, // <-- 1. เพิ่มไอคอนลูกศร
+  FaBars,
 } from "react-icons/fa";
 import "./AdminSidebar.css";
 
-const AdminSidebar = () => {
+// 2. รับ props isCollapsed และ toggleSidebar
+const AdminSidebar = ({ isCollapsed, toggleSidebar }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -23,9 +26,16 @@ const AdminSidebar = () => {
   };
 
   return (
-    <div className="admin-sidebar">
+    // 3. เพิ่ม className แบบไดนามิกตามสถานะ
+    <div className={`admin-sidebar ${isCollapsed ? "collapsed" : ""}`}>
       <div className="sidebar-header">
-        <h3>Admin Panel</h3>
+          {/* --- START: จุดที่แก้ไข --- */}
+        {/* 2. เปลี่ยน H3 เป็น h3 ที่มี className และย้ายปุ่มมาอยู่ข้างๆ */}
+        <h3 className="sidebar-title">Admin</h3>
+        <button className="sidebar-toggle-btn" onClick={toggleSidebar}>
+          <FaBars />
+        </button>
+        {/* --- END: จุดที่แก้ไข --- */}
       </div>
       <ul className="sidebar-nav">
         <li>
@@ -78,7 +88,6 @@ const AdminSidebar = () => {
                 <FaTags /> <span>จัดการประเภท</span>
               </NavLink>
             </li>
-
             <li>
               <NavLink
                 to="/admin/roles"

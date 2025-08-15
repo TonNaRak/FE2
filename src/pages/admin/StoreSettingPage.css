@@ -1,0 +1,71 @@
+.store-settings-page {
+    background-color: #f8f9fa;
+
+}
+
+.page-title {
+    margin-bottom: 0rem;
+    font-weight: 700;
+}
+
+.settings-card {
+    border: none;
+    border-radius: 0.75rem;
+}
+
+.settings-card .card-header {
+    background-color: #ffffff;
+    border-bottom: 1px solid #dee2e6;
+    font-weight: 600;
+}
+
+/* Image Upload Styling */
+.image-upload-wrapper, .qr-upload-wrapper {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    border-radius: 0.5rem;
+    cursor: pointer;
+}
+
+.store-image-preview {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+}
+
+.qr-image-preview {
+    max-width: 250px;
+    height: auto;
+}
+
+.image-upload-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    cursor: pointer;
+}
+
+.image-upload-wrapper:hover .image-upload-overlay {
+    opacity: 1;
+}
+.qr-upload-wrapper:hover .image-upload-overlay {
+    opacity: 1;
+}
+
+.image-upload-overlay span {
+    margin-top: 0.5rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+

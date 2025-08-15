@@ -1,246 +1,375 @@
 import React, { useState, useEffect } from "react";
-import { Form, Button, Spinner, Alert, Card, Image } from "react-bootstrap";
-import { useAuth } from "../../context/AuthContext";
+import {
+  Container,
+  Row,
+  Col,
+  Card,
+  Form,
+  Button,
+  Spinner,
+  Alert,
+  Image,
+  InputGroup,
+  Modal, // <-- 1. เพิ่มการ import Modal
+} from "react-bootstrap";
 import axios from "axios";
-import { FaSave } from "react-icons/fa";
+import { useAuth } from "../../context/AuthContext";
+import {
+  BsShop,
+  BsGeoAlt,
+  BsTelephone,
+  BsEnvelope,
+  BsFacebook,
+  BsYoutube,
+  BsUpload,
+} from "react-icons/bs";
+import "./StoreSettingPage.css";
 
 const StoreSettingPage = () => {
+  const [storeInfo, setStoreInfo] = useState({
+    name: "",
+    address: "",
+    phone: "",
+    email: "",
+    image_url: "",
+    map_url: "",
+    facebook_url: "",
+    youtube_url: "",
+    qr_code_url: "",
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [formData, setFormData] = useState({});
-
-  // State สำหรับไฟล์รูปภาพร้านค้า
-  const [selectedFile, setSelectedFile] = useState(null);
-
-  // State ใหม่สำหรับไฟล์ QR Code
+  //   const [success, setSuccess] = useState(""); // ลบ state เดิมออก
+  const [imageFile, setImageFile] = useState(null);
   const [qrCodeFile, setQrCodeFile] = useState(null);
-  const [isUploadingQr, setIsUploadingQr] = useState(false);
+  const [imagePreview, setImagePreview] = useState("");
+  const [qrCodePreview, setQrCodePreview] = useState("");
+
+  // --- START: จุดที่แก้ไข ---
+  // 2. เพิ่ม State สำหรับควบคุม Modal การแจ้งเตือน
+  const [showNotificationModal, setShowNotificationModal] = useState(false);
+  const [notificationMessage, setNotificationMessage] = useState({
+    title: "",
+    body: "",
+    variant: "success",
+  });
+  // --- END: จุดที่แก้ไข ---
 
   const { token } = useAuth();
-
-  const fetchStoreInfo = async () => {
-    try {
-      setLoading(true);
-      const response = await axios.get("https://api.souvenir-from-lagoon-thailand.com/api/store-info");
-      if (response.data) {
-        setFormData(response.data);
-      }
-    } catch (err) {
-      setError("ไม่สามารถโหลดข้อมูลร้านค้าได้");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const API_CONFIG = { headers: { Authorization: `Bearer ${token}` } };
 
   useEffect(() => {
+    const fetchStoreInfo = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get(
+          "https://api.souvenir-from-lagoon-thailand.com/api/store-info",
+          API_CONFIG
+        );
+        if (response.data) {
+          setStoreInfo(response.data);
+          setImagePreview(response.data.image_url);
+          setQrCodePreview(response.data.qr_code_url);
+        }
+      } catch (err) {
+        setError("ไม่สามารถดึงข้อมูลร้านค้าได้");
+      } finally {
+        setLoading(false);
+      }
+    };
     fetchStoreInfo();
-  }, []);
+  }, [token]);
 
   const handleInputChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setStoreInfo((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleFileChange = (e) => {
-    setSelectedFile(e.target.files[0]);
+  const handleImageFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImageFile(file);
+      setImagePreview(URL.createObjectURL(file));
+    }
   };
 
   const handleQrCodeFileChange = (e) => {
-    setQrCodeFile(e.target.files[0]);
+    const file = e.target.files[0];
+    if (file) {
+      setQrCodeFile(file);
+      setQrCodePreview(URL.createObjectURL(file));
+    }
   };
 
-  // ฟังก์ชันสำหรับบันทึกข้อมูลหลักของร้าน
-  const handleSave = async (e) => {
+  const handleFormSubmit = async (e) => {
     e.preventDefault();
-    const dataToSubmit = new FormData();
-    Object.keys(formData).forEach((key) => {
-      // ไม่ส่ง qr_code_url ไปกับฟอร์มหลัก
-      if (key !== "qr_code_url") {
-        dataToSubmit.append(key, formData[key] || "");
+    setError("");
+
+    const formData = new FormData();
+    Object.keys(storeInfo).forEach((key) => {
+      if (storeInfo[key] != null) {
+        formData.append(key, storeInfo[key]);
       }
     });
-    dataToSubmit.append("existing_image_url", formData.image_url || "");
-    if (selectedFile) {
-      dataToSubmit.append("image", selectedFile);
-    }
-    try {
-      await axios.put("https://api.souvenir-from-lagoon-thailand.com/api/store-info", dataToSubmit, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      alert("บันทึกข้อมูลร้านค้าสำเร็จ!");
-      setSelectedFile(null);
-      fetchStoreInfo(); // รีเฟรชข้อมูลทั้งหมด
-    } catch (err) {
-      alert("เกิดข้อผิดพลาดในการบันทึกข้อมูล");
-    }
-  };
 
-  // ฟังก์ชันสำหรับอัปโหลด QR Code โดยเฉพาะ
-  const handleQrCodeUpload = async () => {
-    if (!qrCodeFile) {
-      alert("กรุณาเลือกไฟล์ QR Code");
-      return;
+    if (imageFile) {
+      formData.append("image", imageFile);
     }
-    const qrFormData = new FormData();
-    qrFormData.append("qr_code", qrCodeFile);
+    formData.append("existing_image_url", storeInfo.image_url || "");
 
-    setIsUploadingQr(true);
+    if (qrCodeFile) {
+      formData.append("qr_code", qrCodeFile);
+    }
+    formData.append("existing_qr_code_url", storeInfo.qr_code_url || "");
+
     try {
-      const response = await axios.put("https://api.souvenir-from-lagoon-thailand.com/api/store-info/qr-code", qrFormData, {
-        headers: { Authorization: `Bearer ${token}` },
+      await axios.put(
+        "https://api.souvenir-from-lagoon-thailand.com/api/store-info",
+        formData,
+        API_CONFIG
+      );
+      // --- START: จุดที่แก้ไข ---
+      // 3. เรียกใช้ Modal แทน Alert
+      setNotificationMessage({
+        title: "สำเร็จ",
+        body: "บันทึกข้อมูลร้านค้าสำเร็จ!",
+        variant: "success",
       });
-      setFormData({ ...formData, qr_code_url: response.data.qr_code_url });
+      setShowNotificationModal(true);
+      // --- END: จุดที่แก้ไข ---
+      setImageFile(null);
       setQrCodeFile(null);
-      alert("อัปเดต QR Code สำเร็จ!");
     } catch (err) {
-      alert("เกิดข้อผิดพลาดในการอัปโหลด QR Code");
-    } finally {
-      setIsUploadingQr(false);
+      setError("เกิดข้อผิดพลาดในการบันทึกข้อมูล");
     }
   };
 
   if (loading) return <Spinner animation="border" />;
-  if (error) return <Alert variant="danger">{error}</Alert>;
 
   return (
-    <div>
-      <h1>ตั้งค่าข้อมูลร้านค้า</h1>
-      <p className="text-muted">
-        แก้ไขข้อมูลที่จะแสดงผลในหน้า "ตำแหน่งร้านค้า" ของลูกค้า
-      </p>
-      <Card className="mb-4">
-        <Card.Header>
-          <h5>ข้อมูลทั่วไปของร้าน</h5>
-        </Card.Header>
-        <Card.Body>
-          <Form onSubmit={handleSave}>
-            <Form.Group className="mb-3">
-              <Form.Label>ชื่อร้าน</Form.Label>
-              <Form.Control
-                type="text"
-                name="name"
-                value={formData.name || ""}
-                onChange={handleInputChange}
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>ที่อยู่</Form.Label>
-              <Form.Control
-                as="textarea"
-                rows={3}
-                name="address"
-                value={formData.address || ""}
-                onChange={handleInputChange}
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>เบอร์โทรศัพท์</Form.Label>
-              <Form.Control
-                type="text"
-                name="phone"
-                value={formData.phone || ""}
-                onChange={handleInputChange}
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>อีเมล</Form.Label>
-              <Form.Control
-                type="email"
-                name="email"
-                value={formData.email || ""}
-                onChange={handleInputChange}
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>รูปภาพร้าน</Form.Label>
-              {formData.image_url && (
-                <div className="mb-2">
-                  <p className="mb-1 small text-muted">รูปภาพปัจจุบัน:</p>
+    <Container fluid className="store-settings-page">
+      <Form onSubmit={handleFormSubmit}>
+        <div className="d-flex justify-content-between align-items-center">
+          <h1 className="page-title">ตั้งค่าร้านค้า</h1>
+        </div>
+
+        {error && (
+          <Alert variant="danger" className="mt-3">
+            {error}
+          </Alert>
+        )}
+        {/* ลบ Alert success เดิมออกไป */}
+
+        <Row className="mt-4 d-flex align-items-stretch">
+          <Col lg={8} className="d-flex flex-column">
+            <Card className="settings-card shadow-sm flex-grow-1">
+              <Card.Header as="h5">ข้อมูลหลักของร้าน</Card.Header>
+              <Card.Body>
+                <Row>
+                  <Col md={4}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>โลโก้ / รูปภาพร้านค้า</Form.Label>
+                      <div className="image-upload-wrapper">
+                        <Image
+                          src={
+                            imagePreview || "https://via.placeholder.com/300"
+                          }
+                          fluid
+                          rounded
+                          className="store-image-preview"
+                        />
+                        <label
+                          htmlFor="image-upload"
+                          className="image-upload-overlay"
+                        >
+                          <BsUpload size={24} />
+                          <span>เปลี่ยนรูปภาพ</span>
+                        </label>
+                        <Form.Control
+                          id="image-upload"
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageFileChange}
+                          style={{ display: "none" }}
+                        />
+                      </div>
+                    </Form.Group>
+                  </Col>
+                  <Col md={8}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>ชื่อร้านค้า</Form.Label>
+                      <InputGroup>
+                        <InputGroup.Text>
+                          <BsShop />
+                        </InputGroup.Text>
+                        <Form.Control
+                          type="text"
+                          name="name"
+                          value={storeInfo.name}
+                          onChange={handleInputChange}
+                          required
+                        />
+                      </InputGroup>
+                    </Form.Group>
+                    <Form.Group className="mb-3">
+                      <Form.Label>เบอร์โทรศัพท์</Form.Label>
+                      <InputGroup>
+                        <InputGroup.Text>
+                          <BsTelephone />
+                        </InputGroup.Text>
+                        <Form.Control
+                          type="text"
+                          name="phone"
+                          value={storeInfo.phone}
+                          onChange={handleInputChange}
+                          required
+                        />
+                      </InputGroup>
+                    </Form.Group>
+                    <Form.Group className="mb-3">
+                      <Form.Label>อีเมลติดต่อ</Form.Label>
+                      <InputGroup>
+                        <InputGroup.Text>
+                          <BsEnvelope />
+                        </InputGroup.Text>
+                        <Form.Control
+                          type="email"
+                          name="email"
+                          value={storeInfo.email}
+                          onChange={handleInputChange}
+                          required
+                        />
+                      </InputGroup>
+                    </Form.Group>
+                  </Col>
+                </Row>
+                <Form.Group className="mb-3">
+                  <Form.Label>ที่อยู่ร้านค้า</Form.Label>
+                  <InputGroup>
+                    <InputGroup.Text>
+                      <BsGeoAlt />
+                    </InputGroup.Text>
+                    <Form.Control
+                      as="textarea"
+                      rows={3}
+                      name="address"
+                      value={storeInfo.address}
+                      onChange={handleInputChange}
+                    />
+                  </InputGroup>
+                </Form.Group>
+              </Card.Body>
+            </Card>
+          </Col>
+
+          <Col lg={4} className="d-flex flex-column">
+            <Card className="settings-card shadow-sm mb-4">
+              <Card.Header as="h5">โซเชียลมีเดีย & ลิงก์</Card.Header>
+              <Card.Body>
+                <Form.Group className="mb-3">
+                  <Form.Label>Facebook URL</Form.Label>
+                  <InputGroup>
+                    <InputGroup.Text>
+                      <BsFacebook />
+                    </InputGroup.Text>
+                    <Form.Control
+                      type="text"
+                      name="facebook_url"
+                      value={storeInfo.facebook_url || ""}
+                      onChange={handleInputChange}
+                      placeholder="https://facebook.com/yourpage"
+                    />
+                  </InputGroup>
+                </Form.Group>
+                <Form.Group className="mb-3">
+                  <Form.Label>YouTube URL</Form.Label>
+                  <InputGroup>
+                    <InputGroup.Text>
+                      <BsYoutube />
+                    </InputGroup.Text>
+                    <Form.Control
+                      type="text"
+                      name="youtube_url"
+                      value={storeInfo.youtube_url || ""}
+                      onChange={handleInputChange}
+                      placeholder="https://youtube.com/yourchannel"
+                    />
+                  </InputGroup>
+                </Form.Group>
+                <Form.Group className="mb-3">
+                  <Form.Label>Google Maps URL</Form.Label>
+                  <InputGroup>
+                    <InputGroup.Text>
+                      <BsGeoAlt />
+                    </InputGroup.Text>
+                    <Form.Control
+                      type="text"
+                      name="map_url"
+                      value={storeInfo.map_url || ""}
+                      onChange={handleInputChange}
+                      placeholder="ลิงก์ Google Maps ของร้าน"
+                    />
+                  </InputGroup>
+                </Form.Group>
+              </Card.Body>
+            </Card>
+            <Card className="settings-card shadow-sm mb-4">
+              <Card.Header as="h5">QR Code สำหรับชำระเงิน</Card.Header>
+              <Card.Body className="text-center">
+                <div className="qr-upload-wrapper">
                   <Image
-                    src={formData.image_url}
-                    thumbnail
-                    style={{ maxHeight: "150px" }}
+                    src={qrCodePreview || "https://via.placeholder.com/200"}
+                    fluid
+                    rounded
+                    className="qr-image-preview"
+                  />
+                  <label htmlFor="qr-upload" className="image-upload-overlay">
+                    <BsUpload size={24} />
+                    <span>เปลี่ยน QR Code</span>
+                  </label>
+                  <Form.Control
+                    id="qr-upload"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleQrCodeFileChange}
+                    style={{ display: "none" }}
                   />
                 </div>
-              )}
-              <Form.Control
-                type="file"
-                name="image"
-                onChange={handleFileChange}
-              />
-              <Form.Text className="text-muted">
-                เลือกไฟล์ใหม่เพื่ออัปเดต หรือเว้นว่างไว้เพื่อใช้รูปเดิม
-              </Form.Text>
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>URL เพจ Facebook</Form.Label>
-              <Form.Control
-                type="text"
-                name="facebook_url"
-                value={formData.facebook_url || ""}
-                onChange={handleInputChange}
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>URL ช่อง YouTube</Form.Label>
-              <Form.Control
-                type="text"
-                name="youtube_url"
-                value={formData.youtube_url || ""}
-                onChange={handleInputChange}
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>URL ตำแหน่งร้านค้า (Google Maps Link)</Form.Label>
-              <Form.Control
-                as="textarea"
-                rows={3}
-                name="map_url"
-                value={formData.map_url || ""}
-                onChange={handleInputChange}
-              />
-            </Form.Group>
-            <div className="text-end">
-              <Button variant="primary" type="submit">
-                <FaSave /> บันทึกข้อมูลร้านค้า
+              </Card.Body>
+            </Card>
+            <div className="d-grid mt-auto">
+              <Button variant="primary" type="submit" size="lg">
+                บันทึกการเปลี่ยนแปลง
               </Button>
             </div>
-          </Form>
-        </Card.Body>
-      </Card>
+          </Col>
+        </Row>
+      </Form>
 
-      {/* ส่วนจัดการ QR Code */}
-      <Card>
-        <Card.Header>
-          <h5>จัดการ QR Code สำหรับชำระเงิน</h5>
-        </Card.Header>
-        <Card.Body>
-          <Form.Group className="mb-3">
-            <Form.Label>QR Code ปัจจุบัน</Form.Label>
-            {formData.qr_code_url ? (
-              <Image
-                src={formData.qr_code_url}
-                thumbnail
-                style={{ maxHeight: "200px", display: "block" }}
-              />
-            ) : (
-              <p className="text-muted">ยังไม่มีการอัปโหลด QR Code</p>
-            )}
-          </Form.Group>
-          <Form.Group>
-            <Form.Label>อัปโหลด QR Code ใหม่</Form.Label>
-            <div className="d-flex gap-2">
-              <Form.Control type="file" onChange={handleQrCodeFileChange} />
-              <Button
-                onClick={handleQrCodeUpload}
-                disabled={!qrCodeFile || isUploadingQr}
-              >
-                {isUploadingQr ? <Spinner size="sm" /> : "อัปโหลด"}
-              </Button>
-            </div>
-          </Form.Group>
-        </Card.Body>
-      </Card>
-    </div>
+      {/* --- START: จุดที่แก้ไข --- */}
+      {/* 4. เพิ่ม JSX ของ Modal การแจ้งเตือน */}
+      <Modal
+        show={showNotificationModal}
+        onHide={() => setShowNotificationModal(false)}
+        centered
+      >
+        <Modal.Header closeButton>
+          <Modal.Title className={`text-${notificationMessage.variant}`}>
+            {notificationMessage.title}
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>{notificationMessage.body}</Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="primary"
+            onClick={() => setShowNotificationModal(false)}
+          >
+            ตกลง
+          </Button>
+        </Modal.Footer>
+      </Modal>
+      {/* --- END: จุดที่แก้ไข --- */}
+    </Container>
   );
 };
 

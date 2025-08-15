@@ -1,0 +1,69 @@
+.category-management-page {
+    background-color: #f8f9fa;
+}
+
+.page-title {
+    margin-bottom: 0rem;
+    font-weight: 700;
+}
+
+.settings-card {
+    border: none;
+    border-radius: 0.75rem;
+}
+
+.category-table {
+    vertical-align: middle; /* ทำให้เนื้อหาในตารางอยู่กึ่งกลางแนวตั้ง */
+}
+
+.category-icon-preview {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+}
+
+
+/* Styles for Modal Image Upload */
+.icon-upload-wrapper {
+    position: relative;
+    width: 150px; /* ขนาดของวงกลม */
+    height: 150px;
+    overflow: hidden;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 3px solid #dee2e6;
+}
+
+.icon-image-preview {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.icon-upload-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    cursor: pointer;
+    border-radius: 50%;
+}
+
+.icon-upload-wrapper:hover .icon-upload-overlay {
+    opacity: 1;
+}
+
+.icon-upload-overlay span {
+    margin-top: 0.5rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+}

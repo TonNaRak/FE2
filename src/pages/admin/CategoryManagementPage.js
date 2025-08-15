@@ -1,16 +1,22 @@
 import React, { useState, useEffect } from "react";
 import {
+  Container,
   Table,
   Button,
   Modal,
   Form,
   Spinner,
   Alert,
-  Image, // <-- เพิ่ม Image component
+  Image,
+  Row,
+  Col,
+  Card,
 } from "react-bootstrap";
 import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
-import { FaPlus, FaEdit, FaTrash, FaSave } from "react-icons/fa";
+import { BsUpload, BsPencilFill, BsTrashFill } from "react-icons/bs"; // <-- 1. เพิ่มไอคอนใหม่
+import "./CategoryManagementPage.css";
+import placeholderImage from "../../images/placeholder.png"; // <-- สมมติว่าไฟล์ชื่อ placeholder.png
 
 const CategoryManagementPage = () => {
   const [categories, setCategories] = useState([]);
@@ -18,18 +24,23 @@ const CategoryManagementPage = () => {
   const [error, setError] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
-
-  // --- START: จุดที่แก้ไข ---
-  // 1. อัปเดต State ให้มี icon_url
   const [currentCategory, setCurrentCategory] = useState({
-    category_id: null,
     category_name: "",
     category_name_en: "",
-    icon_url: "", // เพิ่ม field นี้
+    icon_url: "",
   });
-  // 2. เพิ่ม State สำหรับเก็บไฟล์ที่เลือก
   const [selectedFile, setSelectedFile] = useState(null);
-  // --- END: จุดที่แก้ไข ---
+  const [imagePreview, setImagePreview] = useState("");
+
+  const [showNotificationModal, setShowNotificationModal] = useState(false);
+  const [notificationMessage, setNotificationMessage] = useState({
+    title: "",
+    body: "",
+    variant: "success",
+  });
+
+  const [showConfirmDeleteModal, setShowConfirmDeleteModal] = useState(false);
+  const [categoryToDelete, setCategoryToDelete] = useState(null);
 
   const { token } = useAuth();
   const API_CONFIG = { headers: { Authorization: `Bearer ${token}` } };
@@ -37,14 +48,13 @@ const CategoryManagementPage = () => {
   const fetchCategories = async () => {
     try {
       setLoading(true);
-      // ใช้ /api/admin/categories endpoint ใหม่ (ถ้ามี) หรืออันเดิมก็ได้
       const response = await axios.get(
         "https://api.souvenir-from-lagoon-thailand.com/api/admin/categories",
         API_CONFIG
       );
       setCategories(response.data);
     } catch (err) {
-      setError("ไม่สามารถโหลดข้อมูลได้ หรือคุณไม่มีสิทธิ์เข้าถึง");
+      setError("ไม่สามารถดึงข้อมูลประเภทสินค้าได้");
     } finally {
       setLoading(false);
     }
@@ -54,47 +64,85 @@ const CategoryManagementPage = () => {
     fetchCategories();
   }, []);
 
-  const handleShowAddModal = () => {
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setCurrentCategory((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedFile(file);
+      setImagePreview(URL.createObjectURL(file));
+    }
+  };
+
+  const openModalForAdd = () => {
     setIsEditMode(false);
-    // 3. อัปเดต State เริ่มต้นสำหรับเพิ่มข้อมูลใหม่
     setCurrentCategory({
-      category_id: null,
       category_name: "",
       category_name_en: "",
       icon_url: "",
     });
-    setSelectedFile(null); // เคลียร์ไฟล์ที่เลือกไว้
+    setSelectedFile(null);
+    setImagePreview("");
     setShowModal(true);
   };
 
-  const handleShowEditModal = (category) => {
+  const openModalForEdit = (category) => {
     setIsEditMode(true);
     setCurrentCategory(category);
-    setSelectedFile(null); // เคลียร์ไฟล์ที่เลือกไว้
+    setSelectedFile(null);
+    setImagePreview(category.icon_url);
     setShowModal(true);
   };
 
-  const handleCloseModal = () => setShowModal(false);
-
-  // --- START: จุดที่แก้ไข ---
-  // 4. เพิ่ม function สำหรับจัดการไฟล์ที่เลือก
-  const handleFileChange = (e) => {
-    setSelectedFile(e.target.files[0]);
+  const handleShowConfirmDelete = (categoryId) => {
+    setCategoryToDelete(categoryId); // เก็บ ID ของ category ที่จะลบ
+    setShowConfirmDeleteModal(true); // เปิด Modal
   };
 
-  // 5. แก้ไข handleSave ให้รองรับการส่งไฟล์ (FormData)
-  const handleSave = async (e) => {
-    e.preventDefault();
+  const handleCloseConfirmDelete = () => {
+    setCategoryToDelete(null);
+    setShowConfirmDeleteModal(false);
+  };
 
+  const handleDelete = async () => {
+    if (!categoryToDelete) return; // ถ้าไม่มี category ที่จะลบ ก็ไม่ต้องทำอะไร
+
+    try {
+      await axios.delete(
+        `https://api.souvenir-from-lagoon-thailand.com/api/admin/categories/${categoryToDelete}`,
+        API_CONFIG
+      );
+      fetchCategories();
+      setNotificationMessage({
+        title: "สำเร็จ",
+        body: "ลบประเภทสินค้าเรียบร้อยแล้ว",
+        variant: "success",
+      });
+      setShowNotificationModal(true);
+    } catch (err) {
+      setNotificationMessage({
+        title: "เกิดข้อผิดพลาด",
+        body: err.response?.data?.message || "โปรดลองอีกครั้ง",
+        variant: "danger",
+      });
+      setShowNotificationModal(true);
+    } finally {
+      handleCloseConfirmDelete(); // ปิด Modal ยืนยันเสมอ
+    }
+  };
+
+  const handleFormSubmit = async (e) => {
+    e.preventDefault();
     const formData = new FormData();
     formData.append("category_name", currentCategory.category_name);
     formData.append("category_name_en", currentCategory.category_name_en);
 
-    // ถ้ามีการเลือกไฟล์ใหม่ ให้เพิ่มเข้าไปใน formData
     if (selectedFile) {
       formData.append("icon", selectedFile);
     }
-    // ถ้าเป็นการแก้ไข ให้ส่ง URL ของไอคอนเดิมไปด้วย
     if (isEditMode) {
       formData.append("existing_icon_url", currentCategory.icon_url || "");
     }
@@ -105,31 +153,25 @@ const CategoryManagementPage = () => {
     const apiMethod = isEditMode ? "put" : "post";
 
     try {
-      // ส่งข้อมูลเป็น formData
       await axios[apiMethod](apiEndpoint, formData, API_CONFIG);
+      setShowModal(false);
       fetchCategories();
-      handleCloseModal();
+      const successMessage = isEditMode
+        ? "แก้ไขประเภทสินค้าสำเร็จ!"
+        : "เพิ่มประเภทสินค้าใหม่สำเร็จ!";
+      setNotificationMessage({
+        title: "สำเร็จ",
+        body: successMessage,
+        variant: "success",
+      });
+      setShowNotificationModal(true);
     } catch (err) {
-      alert(
-        `เกิดข้อผิดพลาด: ${err.response?.data?.message || "โปรดลองอีกครั้ง"}`
-      );
-    }
-  };
-  // --- END: จุดที่แก้ไข ---
-
-  const handleDelete = async (categoryId) => {
-    if (window.confirm("คุณแน่ใจหรือไม่ว่าต้องการลบประเภทสินค้านี้?")) {
-      try {
-        await axios.delete(
-          `https://api.souvenir-from-lagoon-thailand.com/api/admin/categories/${categoryId}`,
-          API_CONFIG
-        );
-        fetchCategories();
-      } catch (err) {
-        alert(
-          `เกิดข้อผิดพลาด: ${err.response?.data?.message || "โปรดลองอีกครั้ง"}`
-        );
-      }
+      setNotificationMessage({
+        title: "เกิดข้อผิดพลาด",
+        body: err.response?.data?.message || "โปรดลองอีกครั้ง",
+        variant: "danger",
+      });
+      setShowNotificationModal(true);
     }
   };
 
@@ -137,141 +179,167 @@ const CategoryManagementPage = () => {
   if (error) return <Alert variant="danger">{error}</Alert>;
 
   return (
-    <div>
+    <Container fluid className="category-management-page">
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h1>จัดการประเภทสินค้า</h1>
-        <Button onClick={handleShowAddModal}>
-          <FaPlus /> เพิ่มประเภทใหม่
+        <h1 className="page-title mb-0">จัดการประเภทสินค้า</h1>
+        <Button variant="primary" onClick={openModalForAdd}>
+          + เพิ่มประเภทใหม่
         </Button>
       </div>
+      <Card className="settings-card shadow-sm">
+        <Card.Body>
+          <Table hover responsive className="category-table">
+            <thead>
+              <tr>
+                <th>#ID</th>
+                <th>ไอคอน</th>
+                <th>ชื่อประเภท (ไทย)</th>
+                <th>ชื่อประเภท (Eng)</th>
+                <th className="text-end">จัดการ</th>
+              </tr>
+            </thead>
+            <tbody>
+              {categories.map((cat) => (
+                <tr key={cat.category_id}>
+                  <td>{cat.category_id}</td>
+                  <td>
+                    <Image
+                      src={cat.icon_url || "https://via.placeholder.com/40"}
+                      rounded
+                      className="category-icon-preview"
+                    />
+                  </td>
+                  <td>{cat.category_name}</td>
+                  <td>{cat.category_name_en}</td>
+                  <td className="text-end">
+                    <Button
+                      variant="outline-warning"
+                      size="sm"
+                      onClick={() => openModalForEdit(cat)}
+                      className="me-2"
+                      title="แก้ไข"
+                    >
+                      <BsPencilFill />
+                    </Button>
+                    <Button
+                      variant="outline-danger"
+                      size="sm"
+                      onClick={() => handleShowConfirmDelete(cat.category_id)}
+                      title="ลบ"
+                    >
+                      <BsTrashFill />
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        </Card.Body>
+      </Card>
 
-      <Table striped bordered hover responsive>
-        <thead>
-          <tr>
-            <th>#ID</th>
-            {/* --- START: จุดที่แก้ไข --- */}
-            <th>ไอคอน</th>
-            {/* --- END: จุดที่แก้ไข --- */}
-            <th>ชื่อประเภท (ไทย)</th>
-            <th>ชื่อประเภท (English)</th>
-            <th>จัดการ</th>
-          </tr>
-        </thead>
-        <tbody>
-          {categories.map((cat) => (
-            <tr key={cat.category_id}>
-              <td>{cat.category_id}</td>
-              <td>
-                <Image
-                  src={cat.icon_url}
-                  thumbnail
-                  style={{
-                    maxHeight: "40px",
-                    maxWidth: "40px",
-                    objectFit: "contain",
-                  }}
-                  onError={(e) => {
-                    e.target.style.display = "none";
-                  }}
-                />
-              </td>
-              <td>{cat.category_name}</td>
-              <td>{cat.category_name_en}</td>
-              <td>
-                <Button
-                  variant="warning"
-                  size="sm"
-                  onClick={() => handleShowEditModal(cat)}
-                  className="me-2"
-                >
-                  <FaEdit />
-                </Button>
-                <Button
-                  variant="danger"
-                  size="sm"
-                  onClick={() => handleDelete(cat.category_id)}
-                >
-                  <FaTrash />
-                </Button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </Table>
-
-      <Modal show={showModal} onHide={handleCloseModal}>
+      <Modal show={showModal} onHide={() => setShowModal(false)} centered>
         <Modal.Header closeButton>
           <Modal.Title>
             {isEditMode ? "แก้ไขประเภทสินค้า" : "เพิ่มประเภทสินค้าใหม่"}
           </Modal.Title>
         </Modal.Header>
-        <Form onSubmit={handleSave}>
+        <Form onSubmit={handleFormSubmit}>
           <Modal.Body>
+            <Form.Group className="mb-3 text-center">
+              <Form.Label>ไอคอน</Form.Label>
+              <div className="icon-upload-wrapper mx-auto">
+                <Image
+                  src={imagePreview || placeholderImage}
+                  roundedCircle
+                  className="icon-image-preview"
+                />
+                <label htmlFor="icon-upload" className="icon-upload-overlay">
+                  <BsUpload size={24} />
+                  <span>เปลี่ยนไอคอน</span>
+                </label>
+                <Form.Control
+                  id="icon-upload"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  style={{ display: "none" }}
+                />
+              </div>
+            </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label>ชื่อประเภท (ไทย)</Form.Label>
               <Form.Control
                 type="text"
+                name="category_name"
                 value={currentCategory.category_name}
-                onChange={(e) =>
-                  setCurrentCategory({
-                    ...currentCategory,
-                    category_name: e.target.value,
-                  })
-                }
+                onChange={handleInputChange}
                 required
-                autoFocus
               />
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label>ชื่อประเภท (English)</Form.Label>
               <Form.Control
                 type="text"
+                name="category_name_en"
                 value={currentCategory.category_name_en || ""}
-                onChange={(e) =>
-                  setCurrentCategory({
-                    ...currentCategory,
-                    category_name_en: e.target.value,
-                  })
-                }
+                onChange={handleInputChange}
               />
             </Form.Group>
-
-            {/* --- START: จุดที่แก้ไข --- */}
-            {/* 6. เพิ่มช่องสำหรับอัปโหลดไอคอน */}
-            <Form.Group className="mb-3">
-              <Form.Label>ไอคอน</Form.Label>
-              {isEditMode && currentCategory.icon_url && (
-                <div className="mb-2">
-                  <p className="mb-1 small text-muted">ไอคอนปัจจุบัน:</p>
-                  <Image
-                    src={currentCategory.icon_url}
-                    thumbnail
-                    style={{ maxHeight: "80px" }}
-                  />
-                </div>
-              )}
-              <Form.Control
-                type="file"
-                onChange={handleFileChange}
-                accept="image/*"
-              />
-              <Form.Text className="text-muted">
-                เลือกไฟล์ใหม่เพื่ออัปเดต หรือเว้นว่างไว้เพื่อใช้รูปเดิม
-              </Form.Text>
-            </Form.Group>
-            {/* --- END: จุดที่แก้ไข --- */}
           </Modal.Body>
           <Modal.Footer>
-            <Button variant="secondary" onClick={handleCloseModal}>
+            <Button variant="secondary" onClick={() => setShowModal(false)}>
               ยกเลิก
             </Button>
             <Button variant="primary" type="submit">
-              <FaSave /> บันทึก
+              บันทึก
             </Button>
           </Modal.Footer>
         </Form>
       </Modal>
-    </div>
+
+      <Modal
+        show={showNotificationModal}
+        onHide={() => setShowNotificationModal(false)}
+        centered
+      >
+        <Modal.Header closeButton>
+          <Modal.Title className={`text-${notificationMessage.variant}`}>
+            {notificationMessage.title}
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>{notificationMessage.body}</Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="primary"
+            onClick={() => setShowNotificationModal(false)}
+          >
+            ตกลง
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      <Modal
+        show={showConfirmDeleteModal}
+        onHide={handleCloseConfirmDelete}
+        centered
+      >
+        <Modal.Header closeButton>
+          <Modal.Title className="text-danger">ยืนยันการลบ</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          คุณแน่ใจหรือไม่ว่าต้องการลบประเภทสินค้านี้?
+          การกระทำนี้ไม่สามารถย้อนกลับได้
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleCloseConfirmDelete}>
+            ยกเลิก
+          </Button>
+          <Button variant="danger" onClick={handleDelete}>
+            ยืนยันการลบ
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    </Container>
   );
 };
 
