@@ -1,18 +1,19 @@
 .role-management-page {
-    background-color: #f8f9fa;
-    min-height: 100vh;
+  /* background-color: #f8f9fa; */
+  background-color: #f4f7f6;
+  min-height: 100vh;
 }
 
 .page-title {
-    margin-bottom: 0rem;
-    font-weight: 700;
+  margin-bottom: 0rem;
+  font-weight: 700;
 }
 
 .settings-card {
-    border: none;
-    border-radius: 0.75rem;
+  border: none;
+  border-radius: 0.75rem;
 }
 
 .role-table {
-    vertical-align: middle; /* ทำให้เนื้อหาในตารางอยู่กึ่งกลางแนวตั้ง */
+  vertical-align: middle; /* ทำให้เนื้อหาในตารางอยู่กึ่งกลางแนวตั้ง */
 }

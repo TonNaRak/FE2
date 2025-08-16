@@ -1,4 +1,3 @@
-// src/pages/LocationPage.js (โค้ดฉบับเต็ม)
 import React, { useState, useEffect } from "react";
 import {
   Container,
@@ -10,14 +9,16 @@ import {
   Button,
 } from "react-bootstrap";
 import axios from "axios";
-import { FaFacebook, FaYoutube, FaMapMarkedAlt } from "react-icons/fa"; // Import icon เพิ่ม
+import { FaFacebook, FaYoutube, FaMapMarkedAlt } from "react-icons/fa";
 import "./LocationPage.css";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next"; // 1. Import useTranslation
 
 const LocationPage = () => {
   const [storeInfo, setStoreInfo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const { t, i18n } = useTranslation(); // 2. เรียกใช้ hook
 
   useEffect(() => {
     const fetchStoreInfo = async () => {
@@ -67,11 +68,6 @@ const LocationPage = () => {
     );
   }
 
-  // สร้าง URL สำหรับปุ่มนำทาง
-  const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=$${encodeURIComponent(
-    storeInfo.address
-  )}`;
-
   return (
     <div className="location-page-bg">
       <Container className="location-container my-5">
@@ -81,20 +77,28 @@ const LocationPage = () => {
               <Col md={6} className="mb-4 mb-md-0">
                 <img
                   src={storeInfo.image_url}
-                  alt="หน้าร้าน"
+                  alt={t("storefront_alt")}
                   className="store-image img-fluid rounded mb-4"
                 />
               </Col>
               <Col md={6} className="d-flex flex-column justify-content-center">
-                <h2 className="store-name">{storeInfo.name}</h2>
+                {/* --- START: จุดที่แก้ไข --- */}
+                <h2 className="store-name">
+                  {i18n.language === 'en' && storeInfo.name_en 
+                    ? storeInfo.name_en 
+                    : storeInfo.name}
+                </h2>
                 <p>
-                  <strong>ที่อยู่:</strong> {storeInfo.address}
+                  <strong>{t("address_label")}:</strong>{" "}
+                  {i18n.language === 'en' && storeInfo.address_en 
+                    ? storeInfo.address_en 
+                    : storeInfo.address}
                 </p>
                 <p>
-                  <strong>เบอร์โทรศัพท์:</strong> {storeInfo.phone}
+                  <strong>{t("phone_label")}:</strong> {storeInfo.phone}
                 </p>
                 <p>
-                  <strong>อีเมล:</strong> {storeInfo.email}
+                  <strong>{t("email_label")}:</strong> {storeInfo.email}
                 </p>
 
                 <div className="mt-3">
@@ -128,9 +132,10 @@ const LocationPage = () => {
                     target="_blank"
                   >
                     <FaMapMarkedAlt className="me-2" />
-                    กดเพื่อนำทาง
+                    {t("navigate_button")}
                   </Button>
                 </div>
+                {/* --- END: จุดที่แก้ไข --- */}
               </Col>
             </Row>
           </Card.Body>

@@ -174,7 +174,7 @@ const OrderManagementPage = () => {
                     minute: "2-digit",
                   })}
                 </td>
-                <td>{order.total_price.toLocaleString()}</td>
+                <td>{parseFloat(order.total_price).toLocaleString()}</td>
                 <td>
                   <Badge bg={badge.bg}>{badge.text}</Badge>
                 </td>
@@ -272,7 +272,8 @@ const OrderManagementPage = () => {
                           )}
                         {/* --- END: จุดที่แก้ไข --- */}
                       </td>
-                      <td>{item.current_price.toLocaleString()}</td>
+                      <td>{parseFloat(item.current_price).toLocaleString()}</td>
+                      {/* <td>{item.current_price.toLocaleString()}</td> */}
                       <td>{item.quantity}</td>
                       <td>
                         {(item.current_price * item.quantity).toLocaleString()}

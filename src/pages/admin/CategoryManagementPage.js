@@ -16,7 +16,7 @@ import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
 import { BsUpload, BsPencilFill, BsTrashFill } from "react-icons/bs"; // <-- 1. เพิ่มไอคอนใหม่
 import "./CategoryManagementPage.css";
-import placeholderImage from "../../images/placeholder.png"; // <-- สมมติว่าไฟล์ชื่อ placeholder.png
+import placeholderImage from "../../images/placeholder.png";
 
 const CategoryManagementPage = () => {
   const [categories, setCategories] = useState([]);
@@ -191,11 +191,11 @@ const CategoryManagementPage = () => {
           <Table hover responsive className="category-table">
             <thead>
               <tr>
-                <th>#ID</th>
-                <th>ไอคอน</th>
-                <th>ชื่อประเภท (ไทย)</th>
-                <th>ชื่อประเภท (Eng)</th>
-                <th className="text-end">จัดการ</th>
+                <th className="text-center">ID</th>
+                <th className="text-center">ไอคอน</th>
+                <th className="text-center">ชื่อประเภท (ไทย)</th>
+                <th className="text-center">ชื่อประเภท (Eng)</th>
+                <th className="text-center">จัดการ</th>
               </tr>
             </thead>
             <tbody>
@@ -204,14 +204,14 @@ const CategoryManagementPage = () => {
                   <td>{cat.category_id}</td>
                   <td>
                     <Image
-                      src={cat.icon_url || "https://via.placeholder.com/40"}
+                      src={cat.icon_url || placeholderImage}
                       rounded
                       className="category-icon-preview"
                     />
                   </td>
                   <td>{cat.category_name}</td>
                   <td>{cat.category_name_en}</td>
-                  <td className="text-end">
+                  <td className="text-center">
                     <Button
                       variant="outline-warning"
                       size="sm"

@@ -10,7 +10,7 @@ import {
   Alert,
   Image,
   InputGroup,
-  Modal, // <-- 1. เพิ่มการ import Modal
+  Modal,
 } from "react-bootstrap";
 import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
@@ -24,11 +24,14 @@ import {
   BsUpload,
 } from "react-icons/bs";
 import "./StoreSettingPage.css";
+import placeholderImage from "../../images/placeholder.png";
 
 const StoreSettingPage = () => {
   const [storeInfo, setStoreInfo] = useState({
     name: "",
+    name_en: "", // เพิ่ม name_en
     address: "",
+    address_en: "", // เพิ่ม address_en
     phone: "",
     email: "",
     image_url: "",
@@ -39,21 +42,16 @@ const StoreSettingPage = () => {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  //   const [success, setSuccess] = useState(""); // ลบ state เดิมออก
   const [imageFile, setImageFile] = useState(null);
   const [qrCodeFile, setQrCodeFile] = useState(null);
   const [imagePreview, setImagePreview] = useState("");
   const [qrCodePreview, setQrCodePreview] = useState("");
-
-  // --- START: จุดที่แก้ไข ---
-  // 2. เพิ่ม State สำหรับควบคุม Modal การแจ้งเตือน
   const [showNotificationModal, setShowNotificationModal] = useState(false);
   const [notificationMessage, setNotificationMessage] = useState({
     title: "",
     body: "",
     variant: "success",
   });
-  // --- END: จุดที่แก้ไข ---
 
   const { token } = useAuth();
   const API_CONFIG = { headers: { Authorization: `Bearer ${token}` } };
@@ -62,12 +60,14 @@ const StoreSettingPage = () => {
     const fetchStoreInfo = async () => {
       try {
         setLoading(true);
+        // API Endpoint เดิม ไม่ต้องแก้ไข เพราะ Backend ส่งข้อมูลมาครบแล้ว
         const response = await axios.get(
           "https://api.souvenir-from-lagoon-thailand.com/api/store-info",
           API_CONFIG
         );
         if (response.data) {
-          setStoreInfo(response.data);
+          // ใช้ spread operator เพื่อให้ state รับค่าใหม่ได้โดยไม่ต้องแก้เยอะ
+          setStoreInfo((prev) => ({ ...prev, ...response.data }));
           setImagePreview(response.data.image_url);
           setQrCodePreview(response.data.qr_code_url);
         }
@@ -117,8 +117,9 @@ const StoreSettingPage = () => {
     }
     formData.append("existing_image_url", storeInfo.image_url || "");
 
+    // Logic สำหรับ QR Code (แก้ไขให้ส่งข้อมูลไปพร้อมกัน)
     if (qrCodeFile) {
-      formData.append("qr_code", qrCodeFile);
+      formData.append("qr_code_file", qrCodeFile); // เปลี่ยนชื่อ key เพื่อไม่ให้ซ้ำกับ field ใน DB
     }
     formData.append("existing_qr_code_url", storeInfo.qr_code_url || "");
 
@@ -128,15 +129,12 @@ const StoreSettingPage = () => {
         formData,
         API_CONFIG
       );
-      // --- START: จุดที่แก้ไข ---
-      // 3. เรียกใช้ Modal แทน Alert
       setNotificationMessage({
         title: "สำเร็จ",
         body: "บันทึกข้อมูลร้านค้าสำเร็จ!",
         variant: "success",
       });
       setShowNotificationModal(true);
-      // --- END: จุดที่แก้ไข ---
       setImageFile(null);
       setQrCodeFile(null);
     } catch (err) {
@@ -158,7 +156,6 @@ const StoreSettingPage = () => {
             {error}
           </Alert>
         )}
-        {/* ลบ Alert success เดิมออกไป */}
 
         <Row className="mt-4 d-flex align-items-stretch">
           <Col lg={8} className="d-flex flex-column">
@@ -166,13 +163,13 @@ const StoreSettingPage = () => {
               <Card.Header as="h5">ข้อมูลหลักของร้าน</Card.Header>
               <Card.Body>
                 <Row>
-                  <Col md={4}>
+                  <Col md={5}>
                     <Form.Group className="mb-3">
                       <Form.Label>โลโก้ / รูปภาพร้านค้า</Form.Label>
                       <div className="image-upload-wrapper">
                         <Image
                           src={
-                            imagePreview || "https://via.placeholder.com/300"
+                            imagePreview || placeholderImage
                           }
                           fluid
                           rounded
@@ -195,9 +192,10 @@ const StoreSettingPage = () => {
                       </div>
                     </Form.Group>
                   </Col>
-                  <Col md={8}>
+                  <Col md={7}>
+                    {/* --- จุดที่แก้ไข: เพิ่มฟอร์มชื่อร้าน (ไทย/อังกฤษ) --- */}
                     <Form.Group className="mb-3">
-                      <Form.Label>ชื่อร้านค้า</Form.Label>
+                      <Form.Label>ชื่อร้านค้า (ไทย)</Form.Label>
                       <InputGroup>
                         <InputGroup.Text>
                           <BsShop />
@@ -211,6 +209,21 @@ const StoreSettingPage = () => {
                         />
                       </InputGroup>
                     </Form.Group>
+                    <Form.Group className="mb-3">
+                      <Form.Label>ชื่อร้านค้า (English)</Form.Label>
+                      <InputGroup>
+                        <InputGroup.Text>
+                          <BsShop />
+                        </InputGroup.Text>
+                        <Form.Control
+                          type="text"
+                          name="name_en"
+                          value={storeInfo.name_en || ""}
+                          onChange={handleInputChange}
+                        />
+                      </InputGroup>
+                    </Form.Group>
+
                     <Form.Group className="mb-3">
                       <Form.Label>เบอร์โทรศัพท์</Form.Label>
                       <InputGroup>
@@ -243,17 +256,33 @@ const StoreSettingPage = () => {
                     </Form.Group>
                   </Col>
                 </Row>
+                {/* --- จุดที่แก้ไข: เพิ่มฟอร์มที่อยู่ (ไทย/อังกฤษ) --- */}
                 <Form.Group className="mb-3">
-                  <Form.Label>ที่อยู่ร้านค้า</Form.Label>
+                  <Form.Label>ที่อยู่ร้านค้า (ไทย)</Form.Label>
                   <InputGroup>
                     <InputGroup.Text>
                       <BsGeoAlt />
                     </InputGroup.Text>
                     <Form.Control
                       as="textarea"
-                      rows={3}
+                      rows={4}
                       name="address"
                       value={storeInfo.address}
+                      onChange={handleInputChange}
+                    />
+                  </InputGroup>
+                </Form.Group>
+                <Form.Group className="mb-3">
+                  <Form.Label>ที่อยู่ร้านค้า (English)</Form.Label>
+                  <InputGroup>
+                    <InputGroup.Text>
+                      <BsGeoAlt />
+                    </InputGroup.Text>
+                    <Form.Control
+                      as="textarea"
+                      rows={4}
+                      name="address_en"
+                      value={storeInfo.address_en || ""}
                       onChange={handleInputChange}
                     />
                   </InputGroup>
@@ -277,7 +306,7 @@ const StoreSettingPage = () => {
                       name="facebook_url"
                       value={storeInfo.facebook_url || ""}
                       onChange={handleInputChange}
-                      placeholder="https://facebook.com/yourpage"
+                      placeholder="https://facebook.com"
                     />
                   </InputGroup>
                 </Form.Group>
@@ -292,7 +321,7 @@ const StoreSettingPage = () => {
                       name="youtube_url"
                       value={storeInfo.youtube_url || ""}
                       onChange={handleInputChange}
-                      placeholder="https://youtube.com/yourchannel"
+                      placeholder="https://youtube.com"
                     />
                   </InputGroup>
                 </Form.Group>
@@ -307,7 +336,7 @@ const StoreSettingPage = () => {
                       name="map_url"
                       value={storeInfo.map_url || ""}
                       onChange={handleInputChange}
-                      placeholder="ลิงก์ Google Maps ของร้าน"
+                      placeholder="https://www.google.com/maps"
                     />
                   </InputGroup>
                 </Form.Group>
@@ -318,7 +347,7 @@ const StoreSettingPage = () => {
               <Card.Body className="text-center">
                 <div className="qr-upload-wrapper">
                   <Image
-                    src={qrCodePreview || "https://via.placeholder.com/200"}
+                    src={qrCodePreview || placeholderImage }
                     fluid
                     rounded
                     className="qr-image-preview"
@@ -346,8 +375,6 @@ const StoreSettingPage = () => {
         </Row>
       </Form>
 
-      {/* --- START: จุดที่แก้ไข --- */}
-      {/* 4. เพิ่ม JSX ของ Modal การแจ้งเตือน */}
       <Modal
         show={showNotificationModal}
         onHide={() => setShowNotificationModal(false)}
@@ -368,7 +395,6 @@ const StoreSettingPage = () => {
           </Button>
         </Modal.Footer>
       </Modal>
-      {/* --- END: จุดที่แก้ไข --- */}
     </Container>
   );
 };

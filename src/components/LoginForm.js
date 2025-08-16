@@ -23,15 +23,16 @@ const LoginPage = () => {
       });
 
       const loggedInUser = response.data.user;
-      const token = response.data.token;
+      
+      // --- START: จุดที่แก้ไข ---
+      const { accessToken, refreshToken } = response.data;
+      login(loggedInUser, accessToken, refreshToken);
+      // --- END: จุดที่แก้ไข ---
 
-      login(loggedInUser, token);
-
-      //  เช็ค role ของ user แล้วส่งไปยังหน้าที่ถูกต้อง
       if (loggedInUser.role === "admin" || loggedInUser.role === "employee") {
-        navigate("/admin/dashboard"); // ถ้าเป็น admin/employee ไปหน้าแดชบอร์ด
+        navigate("/admin/dashboard");
       } else {
-        navigate("/index"); // ถ้าเป็นลูกค้า ไปหน้าแรก
+        navigate("/index");
       }
     } catch (err) {
       setError(
