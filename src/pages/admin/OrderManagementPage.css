@@ -1,0 +1,31 @@
+.order-management-page {
+  background-color: #f4f7f6;
+  min-height: 100vh;
+}
+
+.page-title {
+  margin-bottom: 0rem;
+  font-weight: 700;
+}
+
+.settings-card {
+  border: none;
+  border-radius: 0.75rem;
+}
+
+.order-table {
+  vertical-align: middle;
+}
+
+.order-table th {
+  font-weight: 600;
+}
+
+.order-table td, .order-table th {
+  padding: 1rem 0.75rem;
+}
+
+.form-label {
+    font-weight: 500;
+    color: #495057;
+}

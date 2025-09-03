@@ -63,14 +63,15 @@
   border-color: rgba(0, 0, 0, 0.15);
 }
 
-/* === สไตล์สำหรับ Mobile (ใหม่) === */
+/* === สไตล์สำหรับ Mobile === */
 
 .mobile-product-page {
   padding-bottom: 100px;
 }
 
 .mobile-header {
-  position: absolute;
+  /* position: absolute; */
+  position: fixed;
   top: 1rem;
   left: 1rem;
   right: 1rem;
@@ -79,7 +80,6 @@
   justify-content: space-between;
 }
 
-/* ทำให้ปุ่มใน Header ของมือถือเป็นวงกลมเหมือนเดิม */
 .mobile-header .glass-btn {
   width: 44px;
   height: 44px;
@@ -104,6 +104,17 @@
 
 /* แถบปุ่ม Fixed ที่ขอบล่าง */
 .mobile-action-bar {
+  /* position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  background-color: #ffffff;
+  padding: 1rem;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  display: flex;
+  gap: 1rem; */
   position: fixed;
   bottom: 0;
   left: 0;
@@ -115,10 +126,15 @@
   z-index: 1000;
   display: flex;
   gap: 1rem;
+  align-items: stretch; /* ทำให้ปุ่มสูงเท่ากัน */
 }
 
 .mobile-action-bar .btn {
-  flex: 1;
+  /* flex: 1;
+  padding: 0.75rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 8px; */
   padding: 0.75rem;
   font-size: 1rem;
   font-weight: 600;
@@ -126,18 +142,24 @@
 }
 
 .mobile-cart-btn {
+  /* display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  flex-grow: 1.2; */
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  flex-grow: 1.2;
 }
 
 .mobile-buy-btn {
-  flex-grow: 1;
+  /* flex-grow: 1; */
+  flex: 3;
 }
 
-/* --- START: เพิ่มโค้ด CSS สำหรับ Modal รูปภาพ --- */
+/* --- CSS สำหรับ Modal รูปภาพ --- */
 
 /* ทำให้รูปภาพดูเหมือนกดได้ โดยเปลี่ยน cursor เป็นรูปมือ */
 .product-main-image,
@@ -175,8 +197,8 @@
 
 .image-modal .modal-body img {
   max-width: 100%;
-  max-height: 90vh; /* ความสูงสูงสุดไม่เกิน 90% ของความสูงจอ */
-  object-fit: contain; /* ทำให้เห็นภาพเต็มๆ โดยไม่ถูกตัด */
+  max-height: 90vh;
+  object-fit: contain;
 }
 
 /* ทำให้ปุ่มปิด (X) เป็นสีขาว */
@@ -185,9 +207,7 @@
   opacity: 0.8;
 }
 
-/* --- END: เพิ่มโค้ด CSS --- */
-
-/* ====== ใหม่: ปุ่มตัวเลือกแบบ TILE ====== */
+/* ====== ปุ่มตัวเลือกแบบ TILE ====== */
 .option-tiles {
   display: flex;
   flex-wrap: wrap;
@@ -196,7 +216,7 @@
 
 .tile-btn {
   appearance: none;
-  border: 1px solid rgba(0,0,0,0.12);
+  border: 1px solid rgba(0, 0, 0, 0.12);
   background: #fff;
   border-radius: 12px;
   padding: 0.55rem 0.9rem;
@@ -210,8 +230,8 @@
 }
 .tile-btn:hover,
 .tile-btn:focus {
-  border-color: rgba(0,0,0,0.25);
-  box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+  border-color: rgba(0, 0, 0, 0.25);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
   outline: none;
 }
 .tile-btn:active {
@@ -231,12 +251,12 @@
   }
 }
 
-/* ====== ใหม่: ตัวเพิ่ม-ลดจำนวน ====== */
+/* ====== ตัวเพิ่ม-ลดจำนวน ====== */
 .quantity-stepper {
   display: inline-flex;
   align-items: center;
-  background: rgba(0,0,0,0.03);
-  border: 1px solid rgba(0,0,0,0.1);
+  background: rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 999px;
   padding: 0.2rem;
 }
@@ -252,7 +272,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
   cursor: pointer;
   transition: transform 0.05s ease, box-shadow 0.15s ease;
 }

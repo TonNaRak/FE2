@@ -16,7 +16,12 @@ import {
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
 import { useTranslation } from "react-i18next";
-import { BsArrowLeft, BsCart } from "react-icons/bs";
+import {
+  BsArrowLeft,
+  BsCart,
+  BsCheckCircleFill,
+  BsExclamationTriangleFill,
+} from "react-icons/bs";
 import useMediaQuery from "../hooks/useMediaQuery";
 import "./ProductDetailPage.css";
 
@@ -26,9 +31,15 @@ const ProductDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [quantity, setQuantity] = useState(1);
-  const [addCartSuccess, setAddCartSuccess] = useState(false);
   const [selectedOptions, setSelectedOptions] = useState({});
   const [showImageModal, setShowImageModal] = useState(false);
+
+  const [showNotificationModal, setShowNotificationModal] = useState(false);
+  const [notification, setNotification] = useState({
+    title: "",
+    body: "",
+    variant: "success",
+  });
 
   const { t, i18n } = useTranslation();
   const { user, token } = useAuth();
@@ -37,6 +48,11 @@ const ProductDetailPage = () => {
 
   const handleShowImageModal = () => setShowImageModal(true);
   const handleCloseImageModal = () => setShowImageModal(false);
+
+  const showNotification = (title, body, variant = "success") => {
+    setNotification({ title, body, variant });
+    setShowNotificationModal(true);
+  };
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -55,14 +71,14 @@ const ProductDetailPage = () => {
         }
         setSelectedOptions(initialOptions);
       } catch (err) {
-        setError("ไม่พบสินค้าหรือเกิดข้อผิดพลาด");
+        setError(t("product_not_found"));
         console.error(err);
       } finally {
         setLoading(false);
       }
     };
     fetchProduct();
-  }, [productId]);
+  }, [productId, t]);
 
   const handleOptionChange = (optionName, value) => {
     setSelectedOptions((prev) => ({ ...prev, [optionName]: value }));
@@ -82,7 +98,15 @@ const ProductDetailPage = () => {
     if (product.options && product.options.length > 0) {
       for (const option of product.options) {
         if (!selectedOptions[option.option_name]) {
-          alert(`กรุณาเลือก "${option.option_name}"`);
+          showNotification(
+            t("please_select_option"),
+            `${t("please_select")} "${
+              i18n.language === "en" && option.option_name_en
+                ? option.option_name_en
+                : option.option_name
+            }"`,
+            "warning"
+          );
           return;
         }
       }
@@ -99,11 +123,23 @@ const ProductDetailPage = () => {
           },
           { headers: { Authorization: `Bearer ${token}` } }
         );
-        setAddCartSuccess(true);
-        setTimeout(() => setAddCartSuccess(false), 3000);
+        showNotification(
+          t("added_to_cart_success_title"),
+          t("added_to_cart_success_body", {
+            productName:
+              i18n.language === "en" && product.name_en
+                ? product.name_en
+                : product.name,
+            quantity: quantity,
+          })
+        );
       } catch (err) {
         console.error("Failed to add to cart:", err);
-        alert("เกิดข้อผิดพลาดในการเพิ่มสินค้าลงตะกร้า");
+        showNotification(
+          t("add_to_cart_fail_title"),
+          t("add_to_cart_fail_body"),
+          "danger"
+        );
       }
     } else if (actionType === "buyNow") {
       const itemToBuy = {
@@ -127,7 +163,7 @@ const ProductDetailPage = () => {
           : product.name}
       </h1>
       <p className="product-price-detail">
-        {product.price.toLocaleString()} บาท
+        {product.price.toLocaleString()} {t("baht")}
       </p>
       <p className="product-description">
         {i18n.language === "en" && product.description_en
@@ -136,7 +172,6 @@ const ProductDetailPage = () => {
       </p>
       <hr />
 
-      {/* ====== ตัวเลือกสินค้าแบบ TILE (คง dropdown เดิมไว้แต่ซ่อน) ====== */}
       {product.options && product.options.length > 0 && (
         <div className="my-4">
           {product.options.map((option) => {
@@ -155,11 +190,10 @@ const ProductDetailPage = () => {
                   {labelText}:
                 </Form.Label>
                 <Col sm={9}>
-                  {/* กลุ่มปุ่ม tile */}
                   <div
                     className="option-tiles"
                     role="group"
-                    aria-label={`เลือก ${labelText}`}
+                    aria-label={`${t("please_select")} ${labelText}`}
                   >
                     {option.values.map((val) => {
                       const valueText =
@@ -175,7 +209,10 @@ const ProductDetailPage = () => {
                           type="button"
                           className={`tile-btn ${isActive ? "active" : ""}`}
                           onClick={() =>
-                            handleOptionChange(option.option_name, val.value_name)
+                            handleOptionChange(
+                              option.option_name,
+                              val.value_name
+                            )
                           }
                           aria-pressed={isActive}
                         >
@@ -184,26 +221,6 @@ const ProductDetailPage = () => {
                       );
                     })}
                   </div>
-
-                  {/* Dropdown เดิม: คงไว้ แต่ซ่อนด้วย d-none เผื่ออยากสลับกลับ */}
-                  <Form.Select
-                    className="d-none"
-                    value={selectedOptions[option.option_name] || ""}
-                    onChange={(e) =>
-                      handleOptionChange(option.option_name, e.target.value)
-                    }
-                  >
-                    <option value="" disabled>
-                      -- กรุณาเลือก --
-                    </option>
-                    {option.values.map((val) => (
-                      <option key={val.value_id} value={val.value_name}>
-                        {i18n.language === "en" && val.value_name_en
-                          ? val.value_name_en
-                          : val.value_name}
-                      </option>
-                    ))}
-                  </Form.Select>
                 </Col>
               </Form.Group>
             );
@@ -211,24 +228,23 @@ const ProductDetailPage = () => {
         </div>
       )}
 
-      {/* ====== จำนวนสินค้าแบบปุ่ม +/- (คงช่องตัวเลขเดิมไว้แต่ซ่อน) ====== */}
       <Row className="align-items-center my-4">
         <Col xs="auto" className="fw-bold">
-          <Form.Label className="mb-0">จำนวน:</Form.Label>
+          <Form.Label className="mb-0">{t("quantity_label")}</Form.Label>
         </Col>
         <Col xs="auto">
           <div
             className="quantity-stepper"
             role="group"
-            aria-label="ปรับจำนวนสินค้า"
+            aria-label={t("quantity_label")}
           >
             <button
               type="button"
               className="qty-btn"
               onClick={decrementQuantity}
-              aria-label="ลดจำนวน"
+              aria-label={t("remove")}
             >
-              –
+              -
             </button>
             <div className="qty-value" aria-live="polite">
               {quantity}
@@ -237,29 +253,13 @@ const ProductDetailPage = () => {
               type="button"
               className="qty-btn"
               onClick={incrementQuantity}
-              aria-label="เพิ่มจำนวน"
+              aria-label={t("add_to_cart")}
             >
               +
             </button>
           </div>
         </Col>
-
-        {/* ช่องกรอกจำนวนเดิม: คงไว้แต่ซ่อนด้วย d-none */}
-        <Col xs={4} sm={3} className="d-none">
-          <Form.Control
-            type="number"
-            value={quantity}
-            onChange={(e) =>
-              setQuantity(Math.max(1, parseInt(e.target.value)))
-            }
-            min="1"
-          />
-        </Col>
       </Row>
-
-      {addCartSuccess && (
-        <Alert variant="success">เพิ่มสินค้าลงตะกร้าเรียบร้อย!</Alert>
-      )}
     </>
   );
 
@@ -303,19 +303,20 @@ const ProductDetailPage = () => {
 
           <div className="mobile-action-bar">
             <Button
-              variant="outline-primary"
-              className="mobile-cart-btn"
-              onClick={() => handleAction("addToCart")}
-            >
-              <span>เพิ่มลงตะกร้า</span>
-            </Button>
-            <Button
               variant="success"
               className="mobile-buy-btn"
               onClick={() => handleAction("buyNow")}
             >
-              ซื้อทันที
+              {t("buy_now")}
             </Button>
+            <Button
+              variant="outline-primary"
+              className="mobile-cart-btn"
+              onClick={() => handleAction("addToCart")}
+            >
+              <span>{t("add_to_cart_mobile")}</span>
+            </Button>
+            
           </div>
         </div>
       );
@@ -325,10 +326,10 @@ const ProductDetailPage = () => {
       <Container className={`product-detail-container my-5`}>
         <div className="d-flex justify-content-between align-items-center mb-4">
           <Button className="glass-btn" onClick={() => navigate(-1)}>
-            <BsArrowLeft className="me-2" /> ย้อนกลับ
+            <BsArrowLeft className="me-2" /> {t("back_button")}
           </Button>
           <Button className="glass-btn" onClick={() => navigate("/cart")}>
-            <BsCart className="me-2" /> ไปที่ตะกร้า
+            <BsCart className="me-2" /> {t("go_to_cart")}
           </Button>
         </div>
         <Row>
@@ -357,7 +358,7 @@ const ProductDetailPage = () => {
                 size="lg"
                 onClick={() => handleAction("buyNow")}
               >
-                ซื้อสินค้า
+                {t("buy_now")}
               </Button>
             </div>
           </Col>
@@ -382,6 +383,39 @@ const ProductDetailPage = () => {
         <ModalBody className="p-0 text-center">
           {product && <Image src={product.image_url} fluid />}
         </ModalBody>
+      </Modal>
+
+      {/* Notification Modal */}
+      <Modal
+        show={showNotificationModal}
+        onHide={() => setShowNotificationModal(false)}
+        centered
+      >
+        <Modal.Header closeButton>
+          <Modal.Title
+            className={`d-flex align-items-center text-${notification.variant}`}
+          >
+            {notification.variant === "success" && (
+              <BsCheckCircleFill className="me-2" />
+            )}
+            {notification.variant === "warning" && (
+              <BsExclamationTriangleFill className="me-2" />
+            )}
+            {notification.variant === "danger" && (
+              <BsExclamationTriangleFill className="me-2" />
+            )}
+            {notification.title}
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>{notification.body}</Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="primary"
+            onClick={() => setShowNotificationModal(false)}
+          >
+            {t("ok")}
+          </Button>
+        </Modal.Footer>
       </Modal>
     </>
   );

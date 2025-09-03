@@ -1,36 +1,52 @@
-// src/pages/LandingPage.js
-import React from 'react';
-import { Container, Button } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
-import logoImage from '../images/Logo.jpg'; // ตรวจสอบว่า path ถูกต้อง
-import './LandingPage.css';
+import React from "react";
+import { Container, Button } from "react-bootstrap";
+import { Link } from "react-router-dom";
+import logoImage from "../images/Logo.jpg";
+import "./LandingPage.css";
+import { useTranslation } from "react-i18next";
+import LanguageSwitcher from "../components/LanguageSwitcher";
 
 const LandingPage = () => {
-  return (
-    <div className="landing-page-container position-relative"> 
+  const { t } = useTranslation();
 
-      {/* ปุ่ม "ข้าม" ที่มุมขวาบน */}
+  return (
+    <div className="landing-page-container position-relative">
       <Link to="/index" className="skip-button">
-        ข้าม →
+        {t("skip_button")}
       </Link>
+
+      <div className="landing-language-switcher-top">
+        <LanguageSwitcher />
+      </div>
 
       <Container className="text-center">
         <img src={logoImage} alt="Company Logo" className="landing-logo" />
-        
-        <h1 className="landing-title">
-          ยินดีต้อนรับ
-        </h1>
 
-        <p className="landing-subtitle">
-          เริ่มต้นใช้งานโดยการเข้าสู่ระบบ หรือสร้างบัญชีใหม่
-        </p>
+        <h1 className="landing-title">{t("welcome_title")}</h1>
 
-        <div className="d-grid gap-3 mt-5 mx-auto" style={{ maxWidth: '320px' }}>
-          <Button as={Link} to="/login" variant="primary" size="lg" className="landing-button">
-            เข้าสู่ระบบ
+        <p className="landing-subtitle">{t("welcome_subtitle")} </p>
+
+        <div
+          className="d-grid gap-3 mt-5 mx-auto"
+          style={{ maxWidth: "320px" }}
+        >
+          <Button
+            as={Link}
+            to="/login"
+            variant="primary"
+            size="lg"
+            className="landing-button"
+          >
+            {t("login_button")}
           </Button>
-          <Button as={Link} to="/register" variant="outline-primary" size="lg" className="landing-button">
-            สร้างบัญชีใหม่
+          <Button
+            as={Link}
+            to="/register"
+            variant="outline-primary"
+            size="lg"
+            className="landing-button"
+          >
+            {t("register_button")}
           </Button>
         </div>
       </Container>

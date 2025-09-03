@@ -1,0 +1,91 @@
+/* src/pages/admin/ProductManagementPage.css */
+.product-management-page {
+  background-color: #f4f7f6;
+  min-height: 100vh;
+}
+
+.page-title {
+  margin-bottom: 0rem;
+  font-weight: 700;
+}
+
+.settings-card {
+  border: none;
+  border-radius: 0.75rem;
+}
+
+.product-table {
+  vertical-align: middle;
+}
+
+.product-table th {
+  font-weight: 600;
+}
+
+.product-table td,
+.product-table th {
+  padding: 1rem 0.75rem;
+}
+
+.product-image-cell {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: center;
+  flex-wrap: nowrap; /* บังคับไม่ให้ปุ่มขึ้นบรรทัดใหม่ */
+}
+
+.product-image-upload-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 300px; /* ปรับขนาดได้ตามความเหมาะสม */
+    overflow: hidden;
+    border-radius: 0.75rem;
+    cursor: pointer;
+    border: 2px dashed #ced4da;
+    margin-bottom: 1rem;
+    background-color: #f8f9fa;
+}
+
+.product-modal-image-preview {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.product-image-upload-wrapper:hover .product-modal-image-preview {
+    transform: scale(1.05);
+}
+
+.product-image-upload-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    cursor: pointer;
+    border-radius: 0.75rem;
+}
+
+.product-image-upload-wrapper:hover .product-image-upload-overlay {
+    opacity: 1;
+}
+
+.product-image-upload-overlay span {
+    margin-top: 0.5rem;
+    font-weight: 600;
+    font-size: 1rem;
+}

@@ -12,13 +12,13 @@ import axios from "axios";
 import { FaFacebook, FaYoutube, FaMapMarkedAlt } from "react-icons/fa";
 import "./LocationPage.css";
 import { Link } from "react-router-dom";
-import { useTranslation } from "react-i18next"; // 1. Import useTranslation
+import { useTranslation } from "react-i18next";
 
 const LocationPage = () => {
   const [storeInfo, setStoreInfo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const { t, i18n } = useTranslation(); // 2. เรียกใช้ hook
+  const { t, i18n } = useTranslation();
 
   useEffect(() => {
     const fetchStoreInfo = async () => {
@@ -82,16 +82,15 @@ const LocationPage = () => {
                 />
               </Col>
               <Col md={6} className="d-flex flex-column justify-content-center">
-                {/* --- START: จุดที่แก้ไข --- */}
                 <h2 className="store-name">
-                  {i18n.language === 'en' && storeInfo.name_en 
-                    ? storeInfo.name_en 
+                  {i18n.language === "en" && storeInfo.name_en
+                    ? storeInfo.name_en
                     : storeInfo.name}
                 </h2>
                 <p>
                   <strong>{t("address_label")}:</strong>{" "}
-                  {i18n.language === 'en' && storeInfo.address_en 
-                    ? storeInfo.address_en 
+                  {i18n.language === "en" && storeInfo.address_en
+                    ? storeInfo.address_en
                     : storeInfo.address}
                 </p>
                 <p>
@@ -135,7 +134,6 @@ const LocationPage = () => {
                     {t("navigate_button")}
                   </Button>
                 </div>
-                {/* --- END: จุดที่แก้ไข --- */}
               </Col>
             </Row>
           </Card.Body>

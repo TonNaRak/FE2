@@ -1,21 +1,22 @@
 import React, { useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
-import { useNavigate, Link } from "react-router-dom"; // 1. Import Link
+import { useNavigate, Link } from "react-router-dom";
 import { Container, Row, Col, Card, ListGroup, Button } from "react-bootstrap";
 import {
   BsPersonCircle,
-  BsPersonVcard,
   BsReceipt,
   BsQuestionCircle,
   BsBoxArrowRight,
   BsAward,
   BsPencilSquare,
 } from "react-icons/bs";
+import { useTranslation } from "react-i18next";
 import "./ProfilePage.css";
 
 const ProfilePage = () => {
   const { user, logout, refreshUserData } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (refreshUserData) {
@@ -31,8 +32,8 @@ const ProfilePage = () => {
   if (!user) {
     return (
       <Container className="profile-container text-center mt-5">
-        <p>กำลังโหลดข้อมูล หรือ กรุณาเข้าสู่ระบบ</p>
-        <Button onClick={() => navigate("/login")}>ไปที่หน้าเข้าสู่ระบบ</Button>
+        <p>{t("loading_or_login_prompt")}</p>
+        <Button onClick={() => navigate("/login")}>{t("go_to_login")}</Button>
       </Container>
     );
   }
@@ -53,7 +54,9 @@ const ProfilePage = () => {
               <Col xs="auto" className="text-end">
                 <div className="points-display">
                   <BsAward className="points-icon" />
-                  <span>{user.points || 0} แต้ม</span>
+                  <span>
+                    {user.points || 0} {t("points")}
+                  </span>
                 </div>
               </Col>
             </Row>
@@ -69,7 +72,7 @@ const ProfilePage = () => {
               className="profile-menu-item"
             >
               <BsPencilSquare className="menu-icon" />
-              แก้ไขข้อมูลส่วนตัว
+              {t("edit_profile")}
             </ListGroup.Item>
 
             <ListGroup.Item
@@ -79,12 +82,12 @@ const ProfilePage = () => {
               className="profile-menu-item"
             >
               <BsReceipt className="menu-icon" />
-              ประวัติคำสั่งซื้อ
+              {t("order_history")}
             </ListGroup.Item>
 
             <ListGroup.Item action href="#" className="profile-menu-item">
               <BsQuestionCircle className="menu-icon" />
-              ศูนย์ความช่วยเหลือ
+              {t("help_center")}
             </ListGroup.Item>
             <ListGroup.Item
               action
@@ -92,7 +95,7 @@ const ProfilePage = () => {
               className="profile-menu-item text-danger"
             >
               <BsBoxArrowRight className="menu-icon" />
-              ออกจากระบบ
+              {t("logout")}
             </ListGroup.Item>
           </ListGroup>
         </Card>

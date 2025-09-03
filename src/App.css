@@ -8,11 +8,19 @@ body {
 }
 
 .login-page-container {
+  position: relative; /* เพิ่มบรรทัดนี้เพื่อเป็นตัวอ้างอิงตำแหน่ง */
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
   padding: 20px 0;
+}
+
+.login-language-switcher {
+  position: absolute;
+  top: 20px;
+  right: 25px;
+  z-index: 10;
 }
 
 .login-form-wrapper {

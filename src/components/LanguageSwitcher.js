@@ -44,7 +44,6 @@ const LanguageSwitcher = () => {
       </button>
       {isOpen && (
         <div className="glass-lang-dropdown">
-          {/* 4. วน Loop สร้างปุ่มสำหรับทุกภาษา */}
           {languages.map((lang) => (
             <button
               key={lang.code}
@@ -52,7 +51,6 @@ const LanguageSwitcher = () => {
               onClick={() => changeLanguage(lang.code)}
             >
               <span>{lang.name}</span>
-              {/* 5. แสดงไอคอน Check ถ้าเป็นภาษาที่เลือกอยู่ */}
               {currentLanguage?.code === lang.code && <BsCheck className="check-icon" />}
             </button>
           ))}

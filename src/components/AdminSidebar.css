@@ -76,32 +76,8 @@
   margin-left: 10px;
 }
 
-/* --- START: โค้ดแก้ไขปัญหาตัวอักษรขยับและสไตล์ปุ่ม (ฉบับสมบูรณ์) --- */
-
 .admin-sidebar.collapsed {
   width: 80px;
-}
-
-.admin-sidebar .sidebar-nav span,
-.admin-sidebar .sidebar-footer span,
-.admin-sidebar .sidebar-title {
-    white-space: nowrap;
-    transition: opacity 0.1s ease-out, width 0.1s ease-out;
-}
-
-.admin-sidebar:not(.collapsed) .sidebar-nav span,
-.admin-sidebar:not(.collapsed) .sidebar-footer span,
-.admin-sidebar:not(.collapsed) .sidebar-title {
-    transition-delay: 0.15s;
-}
-
-.admin-sidebar.collapsed .sidebar-nav span,
-.admin-sidebar.collapsed .sidebar-footer span,
-.admin-sidebar.collapsed .sidebar-title {
-  opacity: 0;
-  width: 0;
-  overflow: hidden;
-  transition-delay: 0s;
 }
 
 .admin-sidebar.collapsed .sidebar-nav li a,
@@ -133,4 +109,81 @@
   justify-content: center;
 }
 
-/* --- END: โค้ดแก้ไข --- */
+/* --- START: โค้ดที่เพิ่มใหม่สำหรับ User Info --- */
+
+.sidebar-footer {
+  padding: 20px;
+  border-top: 1px solid #34495e; /* เพิ่มเส้นคั่น */
+}
+
+.sidebar-user-info {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 10px;
+  background-color: rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+}
+
+.admin-sidebar.collapsed .sidebar-user-info {
+  justify-content: center;
+  padding: 10px 0;
+}
+
+.sidebar-user-info .user-avatar {
+  font-size: 2rem;
+  color: #1abc9c;
+  margin-right: 15px;
+}
+
+.admin-sidebar.collapsed .sidebar-user-info .user-avatar {
+  margin-right: 0;
+}
+
+.sidebar-user-info .user-details {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.sidebar-user-name {
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px; /* ป้องกันชื่อยาวเกินไป */
+}
+
+.sidebar-user-email {
+  font-size: 0.8rem;
+  color: #bdc3c7;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
+}
+
+.admin-sidebar .sidebar-nav span,
+.admin-sidebar .sidebar-footer span,
+.admin-sidebar .sidebar-title,
+.admin-sidebar .user-details {
+  white-space: nowrap;
+  transition: opacity 0.1s ease-out, width 0.1s ease-out;
+}
+
+.admin-sidebar:not(.collapsed) .sidebar-nav span,
+.admin-sidebar:not(.collapsed) .sidebar-footer span,
+.admin-sidebar:not(.collapsed) .sidebar-title,
+.admin-sidebar:not(.collapsed) .user-details {
+  transition-delay: 0.15s;
+}
+
+.admin-sidebar.collapsed .sidebar-nav span,
+.admin-sidebar.collapsed .sidebar-footer span,
+.admin-sidebar.collapsed .sidebar-title,
+.admin-sidebar.collapsed .user-details {
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
+  transition-delay: 0s;
+}

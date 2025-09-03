@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
+  Container,
   Table,
   Button,
   Modal,
@@ -11,11 +12,14 @@ import {
   Row,
   Col,
   InputGroup,
+  Card,
 } from "react-bootstrap";
 import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
 import "./ProductOptions.css";
-import { BsSearch } from "react-icons/bs";
+import "./ProductManagementPage.css";
+import { BsSearch, BsPencilFill, BsTrashFill, BsUpload } from "react-icons/bs";
+import placeholderImage from "../../images/placeholder.png";
 
 const ProductManagementPage = () => {
   const [products, setProducts] = useState([]);
@@ -25,9 +29,10 @@ const ProductManagementPage = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
+  const [imagePreview, setImagePreview] = useState("");
 
+  // State สำหรับควบคุมการค้นหา
   const [searchTerm, setSearchTerm] = useState("");
-  const [submittedSearchTerm, setSubmittedSearchTerm] = useState("");
 
   const initialProductState = {
     name: "",
@@ -46,22 +51,13 @@ const ProductManagementPage = () => {
   const { token } = useAuth();
   const API_CONFIG = { headers: { Authorization: `Bearer ${token}` } };
 
-  useEffect(() => {
-    fetchProducts();
-  }, [submittedSearchTerm]); // ให้ useEffect ทำงานใหม่ทุกครั้งที่มีการกดค้นหา
-
-  useEffect(() => {
-    fetchCategories();
-  }, []);
-  // --- END: จุดที่แก้ไข ---
-
-  const fetchProducts = async () => {
+  // ฟังก์ชันสำหรับดึงข้อมูลสินค้า
+  const fetchProducts = useCallback(async () => {
+    setLoading(true);
     try {
-      setLoading(true);
-      const params = {};
-      if (submittedSearchTerm) {
-        params.q = submittedSearchTerm;
-      }
+      const params = {
+        q: searchTerm,
+      };
       const response = await axios.get(
         "https://api.souvenir-from-lagoon-thailand.com/api/admin/products",
         { ...API_CONFIG, params }
@@ -72,33 +68,32 @@ const ProductManagementPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [searchTerm, token]); // ทำงานเมื่อ searchTerm หรือ token เปลี่ยน
 
-  const fetchCategories = async () => {
-    try {
-      const response = await axios.get(
-        "https://api.souvenir-from-lagoon-thailand.com/api/categories",
-        API_CONFIG
-      );
-      setCategories(response.data);
-    } catch (err) {
-      console.error("Could not fetch categories", err);
-    }
-  };
+  // useEffect สำหรับการค้นหาแบบ Debounce
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      fetchProducts();
+    }, 500);
 
-  const handleSearchChange = (e) => {
-    setSearchTerm(e.target.value);
-  };
+    return () => clearTimeout(delayDebounceFn);
+  }, [fetchProducts]);
 
-  const handleSearchSubmit = (e) => {
-    e.preventDefault();
-    setSubmittedSearchTerm(searchTerm);
-  };
-
-  const clearSearch = () => {
-    setSearchTerm("");
-    setSubmittedSearchTerm("");
-  };
+  // useEffect สำหรับดึงข้อมูล Categories (ยังคงไว้สำหรับฟอร์มเพิ่ม/แก้ไขสินค้า)
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await axios.get(
+          "https://api.souvenir-from-lagoon-thailand.com/api/categories",
+          API_CONFIG
+        );
+        setCategories(response.data);
+      } catch (err) {
+        console.error("Could not fetch categories", err);
+      }
+    };
+    fetchCategories();
+  }, []);
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -109,14 +104,17 @@ const ProductManagementPage = () => {
   };
 
   const handleFileChange = (e) => {
-    setSelectedFile(e.target.files[0]);
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedFile(file);
+      setImagePreview(URL.createObjectURL(file));
+    }
   };
 
-  // --- START: ฟังก์ชันจัดการตัวเลือกสินค้า (เวอร์ชันสองภาษา) ---
   const handleAddVariation = () => {
     setCurrentProduct((prev) => ({
       ...prev,
-      options: [...prev.options, { name: "", name_en: "", values: [] }], // เพิ่ม name_en
+      options: [...prev.options, { name: "", name_en: "", values: [] }],
     }));
   };
 
@@ -130,7 +128,7 @@ const ProductManagementPage = () => {
   const handleVariationNameChange = (e, index) => {
     const { name, value } = e.target;
     const newOptions = [...currentProduct.options];
-    newOptions[index][name] = value; // name สามารถเป็น 'name' หรือ 'name_en'
+    newOptions[index][name] = value;
     setCurrentProduct((prev) => ({ ...prev, options: newOptions }));
   };
 
@@ -141,7 +139,6 @@ const ProductManagementPage = () => {
       if (value) {
         const newOptions = [...currentProduct.options];
         if (!newOptions[index].values.some((v) => v.name === value)) {
-          // เพิ่มทั้ง name (ไทย) และ name_en (อังกฤษ) ที่เป็นค่าว่าง
           newOptions[index].values.push({ name: value, name_en: "" });
           setCurrentProduct((prev) => ({ ...prev, options: newOptions }));
         }
@@ -150,7 +147,6 @@ const ProductManagementPage = () => {
     }
   };
 
-  // ฟังก์ชันใหม่สำหรับอัปเดต name_en ของค่าตัวเลือก
   const handleOptionValueEnChange = (e, groupIndex, valueIndex) => {
     const newOptions = [...currentProduct.options];
     newOptions[groupIndex].values[valueIndex].name_en = e.target.value;
@@ -162,7 +158,6 @@ const ProductManagementPage = () => {
     newOptions[groupIndex].values.splice(valueIndex, 1);
     setCurrentProduct((prev) => ({ ...prev, options: newOptions }));
   };
-  // --- END: ฟังก์ชันจัดการตัวเลือกสินค้า ---
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
@@ -220,6 +215,7 @@ const ProductManagementPage = () => {
     setIsEditMode(false);
     setCurrentProduct(initialProductState);
     setSelectedFile(null);
+    setImagePreview("");
     setShowModal(true);
   };
 
@@ -235,7 +231,6 @@ const ProductManagementPage = () => {
       if (!productData.options) {
         productData.options = [];
       } else {
-        // แปลงโครงสร้างจาก DB ให้ตรงกับ UI (เพิ่ม _en)
         productData.options = productData.options.map((opt) => ({
           name: opt.option_name,
           name_en: opt.option_name_en,
@@ -248,6 +243,7 @@ const ProductManagementPage = () => {
 
       setCurrentProduct(productData);
       setSelectedFile(null);
+      setImagePreview(productData.image_url);
       setShowModal(true);
     } catch (err) {
       alert("ไม่สามารถโหลดข้อมูลตัวเลือกสินค้าได้");
@@ -271,105 +267,119 @@ const ProductManagementPage = () => {
     }
   };
 
-  if (loading) return <Spinner animation="border" />;
+  if (loading && products.length === 0) return <Spinner animation="border" />;
   if (error) return <Alert variant="danger">{error}</Alert>;
 
   return (
-    <div>
+    <Container fluid className="product-management-page">
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h1>จัดการสินค้า</h1>
+        <h1 className="page-title mb-0">จัดการสินค้า</h1>
         <Button variant="primary" onClick={openModalForAdd}>
           + เพิ่มสินค้าใหม่
         </Button>
       </div>
 
-      <Form onSubmit={handleSearchSubmit} className="mb-4">
-        <Row className="justify-content-end">
-          <Col md={5}>
-            <InputGroup>
-              <Form.Control
-                type="text"
-                placeholder="ค้นหาสินค้า (ชื่อไทย/Eng)..."
-                value={searchTerm}
-                onChange={handleSearchChange}
-              />
-              <Button type="submit" variant="primary">
-                <BsSearch /> ค้นหา
-              </Button>
-            </InputGroup>
-            {submittedSearchTerm && (
-              <div className="mt-2">
-                ผลการค้นหาสำหรับ: "{submittedSearchTerm}"
-                <Button variant="link" size="sm" onClick={clearSearch}>
-                  ล้างการค้นหา
-                </Button>
-              </div>
-            )}
-          </Col>
-        </Row>
-      </Form>
+      <Card className="settings-card shadow-sm">
+        <Card.Body>
+          <Row className="mb-4">
+            <Col md={6}>
+              <Form.Group>
+                <Form.Label>ค้นหาสินค้า</Form.Label>
+                <InputGroup>
+                  <InputGroup.Text>
+                    <BsSearch />
+                  </InputGroup.Text>
+                  <Form.Control
+                    type="text"
+                    placeholder="ค้นหาด้วยชื่อสินค้า (ไทย/Eng)..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                </InputGroup>
+              </Form.Group>
+            </Col>
+          </Row>
 
-      <Table striped bordered hover responsive>
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>รูปภาพ</th>
-            <th>ชื่อสินค้า</th>
-            <th>ราคา</th>
-            <th>ประเภท</th>
-            <th>สถานะแนะนำ</th>
-            <th>สถานะการขาย</th>
-            <th>จัดการ</th>
-          </tr>
-        </thead>
-        <tbody>
-          {products.map((product) => (
-            <tr key={product.product_id}>
-              <td>{product.product_id}</td>
-              <td>
-                <Image
-                  src={product.image_url}
-                  thumbnail
-                  style={{ maxHeight: "50px" }}
-                  onError={(e) => {
-                    e.target.onerror = null;
-                    e.target.src = "https://via.placeholder.com/50";
-                  }}
-                />
-              </td>
-              <td>{product.name}</td>
-              <td>{product.price.toLocaleString()}</td>
-              <td>{product.category_name}</td>
-              <td>
-                <Badge bg={product.recommend_status ? "success" : "secondary"}>
-                  {product.recommend_status ? "แนะนำ" : "ปกติ"}
-                </Badge>
-              </td>
-              <td>
-                <Badge bg={product.sales_status ? "success" : "secondary"}>
-                  {product.sales_status ? "วางขาย" : "ซ่อน"}
-                </Badge>
-              </td>
-              <td>
-                <Button
-                  variant="warning"
-                  size="sm"
-                  onClick={() => openModalForEdit(product)}
-                >
-                  แก้ไข
-                </Button>{" "}
-                <Button
-                  variant="danger"
-                  size="sm"
-                  onClick={() => handleDelete(product.product_id)}
-                >
-                  ลบ
-                </Button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </Table>
+          {loading ? (
+            <div className="text-center">
+              <Spinner animation="border" />
+            </div>
+          ) : (
+            <Table hover responsive className="product-table">
+              <thead>
+                <tr>
+                  <th className="text-center">#</th>
+                  <th className="text-center">รูปภาพ</th>
+                  <th className="text-center">ชื่อสินค้า</th>
+                  <th className="text-center">ราคา</th>
+                  <th className="text-center">ประเภท</th>
+                  <th className="text-center">แนะนำ</th>
+                  <th className="text-center">วางขาย</th>
+                  <th className="text-center">จัดการ</th>
+                </tr>
+              </thead>
+              <tbody>
+                {products.map((product) => (
+                  <tr key={product.product_id}>
+                    <td className="text-center">{product.product_id}</td>
+                    <td className="text-center">
+                      <Image
+                        src={product.image_url}
+                        rounded
+                        className="product-image-cell"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = "https://via.placeholder.com/50";
+                        }}
+                      />
+                    </td>
+                    <td>{product.name}</td>
+                    <td className="text-center">
+                      {product.price.toLocaleString()}
+                    </td>
+                    <td>{product.category_name}</td>
+                    <td className="text-center">
+                      <Badge
+                        bg={product.recommend_status ? "success" : "secondary"}
+                      >
+                        {product.recommend_status ? "แนะนำ" : "ปกติ"}
+                      </Badge>
+                    </td>
+                    <td className="text-center">
+                      <Badge
+                        bg={product.sales_status ? "success" : "secondary"}
+                      >
+                        {product.sales_status ? "วางขาย" : "ซ่อน"}
+                      </Badge>
+                    </td>
+                    <td className="text-center">
+                      <div className="action-buttons">
+                        <Button
+                          variant="warning"
+                          size="sm"
+                          onClick={() => openModalForEdit(product)}
+                          className="me-2"
+                          title="แก้ไข"
+                        >
+                          <BsPencilFill className="text-white" />
+                        </Button>
+                        <Button
+                          variant="danger"
+                          size="sm"
+                          onClick={() => handleDelete(product.product_id)}
+                          title="ลบ"
+                        >
+                          <BsTrashFill />
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          )}
+        </Card.Body>
+      </Card>
 
       <Modal show={showModal} onHide={() => setShowModal(false)} size="lg">
         <Modal.Header closeButton>
@@ -451,26 +461,26 @@ const ProductManagementPage = () => {
                 ))}
               </Form.Select>
             </Form.Group>
+            
             <Form.Group className="mb-3">
               <Form.Label>รูปภาพสินค้า</Form.Label>
-              {isEditMode && currentProduct.image_url && (
-                <div className="mb-2">
-                  <p className="mb-1 small text-muted">รูปภาพปัจจุบัน:</p>
-                  <Image
-                    src={currentProduct.image_url}
-                    thumbnail
-                    style={{ maxHeight: "100px" }}
-                  />
-                </div>
-              )}
-              <Form.Control
-                type="file"
-                name="image"
-                onChange={handleFileChange}
-              />
-              <Form.Text className="text-muted">
-                เลือกไฟล์ใหม่เพื่ออัปเดต หรือเว้นว่างไว้เพื่อใช้รูปเดิม
-              </Form.Text>
+              <div className="product-image-upload-wrapper mx-auto">
+                <Image
+                  src={imagePreview || placeholderImage}
+                  className="product-modal-image-preview"
+                />
+                <label htmlFor="product-image-upload" className="product-image-upload-overlay">
+                  <BsUpload size={30} />
+                  <span>เปลี่ยนรูปภาพ</span>
+                </label>
+                <Form.Control
+                  id="product-image-upload"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  style={{ display: "none" }}
+                />
+              </div>
             </Form.Group>
 
             <hr />
@@ -590,7 +600,7 @@ const ProductManagementPage = () => {
           </Modal.Footer>
         </Form>
       </Modal>
-    </div>
+    </Container>
   );
 };
 

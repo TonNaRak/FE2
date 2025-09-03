@@ -15,6 +15,7 @@ i18n
       order: ["localStorage", "navigator"],
       caches: ["localStorage"],
     },
+
     resources: {
       en: {
         translation: {
@@ -74,13 +75,98 @@ i18n
           fetch_cart_fail: "Error fetching cart data.",
           login_prompt_cart: "Please log in to view your cart.",
 
-          // --- START: Location Page ---
+          // --- Location Page ---
           storefront_alt: "Storefront",
           address_label: "Address",
           phone_label: "Phone",
           email_label: "Email",
           navigate_button: "Navigate",
-          // --- END: Location Page ---
+
+          // --- Product Detail Page ---
+          product_not_found: "Product not found or an error occurred",
+          please_select_option: "Please select an option",
+          please_select: "Please select",
+          added_to_cart_success_title: "Success!",
+          added_to_cart_success_body:
+            'Added "{{productName}}" (x{{quantity}}) to your cart.',
+          add_to_cart_fail_title: "Error",
+          add_to_cart_fail_body:
+            "Failed to add item to cart. Please try again.",
+          quantity_label: "Quantity:",
+          go_to_cart: "Go to Cart",
+          back_button: "Back",
+          buy_now: "Buy Now",
+          add_to_cart_mobile: "Add to Cart",
+          ok: "OK",
+
+          // --- Profile Page ---
+          loading_or_login_prompt: "Loading data or please log in",
+          points: "Points",
+          edit_profile: "Edit Profile",
+          order_history: "Order History",
+          help_center: "Help Center",
+          logout: "Logout",
+
+          // --- Checkout Page ---
+          checkout_title: "Checkout",
+          shipping_info: "Shipping Information",
+          edit: "Edit",
+          recipient_name: "Recipient's Name",
+          phone_number: "Phone Number",
+          address: "Address",
+          save: "Save",
+          cancel: "Cancel",
+          order_summary: "Order Summary",
+          items_list: "Items List",
+          discount: "Discount",
+          total_amount: "Total Amount",
+          confirm_order: "Confirm Order",
+          no_items_in_order: "No items in the order",
+          back_to_cart: "Back to Cart",
+          save_address_first:
+            "Please save your address before placing an order.",
+          fill_shipping_info: "Please complete the shipping information.",
+          save_address_fail: "Failed to save address.",
+          create_order_fail: "Failed to create order.",
+          // --- Payment Confirmation Page ---
+          payment_confirmation_title: "Payment Confirmation",
+          order_number: "Order",
+          amount_due: "Amount Due:",
+          payment_instructions:
+            "Please scan the QR Code below to pay, then attach the receipt to confirm.",
+          qr_code_not_set: "The store has not set up a QR Code for payment.",
+          attach_receipt: "Attach Payment Receipt",
+          confirm_payment_button: "Confirm Payment",
+          upload_receipt_prompt: "Please attach your payment receipt.",
+          upload_success:
+            "Receipt uploaded successfully! The store will verify it shortly.",
+          upload_fail: "Failed to upload receipt. Please try again.",
+          load_order_fail: "Could not load order details.",
+
+          // --- Login & Register Page ---
+          login_title: "Login",
+          username_label: "Username",
+          password_label: "Password",
+          forgot_password: "Forgot password?",
+          login_button: "Login",
+          or_divider: "or",
+          no_account_prompt: "Don't have an account?",
+          create_account_link: "Create one",
+          connect_server_fail: "Could not connect to the server",
+          register_title: "Create New Account",
+          register_button: "Register",
+          already_have_account: "Already have an account?",
+          login_link: "Login",
+          password_required: "Password is required",
+          password_min_length: "Password must be at least 6 characters long",
+          register_success: "Registration successful! Redirecting to login...",
+          register_fail: "Registration failed",
+
+          // --- Landing Page ---
+          skip_button: "Skip →",
+          welcome_title: "Welcome",
+          welcome_subtitle:
+            "Get started by logging in or creating a new account.",
         },
       },
       th: {
@@ -139,13 +225,97 @@ i18n
           fetch_cart_fail: "เกิดข้อผิดพลาดในการดึงข้อมูลตะกร้า",
           login_prompt_cart: "กรุณาเข้าสู่ระบบเพื่อดูตะกร้าสินค้า",
 
-          // --- START: Location Page ---
+          // --- Location Page ---
           storefront_alt: "หน้าร้าน",
           address_label: "ที่อยู่",
           phone_label: "เบอร์โทรศัพท์",
           email_label: "อีเมล",
           navigate_button: "กดเพื่อนำทาง",
-          // --- END: Location Page ---
+
+          // --- Product Detail Page ---
+          product_not_found: "ไม่พบสินค้าหรือเกิดข้อผิดพลาด",
+          please_select_option: "โปรดเลือกตัวเลือก",
+          please_select: "กรุณาเลือก",
+          added_to_cart_success_title: "เพิ่มสินค้าสำเร็จ",
+          added_to_cart_success_body:
+            'เพิ่ม "{{productName}}" จำนวน {{quantity}} ชิ้น ลงตะกร้าเรียบร้อยแล้ว',
+          add_to_cart_fail_title: "เกิดข้อผิดพลาด",
+          add_to_cart_fail_body:
+            "ไม่สามารถเพิ่มสินค้าลงตะกร้าได้ โปรดลองอีกครั้ง",
+          quantity_label: "จำนวน:",
+          go_to_cart: "ไปที่ตะกร้า",
+          back_button: "ย้อนกลับ",
+          buy_now: "ซื้อทันที",
+          add_to_cart_mobile: "เพิ่มลงตะกร้า",
+          ok: "ตกลง",
+
+          // --- Profile Page ---
+          loading_or_login_prompt: "กำลังโหลดข้อมูล หรือ กรุณาเข้าสู่ระบบ",
+          points: "แต้ม",
+          edit_profile: "แก้ไขข้อมูลส่วนตัว",
+          order_history: "ประวัติคำสั่งซื้อ",
+          help_center: "ศูนย์ความช่วยเหลือ",
+          logout: "ออกจากระบบ",
+
+          // --- Checkout Page ---
+          checkout_title: "สรุปคำสั่งซื้อ",
+          shipping_info: "ข้อมูลการจัดส่ง",
+          edit: "แก้ไข",
+          recipient_name: "ชื่อผู้รับ",
+          phone_number: "เบอร์โทรศัพท์",
+          address: "ที่อยู่",
+          save: "บันทึก",
+          cancel: "ยกเลิก",
+          order_summary: "สรุปยอดชำระเงิน",
+          items_list: "รายการสินค้า",
+          discount: "ส่วนลด",
+          total_amount: "ยอดรวมทั้งสิ้น",
+          confirm_order: "ยืนยันคำสั่งซื้อ",
+          no_items_in_order: "ไม่มีสินค้าในตะกร้า",
+          back_to_cart: "กลับไปที่ตะกร้าสินค้า",
+          save_address_first: "กรุณาบันทึกที่อยู่ก่อนทำการสั่งซื้อ",
+          fill_shipping_info: "กรุณากรอกข้อมูลการจัดส่งให้ครบถ้วน",
+          save_address_fail: "ไม่สามารถบันทึกที่อยู่ได้",
+          create_order_fail: "เกิดข้อผิดพลาดในการสร้างคำสั่งซื้อ",
+
+          // --- Payment Confirmation Page ---
+          payment_confirmation_title: "ยืนยันการชำระเงิน",
+          order_number: "ออเดอร์หมายเลข",
+          amount_due: "ยอดชำระ:",
+          payment_instructions:
+            "กรุณาสแกน QR Code ด้านล่างเพื่อชำระเงิน และแนบสลิปเพื่อยืนยัน",
+          qr_code_not_set: "ร้านค้ายังไม่ได้ตั้งค่า QR Code สำหรับชำระเงิน",
+          attach_receipt: "แนบสลิปการชำระเงิน",
+          confirm_payment_button: "ยืนยันการชำระเงิน",
+          upload_receipt_prompt: "กรุณาแนบสลิปการชำระเงิน",
+          upload_success: "อัปโหลดสลิปสำเร็จ! ร้านค้าจะทำการตรวจสอบในเร็วๆ นี้",
+          upload_fail: "เกิดข้อผิดพลาดในการอัปโหลดสลิป",
+          load_order_fail: "ไม่สามารถโหลดข้อมูลออเดอร์ได้",
+
+          // --- START: Login & Register Page ---
+          login_title: "เข้าสู่ระบบ",
+          username_label: "ชื่อผู้ใช้",
+          password_label: "รหัสผ่าน",
+          forgot_password: "ลืมรหัสผ่าน?",
+          login_button: "เข้าสู่ระบบ",
+          or_divider: "หรือ",
+          no_account_prompt: "ยังไม่มีบัญชีใช่ไหม?",
+          create_account_link: "สร้างบัญชี",
+          connect_server_fail: "ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้",
+          register_title: "สร้างบัญชีใหม่",
+          register_button: "ลงทะเบียน",
+          already_have_account: "มีบัญชีอยู่แล้ว?",
+          login_link: "เข้าสู่ระบบ",
+          password_required: "กรุณากรอกรหัสผ่าน",
+          password_min_length: "รหัสผ่านต้องมีความยาวอย่างน้อย 6 ตัวอักษร",
+          register_success: "ลงทะเบียนสำเร็จ! กำลังนำคุณไปยังหน้าล็อกอิน...",
+          register_fail: "การลงทะเบียนล้มเหลว",
+
+          // --- Landing Page ---
+          skip_button: "ข้าม →",
+          welcome_title: "ยินดีต้อนรับ",
+          welcome_subtitle:
+            "เริ่มต้นใช้งานโดยการเข้าสู่ระบบ หรือสร้างบัญชีใหม่",
         },
       },
     },

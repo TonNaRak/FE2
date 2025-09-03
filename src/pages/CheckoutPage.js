@@ -15,11 +15,13 @@ import {
 import axios from "axios";
 import "./CheckoutPage.css";
 import { FaEdit } from "react-icons/fa";
+import { useTranslation } from "react-i18next";
 
 const CheckoutPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, token, refreshUserData } = useAuth();
+  const { t, i18n } = useTranslation();
 
   // 1. ดึง isBuyNow มาจาก state ที่ส่งมา
   const { items, subtotal, isBuyNow } = location.state || {
@@ -51,8 +53,13 @@ const CheckoutPage = () => {
       };
       setShippingInfo(initialInfo);
       setOriginalShippingInfo(initialInfo);
+
+      // ถ้าไม่มีที่อยู่ ให้เปิดโหมดแก้ไข
       if (!user.address) {
         setIsEditingAddress(true);
+      } else {
+        // แต่ถ้ามีที่อยู่แล้ว ต้องมั่นใจว่าโหมดแก้ไขถูกปิด
+        setIsEditingAddress(false);
       }
     }
   }, [user]);
@@ -60,9 +67,9 @@ const CheckoutPage = () => {
   if (items.length === 0) {
     return (
       <Container className="text-center mt-5">
-        <Alert variant="warning">ไม่พบรายการสินค้าในคำสั่งซื้อ</Alert>
+        <Alert variant="warning">{t("no_items_in_order")}</Alert>
         <Button as={Link} to="/cart">
-          กลับไปที่ตะกร้าสินค้า
+          {t("back_to_shop")}
         </Button>
       </Container>
     );
@@ -142,7 +149,7 @@ const CheckoutPage = () => {
   return (
     <div className="checkout-page-bg">
       <Container className="checkout-container my-5">
-        <h1 className="mb-4 text-center">สรุปคำสั่งซื้อ</h1>
+        <h1 className="mb-4 text-center">{t("checkout_title")}</h1>
         <Row>
           <Col lg={8}>
             <Card className="shadow-sm mb-4">
@@ -150,14 +157,14 @@ const CheckoutPage = () => {
                 as="h5"
                 className="d-flex justify-content-between align-items-center"
               >
-                ที่อยู่ในการจัดส่ง
+                {t("shipping_info")}
                 {!isEditingAddress && (
                   <Button
                     variant="outline-primary"
                     size="sm"
                     onClick={handleEditAddress}
                   >
-                    <FaEdit className="me-1" /> แก้ไข
+                    <FaEdit className="me-1" /> {t("edit")}
                   </Button>
                 )}
               </Card.Header>
@@ -165,7 +172,7 @@ const CheckoutPage = () => {
                 {isEditingAddress ? (
                   <Form>
                     <Form.Group className="mb-2">
-                      <Form.Label>ชื่อผู้รับ</Form.Label>
+                      <Form.Label>{t("recipient_name")}</Form.Label>
                       <Form.Control
                         type="text"
                         name="name"
@@ -174,7 +181,7 @@ const CheckoutPage = () => {
                       />
                     </Form.Group>
                     <Form.Group className="mb-2">
-                      <Form.Label>เบอร์โทรศัพท์</Form.Label>
+                      <Form.Label>{t("phone_number")}</Form.Label>
                       <Form.Control
                         type="text"
                         name="phone"
@@ -183,7 +190,7 @@ const CheckoutPage = () => {
                       />
                     </Form.Group>
                     <Form.Group className="mb-3">
-                      <Form.Label>ที่อยู่</Form.Label>
+                      <Form.Label>{t("address")}</Form.Label>
                       <Form.Control
                         as="textarea"
                         rows={3}
@@ -199,27 +206,28 @@ const CheckoutPage = () => {
                         onClick={handleCancelEdit}
                         className="me-2"
                       >
-                        ยกเลิก
+                        {t("cancel")}
                       </Button>
                       <Button
                         variant="primary"
                         size="sm"
                         onClick={handleSaveAddress}
                       >
-                        บันทึกที่อยู่
+                        {t("save")}
                       </Button>
                     </div>
                   </Form>
                 ) : (
                   <div>
                     <p>
-                      <strong>ผู้รับ:</strong> {shippingInfo.name}
+                      <strong>{t("recipient_name")}:</strong>{" "}
+                      {shippingInfo.name}
                     </p>
                     <p>
-                      <strong>ที่อยู่:</strong> {shippingInfo.address}
+                      <strong>{t("phone_number")}:</strong> {shippingInfo.phone}
                     </p>
                     <p>
-                      <strong>เบอร์โทรศัพท์:</strong> {shippingInfo.phone}
+                      <strong>{t("address")}:</strong> {shippingInfo.address}
                     </p>
                   </div>
                 )}
@@ -227,7 +235,9 @@ const CheckoutPage = () => {
             </Card>
 
             <Card className="shadow-sm">
-              <Card.Header as="h5">รายการสินค้า ({items.length})</Card.Header>
+              <Card.Header as="h5">
+                {t("items_list")} ({items.length})
+              </Card.Header>
               <ListGroup variant="flush">
                 {items.map((item) => (
                   <ListGroup.Item
@@ -251,7 +261,11 @@ const CheckoutPage = () => {
                       />
                       <div>
                         <p className="mb-0">
-                          <strong>{item.name}</strong>
+                          <strong>
+                            {i18n.language === "en" && item.name_en
+                              ? item.name_en
+                              : item.name}
+                          </strong>
                         </p>
                         {item.selected_options &&
                           typeof item.selected_options === "object" && (
@@ -266,12 +280,13 @@ const CheckoutPage = () => {
                             </div>
                           )}
                         <p className="text-muted small mb-0">
-                          จำนวน: {item.quantity}
+                          {t("quantity")} {item.quantity}
                         </p>
                       </div>
                     </div>
                     <span>
-                      {(item.price * item.quantity).toLocaleString()} บาท
+                      {(item.price * item.quantity).toLocaleString()}{" "}
+                      {t("baht")}
                     </span>
                   </ListGroup.Item>
                 ))}
@@ -282,24 +297,24 @@ const CheckoutPage = () => {
           <Col lg={4}>
             <Card className="shadow-sm summary-card">
               <Card.Body>
-                <Card.Title as="h5">สรุปยอดชำระเงิน</Card.Title>
+                <Card.Title as="h5">{t("order_summary")}</Card.Title>
                 <hr />
                 <div className="d-flex justify-content-between">
-                  <span>ราคารวม</span>
-                  <span>{subtotal.toLocaleString()} บาท</span>
+                  <span>{t("subtotal")}</span>
+                  <span>{subtotal.toLocaleString()} {t("baht")}</span>
                 </div>
                 <div className="d-flex justify-content-between text-danger">
-                  <span>ส่วนลด</span>
-                  <span>- {0} บาท</span>
+                  <span>{t("discount")}</span>
+                  <span>- {0} {t("baht")}</span>
                 </div>
                 <div className="d-flex justify-content-between">
-                  <span>ค่าจัดส่ง</span>
-                  <span>ฟรี</span>
+                  <span>{t("shipping")}</span>
+                  <span>{t("free")}</span>
                 </div>
                 <hr />
                 <div className="d-flex justify-content-between h5">
-                  <strong>ยอดรวมทั้งสิ้น</strong>
-                  <strong>{total.toLocaleString()} บาท</strong>
+                  <strong>{t("total_amount")}</strong>
+                  <strong>{total.toLocaleString()} {t("baht")}</strong>
                 </div>
                 <div className="d-grid mt-4">
                   <Button
@@ -307,7 +322,7 @@ const CheckoutPage = () => {
                     size="lg"
                     onClick={handleConfirmOrder}
                   >
-                    ยืนยันคำสั่งซื้อ
+                    {t("confirm_order")}
                   </Button>
                 </div>
               </Card.Body>

@@ -1,32 +1,33 @@
 /* src/pages/LocationPage.css (ฉบับแก้ไข) */
 
 .location-page-bg {
-    background-color: #f8f9fa;
-    min-height: 25vh;
-    padding-bottom: 80px;
-    display: flex;
-    align-items: center;
+  background-color: #f8f9fa;
+  min-height: 25vh;
+  padding-bottom: 80px;
+  display: flex;
+  align-items: center;
 }
 
 .location-container .card {
-    border-radius: .75rem;
-    border: none;
+  border-radius: 0.75rem;
+  border: none;
 }
 
 .store-image {
-    width: 100%;
-    height: 350px;
-    object-fit: cover;
+  width: 100%;
+  /* height: 350px; */
+  /* object-fit: cover; */
+  object-fit: contain;
 }
 
 .store-name {
-    font-weight: 700;
-    color: #007bff;
-    margin-bottom: 1.5rem;
+  font-weight: 700;
+  color: #007bff;
+  margin-bottom: 1.5rem;
 }
 
 .social-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
 }

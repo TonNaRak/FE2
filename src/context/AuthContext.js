@@ -1,6 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
-import axios from "axios"; // 1. Import axios
-
+import axios from "axios";
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
@@ -10,7 +9,6 @@ export const AuthProvider = ({ children }) => {
   );
   const [loading, setLoading] = useState(true);
 
-  // 2. ย้าย Logic ของ Interceptor เข้ามาไว้ใน useEffect
   useEffect(() => {
     // Interceptor สำหรับใส่ Token ในทุก Request
     const requestInterceptor = axios.interceptors.request.use(
@@ -29,7 +27,7 @@ export const AuthProvider = ({ children }) => {
       (response) => response,
       async (error) => {
         const originalRequest = error.config;
-        // ตรวจสอบว่าเป็น lỗi 401 และยังไม่ได้ลอง retry
+        // ตรวจสอบว่าเป็น 401 และยังไม่ได้ลอง retry
         if (error.response?.status === 401 && !originalRequest._retry) {
           originalRequest._retry = true;
           try {

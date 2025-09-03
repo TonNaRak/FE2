@@ -37,8 +37,8 @@
 .skip-button {
   position: absolute;
   top: 20px;
-  right: 25px;
-
+  /* right: 25px; */
+  left: 25px;
   background-color: rgba(0, 0, 0, 0.05);
   color: #555;
   padding: 8px 16px;
@@ -51,4 +51,15 @@
 .skip-button:hover {
   background-color: rgba(0, 0, 0, 0.1);
   color: #000;
+}
+
+/* .landing-lang-switcher {
+  margin-top: 2.5rem;
+} */
+
+.landing-language-switcher-top {
+  position: absolute;
+  top: 20px;
+  right: 25px;
+  z-index: 10;
 }

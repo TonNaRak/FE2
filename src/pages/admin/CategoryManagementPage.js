@@ -14,7 +14,7 @@ import {
 } from "react-bootstrap";
 import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
-import { BsUpload, BsPencilFill, BsTrashFill } from "react-icons/bs"; // <-- 1. เพิ่มไอคอนใหม่
+import { BsUpload, BsPencilFill, BsTrashFill } from "react-icons/bs";
 import "./CategoryManagementPage.css";
 import placeholderImage from "../../images/placeholder.png";
 
@@ -130,7 +130,7 @@ const CategoryManagementPage = () => {
       });
       setShowNotificationModal(true);
     } finally {
-      handleCloseConfirmDelete(); // ปิด Modal ยืนยันเสมอ
+      handleCloseConfirmDelete();
     }
   };
 
@@ -202,7 +202,7 @@ const CategoryManagementPage = () => {
               {categories.map((cat) => (
                 <tr key={cat.category_id}>
                   <td>{cat.category_id}</td>
-                  <td>
+                  <td className="text-center">
                     <Image
                       src={cat.icon_url || placeholderImage}
                       rounded
@@ -213,16 +213,16 @@ const CategoryManagementPage = () => {
                   <td>{cat.category_name_en}</td>
                   <td className="text-center">
                     <Button
-                      variant="outline-warning"
+                      variant="warning"
                       size="sm"
                       onClick={() => openModalForEdit(cat)}
-                      className="me-2"
+                      className="me-2 text-white"
                       title="แก้ไข"
                     >
                       <BsPencilFill />
                     </Button>
                     <Button
-                      variant="outline-danger"
+                      variant="danger"
                       size="sm"
                       onClick={() => handleShowConfirmDelete(cat.category_id)}
                       title="ลบ"

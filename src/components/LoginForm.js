@@ -4,6 +4,8 @@ import { Form, Button, Container, Alert } from "react-bootstrap";
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
 import logoImage from "../images/Logo.jpg";
+import { useTranslation } from "react-i18next";
+import LanguageSwitcher from "./LanguageSwitcher";
 
 const LoginPage = () => {
   const [username, setUsername] = useState("");
@@ -11,23 +13,25 @@ const LoginPage = () => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
   const { login } = useAuth();
+  const { t } = useTranslation();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError("");
 
     try {
-      const response = await axios.post("https://api.souvenir-from-lagoon-thailand.com/api/login", {
-        identifier: username,
-        password: password,
-      });
+      const response = await axios.post(
+        "https://api.souvenir-from-lagoon-thailand.com/api/login",
+        {
+          identifier: username,
+          password: password,
+        }
+      );
 
       const loggedInUser = response.data.user;
-      
-      // --- START: จุดที่แก้ไข ---
+
       const { accessToken, refreshToken } = response.data;
       login(loggedInUser, accessToken, refreshToken);
-      // --- END: จุดที่แก้ไข ---
 
       if (loggedInUser.role === "admin" || loggedInUser.role === "employee") {
         navigate("/admin/dashboard");
@@ -44,12 +48,16 @@ const LoginPage = () => {
 
   return (
     <div className="login-page-container">
+      {/* <div className="login-language-switcher">
+        <LanguageSwitcher />
+      </div> */}
+
       <div className="login-form-wrapper">
         <div className="text-center">
           <img src={logoImage} alt="Company Logo" className="login-logo" />
         </div>
 
-        <h2 className="text-center login-title">เข้าสู่ระบบ</h2>
+        <h2 className="text-center login-title">{t("login_title")}</h2>
 
         {error && (
           <Alert variant="danger" className="text-center">
@@ -59,7 +67,7 @@ const LoginPage = () => {
 
         <Form noValidate onSubmit={handleSubmit}>
           <Form.Group className="minimal-input-group " controlId="formUsername">
-            <Form.Label>ชื่อผู้ใช้</Form.Label>
+            <Form.Label>{t("username_label")}</Form.Label>
             <Form.Control
               type="text"
               value={username}
@@ -70,7 +78,7 @@ const LoginPage = () => {
           </Form.Group>
 
           <Form.Group className="minimal-input-group" controlId="formPassword">
-            <Form.Label>รหัสผ่าน</Form.Label>
+            <Form.Label>{t("password_label")}</Form.Label>
             <Form.Control
               type="password"
               value={password}
@@ -82,26 +90,26 @@ const LoginPage = () => {
 
           <div className="text-end mb-4">
             <a href="#forgot" className="text-link">
-              ลืมรหัสผ่าน?
+              {t("forgot_password")}
             </a>
           </div>
 
           <div className="d-grid">
             <Button variant="primary" type="submit" size="lg">
-              เข้าสู่ระบบ
+              {t("login_button")}
             </Button>
           </div>
         </Form>
         <div className="divider-container my-4">
           <hr className="divider-line" />
-          <span className="divider-text">หรือ</span>
+          <span className="divider-text">{t("or_divider")}</span>
           <hr className="divider-line" />
         </div>
         <div className="mt-5 text-center">
           <p className="bottom-text">
-            ยังไม่มีบัญชีใช่ไหม?{" "}
+            {t("no_account_prompt")}{" "}
             <Link to="/register" className="text-link fw-bold">
-              สร้างบัญชี
+              {t("create_account_link")}
             </Link>
           </p>
         </div>

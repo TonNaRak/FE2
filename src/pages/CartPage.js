@@ -152,7 +152,7 @@ const CartPage = () => {
     <Container className="cart-page-container my-5">
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h1>{t("cart_title")}</h1>
-        <LanguageSwitcher />
+        {/* <LanguageSwitcher /> */}
       </div>
 
       {error && <Alert variant="danger">{error}</Alert>}
@@ -179,7 +179,6 @@ const CartPage = () => {
                       />
                     </Col>
                     <Col xs={9} md={4}>
-                      {/* --- จุดที่แก้ไข --- */}
                       <h5>
                         {i18n.language === "en" && item.name_en
                           ? item.name_en
@@ -268,7 +267,6 @@ const CartPage = () => {
                       </Col>
                       <Col xs={9} md={4}>
                         <h5 className="text-muted">
-                          {/* --- จุดที่แก้ไข --- */}
                           <s>
                             {i18n.language === "en" && item.name_en
                               ? item.name_en

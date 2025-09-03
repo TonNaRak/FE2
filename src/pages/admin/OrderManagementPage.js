@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
+  Container,
   Table,
   Button,
   Spinner,
@@ -10,21 +11,20 @@ import {
   Form,
   Row,
   Col,
+  Card,
 } from "react-bootstrap";
 import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
+import "./OrderManagementPage.css";
 
 const OrderManagementPage = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
-  const [statusFilter, setStatusFilter] = useState("all"); // ค่าเริ่มต้นคือ 'แสดงทั้งหมด'
-  const [sortBy, setSortBy] = useState("desc"); // ค่าเริ่มต้นคือเรียงจาก 'ใหม่ไปเก่า'
-
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [sortBy, setSortBy] = useState("desc");
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
-
   const [showReceiptModal, setShowReceiptModal] = useState(false);
   const [selectedReceipt, setSelectedReceipt] = useState("");
 
@@ -90,7 +90,7 @@ const OrderManagementPage = () => {
 
   const getStatusBadge = (status) => {
     const styles = {
-      pending_payment: { bg: "secondary", text: "รอชำระเงิน" }, // เพิ่มสถานะนี้
+      pending_payment: { bg: "secondary", text: "รอชำระเงิน" },
       pending_verification: { bg: "warning", text: "รอตรวจสอบ" },
       processing: { bg: "info", text: "กำลังจัดเตรียม" },
       shipped: { bg: "primary", text: "จัดส่งแล้ว" },
@@ -104,94 +104,104 @@ const OrderManagementPage = () => {
   if (error) return <Alert variant="danger">{error}</Alert>;
 
   return (
-    <div>
-      <h1>จัดการคำสั่งซื้อ</h1>
+    <Container fluid className="order-management-page">
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h1 className="page-title mb-0">จัดการคำสั่งซื้อ</h1>
+      </div>
 
-      <Row className="mb-4 align-items-center">
-        <Col md={4}>
-          <Form.Group>
-            <Form.Label className="fw-bold">กรองตามสถานะ</Form.Label>
-            <Form.Select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-            >
-              <option value="all">แสดงทั้งหมด</option>
-              <option value="pending_payment">รอชำระเงิน</option>
-              <option value="pending_verification">รอตรวจสอบ</option>
-              <option value="processing">กำลังจัดเตรียม</option>
-              <option value="shipped">จัดส่งแล้ว</option>
-              <option value="completed">เสร็จสมบูรณ์</option>
-              <option value="cancelled">ยกเลิก</option>
-            </Form.Select>
-          </Form.Group>
-        </Col>
-        <Col md={8} className="d-flex justify-content-end align-items-end">
-          <div>
-            <Form.Label className="fw-bold">เรียงลำดับ</Form.Label>
-            <div>
-              <Button
-                variant={sortBy === "desc" ? "primary" : "outline-secondary"}
-                onClick={() => setSortBy("desc")}
-                className="me-2"
-              >
-                ใหม่ไปเก่า
-              </Button>
-              <Button
-                variant={sortBy === "asc" ? "primary" : "outline-secondary"}
-                onClick={() => setSortBy("asc")}
-              >
-                เก่าไปใหม่
-              </Button>
-            </div>
-          </div>
-        </Col>
-      </Row>
-
-      <Table striped bordered hover responsive>
-        <thead>
-          <tr>
-            <th>#ID</th>
-            <th>ลูกค้า</th>
-            <th>วันที่สั่ง</th>
-            <th>ยอดรวม</th>
-            <th>สถานะ</th>
-            <th>จัดการ</th>
-          </tr>
-        </thead>
-        <tbody>
-          {orders.map((order) => {
-            const badge = getStatusBadge(order.status);
-            return (
-              <tr key={order.order_id}>
-                <td>{order.order_id}</td>
-                <td>{order.username}</td>
-                <td>
-                  {new Date(order.order_date).toLocaleDateString("th-TH", {
-                    year: "numeric",
-                    month: "short",
-                    day: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </td>
-                <td>{parseFloat(order.total_price).toLocaleString()}</td>
-                <td>
-                  <Badge bg={badge.bg}>{badge.text}</Badge>
-                </td>
-                <td>
+      <Card className="settings-card shadow-sm">
+        <Card.Body>
+          <Row className="mb-4 align-items-end">
+            <Col md={4}>
+              <Form.Group>
+                <Form.Label>กรองตามสถานะ:</Form.Label>
+                <Form.Select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                >
+                  <option value="all">แสดงทั้งหมด</option>
+                  <option value="pending_payment">รอชำระเงิน</option>
+                  <option value="pending_verification">รอตรวจสอบ</option>
+                  <option value="processing">กำลังจัดเตรียม</option>
+                  <option value="shipped">จัดส่งแล้ว</option>
+                  <option value="completed">เสร็จสมบูรณ์</option>
+                  <option value="cancelled">ยกเลิก</option>
+                </Form.Select>
+              </Form.Group>
+            </Col>
+            <Col md={8} className="d-flex justify-content-end">
+              <Form.Group>
+                <Form.Label>เรียงลำดับ:</Form.Label>
+                <div>
                   <Button
-                    variant="info"
-                    size="sm"
-                    onClick={() => viewOrderDetails(order.order_id)}
+                    variant={
+                      sortBy === "desc" ? "primary" : "outline-secondary"
+                    }
+                    onClick={() => setSortBy("desc")}
+                    className="me-2"
                   >
-                    ดูรายละเอียด
+                    ใหม่ไปเก่า
                   </Button>
-                </td>
+                  <Button
+                    variant={sortBy === "asc" ? "primary" : "outline-secondary"}
+                    onClick={() => setSortBy("asc")}
+                  >
+                    เก่าไปใหม่
+                  </Button>
+                </div>
+              </Form.Group>
+            </Col>
+          </Row>
+
+          <Table hover responsive className="order-table">
+            <thead>
+              <tr>
+                <th className="text-center">ID</th>
+                <th className="text-center">ลูกค้า</th>
+                <th className="text-center">วันที่สั่ง</th>
+                <th className="text-center">ยอดรวม</th>
+                <th className="text-center">สถานะ</th>
+                <th className="text-center">จัดการ</th>
               </tr>
-            );
-          })}
-        </tbody>
-      </Table>
+            </thead>
+            <tbody>
+              {orders.map((order) => {
+                const badge = getStatusBadge(order.status);
+                return (
+                  <tr key={order.order_id}>
+                    <td className="text-center">{order.order_id}</td>
+                    <td>{order.username}</td>
+                    <td>
+                      {new Date(order.order_date).toLocaleDateString("th-TH", {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </td>
+                    <td className="text-center">
+                      {parseFloat(order.total_price).toLocaleString()}
+                    </td>
+                    <td className="text-center">
+                      <Badge bg={badge.bg}>{badge.text}</Badge>
+                    </td>
+                    <td className="text-center">
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        onClick={() => viewOrderDetails(order.order_id)}
+                      >
+                        ดูรายละเอียด
+                      </Button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </Table>
+        </Card.Body>
+      </Card>
 
       {/* Modal for viewing receipt */}
       <Modal
@@ -251,7 +261,6 @@ const OrderManagementPage = () => {
                   {selectedOrder.items.map((item) => (
                     <tr key={item.order_item_id}>
                       <td>
-                        {/* --- START: จุดที่แก้ไข --- */}
                         {item.product_name}
                         {item.selected_options &&
                           typeof item.selected_options === "object" && (
@@ -270,10 +279,8 @@ const OrderManagementPage = () => {
                               )}
                             </div>
                           )}
-                        {/* --- END: จุดที่แก้ไข --- */}
                       </td>
                       <td>{parseFloat(item.current_price).toLocaleString()}</td>
-                      {/* <td>{item.current_price.toLocaleString()}</td> */}
                       <td>{item.quantity}</td>
                       <td>
                         {(item.current_price * item.quantity).toLocaleString()}
@@ -322,7 +329,7 @@ const OrderManagementPage = () => {
             )}
             {(selectedOrder?.status === "pending_verification" ||
               selectedOrder?.status === "processing" ||
-              selectedOrder?.status === "pending_payment") && ( // เพิ่มเงื่อนไขให้ยกเลิกได้แม้ยังไม่จ่าย
+              selectedOrder?.status === "pending_payment") && (
               <Button
                 variant="danger"
                 className="ms-2"
@@ -339,7 +346,7 @@ const OrderManagementPage = () => {
           </Button>
         </Modal.Footer>
       </Modal>
-    </div>
+    </Container>
   );
 };
 

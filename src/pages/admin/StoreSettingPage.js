@@ -29,9 +29,9 @@ import placeholderImage from "../../images/placeholder.png";
 const StoreSettingPage = () => {
   const [storeInfo, setStoreInfo] = useState({
     name: "",
-    name_en: "", // เพิ่ม name_en
+    name_en: "",
     address: "",
-    address_en: "", // เพิ่ม address_en
+    address_en: "",
     phone: "",
     email: "",
     image_url: "",
@@ -60,13 +60,11 @@ const StoreSettingPage = () => {
     const fetchStoreInfo = async () => {
       try {
         setLoading(true);
-        // API Endpoint เดิม ไม่ต้องแก้ไข เพราะ Backend ส่งข้อมูลมาครบแล้ว
         const response = await axios.get(
           "https://api.souvenir-from-lagoon-thailand.com/api/store-info",
           API_CONFIG
         );
         if (response.data) {
-          // ใช้ spread operator เพื่อให้ state รับค่าใหม่ได้โดยไม่ต้องแก้เยอะ
           setStoreInfo((prev) => ({ ...prev, ...response.data }));
           setImagePreview(response.data.image_url);
           setQrCodePreview(response.data.qr_code_url);
@@ -117,11 +115,13 @@ const StoreSettingPage = () => {
     }
     formData.append("existing_image_url", storeInfo.image_url || "");
 
-    // Logic สำหรับ QR Code (แก้ไขให้ส่งข้อมูลไปพร้อมกัน)
+    // --- START: จุดที่แก้ไข ---
     if (qrCodeFile) {
-      formData.append("qr_code_file", qrCodeFile); // เปลี่ยนชื่อ key เพื่อไม่ให้ซ้ำกับ field ใน DB
+      formData.append("qr_code_file", qrCodeFile);
     }
+    // ส่ง URL ของ QR Code เดิมกลับไปด้วยเสมอ
     formData.append("existing_qr_code_url", storeInfo.qr_code_url || "");
+    // --- END: จุดที่แก้ไข ---
 
     try {
       await axios.put(
@@ -168,9 +168,7 @@ const StoreSettingPage = () => {
                       <Form.Label>โลโก้ / รูปภาพร้านค้า</Form.Label>
                       <div className="image-upload-wrapper">
                         <Image
-                          src={
-                            imagePreview || placeholderImage
-                          }
+                          src={imagePreview || placeholderImage}
                           fluid
                           rounded
                           className="store-image-preview"
@@ -193,7 +191,6 @@ const StoreSettingPage = () => {
                     </Form.Group>
                   </Col>
                   <Col md={7}>
-                    {/* --- จุดที่แก้ไข: เพิ่มฟอร์มชื่อร้าน (ไทย/อังกฤษ) --- */}
                     <Form.Group className="mb-3">
                       <Form.Label>ชื่อร้านค้า (ไทย)</Form.Label>
                       <InputGroup>
@@ -256,7 +253,6 @@ const StoreSettingPage = () => {
                     </Form.Group>
                   </Col>
                 </Row>
-                {/* --- จุดที่แก้ไข: เพิ่มฟอร์มที่อยู่ (ไทย/อังกฤษ) --- */}
                 <Form.Group className="mb-3">
                   <Form.Label>ที่อยู่ร้านค้า (ไทย)</Form.Label>
                   <InputGroup>
@@ -347,7 +343,7 @@ const StoreSettingPage = () => {
               <Card.Body className="text-center">
                 <div className="qr-upload-wrapper">
                   <Image
-                    src={qrCodePreview || placeholderImage }
+                    src={qrCodePreview || placeholderImage}
                     fluid
                     rounded
                     className="qr-image-preview"

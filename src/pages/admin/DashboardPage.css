@@ -4,14 +4,14 @@
 }
 
 .coming-soon-title {
-  font-size: 4.5rem; /* ทำให้ตัวอักษรใหญ่มาก */
+  font-size: 4.5rem;
   font-weight: 700;
-  color: #ced4da; /* สีเทาอ่อน */
-  text-transform: uppercase; /* ทำให้เป็นตัวพิมพ์ใหญ่ทั้งหมด */
+  color: #ced4da;
+  text-transform: uppercase;
   letter-spacing: 2px;
 }
 
 .coming-soon-subtitle {
   font-size: 1.25rem;
-  color: #6c757d; /* สีเทาเข้ม */
+  color: #6c757d;
 }

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Container } from 'react-bootstrap';
-import './DashboardPage.css'; // เพิ่มการ import ไฟล์ CSS ใหม่
+import './DashboardPage.css';
 
 const DashboardPage = () => {
   return (
