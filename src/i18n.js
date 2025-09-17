@@ -151,7 +151,7 @@ i18n
 
           // --- Login & Register Page ---
           login_title: "Login",
-          username_label: "Username",
+          username_label: "Username or Email",
           password_label: "Password",
           forgot_password: "Forgot password?",
           login_button: "Login",
@@ -306,7 +306,7 @@ i18n
 
           // --- START: Login & Register Page ---
           login_title: "เข้าสู่ระบบ",
-          username_label: "ชื่อผู้ใช้",
+          username_label: "ชื่อผู้ใช้ หรืออีเมล",
           password_label: "รหัสผ่าน",
           forgot_password: "ลืมรหัสผ่าน?",
           login_button: "เข้าสู่ระบบ",

@@ -157,7 +157,24 @@ const OrderHistoryPage = () => {
                   </ListGroup>
                   <hr />
                   <div className="text-end">
-                    <h4>ยอดรวม: {order.total_price.toLocaleString()} บาท</h4>
+                    {/* --- [จุดแก้ไข] เพิ่มการแสดงผล subtotal และ discount --- */}
+                    {order.discount_amount > 0 && (
+                      <>
+                        <p className="mb-1">
+                          ราคารวม: {parseFloat(order.subtotal).toLocaleString()}{" "}
+                          บาท
+                        </p>
+                        <p className="mb-1 text-danger">
+                          ส่วนลด: -
+                          {parseFloat(order.discount_amount).toLocaleString()}{" "}
+                          บาท
+                        </p>
+                      </>
+                    )}
+                    <h4>
+                      ยอดสุทธิ: {parseFloat(order.total_price).toLocaleString()}{" "}
+                      บาท
+                    </h4>
 
                     {order.status === "pending_payment" && (
                       <Button

@@ -1,0 +1,119 @@
+.register-page-container {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  background-color: #fff;
+}
+
+.register-left-panel {
+  display: none;
+}
+
+.register-right-panel {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* --- [จุดแก้ไข] ปรับ Padding แนวตั้ง --- */
+  padding: 20px; /* ลด Padding ลงเล็กน้อย */
+}
+
+.register-form-wrapper {
+  max-width: 450px;
+  width: 100%;
+  animation: fadeIn 1s ease-in-out;
+}
+
+.register-logo {
+  max-width: 120px;
+}
+
+.register-title {
+  font-weight: 700;
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+  color: #2c3e50;
+}
+
+.form-step {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.form-control,
+.form-control:focus {
+  border-radius: 8px !important;
+  padding: 0.75rem 1rem !important;
+  box-shadow: none !important;
+  border: 1px solid #ced4da;
+}
+
+.form-control[type="password"] {
+  padding-right: 50px !important;
+}
+
+.password-toggle-icon {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #6c757d;
+}
+
+.d-grid .btn,
+.d-flex .btn {
+  padding: 0.75rem;
+  border-radius: 50px;
+  font-weight: 600;
+}
+
+.text-link {
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.bottom-text {
+  color: #6c757d;
+}
+
+@media (min-width: 768px) {
+  .register-page-container {
+    flex-direction: row;
+  }
+  .register-left-panel {
+    display: flex;
+    width: 55%;
+    height: 100vh;
+    background-image: url("../images/pic.jpeg");
+    background-size: cover;
+    background-position: center;
+    position: relative;
+  }
+  .register-left-panel::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.3);
+  }
+  .register-right-panel {
+    width: 45%;
+    height: 100vh;
+    /* --- [จุดแก้ไข] เอา overflow ออก --- */
+    /* overflow-y: auto; */
+    background: radial-gradient(circle at 100% 0%, #f0f8ff, #ffffff 40%);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

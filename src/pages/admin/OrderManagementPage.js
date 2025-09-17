@@ -16,6 +16,7 @@ import {
 import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
 import "./OrderManagementPage.css";
+import logo from "../../images/Logo.jpg";
 
 const OrderManagementPage = () => {
   const [orders, setOrders] = useState([]);
@@ -32,6 +33,263 @@ const OrderManagementPage = () => {
 
   const { token } = useAuth();
   const API_CONFIG = { headers: { Authorization: `Bearer ${token}` } };
+
+  // --- [จุดแก้ไข] อัปเดต Layout ของใบเสร็จทั้งหมด ---
+  const handleGenerateReceipt = (order) => {
+    const subtotal = order.subtotal || 0;
+    const discount = order.discount_amount || 0;
+    const total = order.total_price;
+    const pointsEarned = order.user_id ? Math.floor(total / 10) : 0;
+    const paymentMethodText =
+      order.payment_method === "in_store" ? "ชำระเงินหน้าร้าน" : "โอนเงิน";
+
+    const receiptWindow = window.open("", "_blank");
+    receiptWindow.document.write(`
+      <html>
+        <head>
+          <title>ใบเสร็จ #${order.order_id}</title>
+          <style>
+            body { 
+              font-family: 'Sarabun', sans-serif; 
+              margin: 20px; 
+              color: #212529; /* Darker text for readability */
+              font-size: 14px;
+            }
+            .receipt-container { 
+              max-width: 800px; 
+              margin: auto; 
+              border: 1px solid #dee2e6; /* Lighter border */
+              padding: 25px; 
+              border-radius: 8px;
+            }
+            
+            /* Header Styles */
+            .receipt-header { 
+              display: flex; 
+              justify-content: space-between; 
+              align-items: center; 
+              margin-bottom: 25px; 
+              padding-bottom: 15px;
+              border-bottom: 2px solid #000;
+            }
+            .header-left { 
+              display: flex; 
+              align-items: center; 
+            }
+            .header-left img { 
+              max-width: 70px; /* Slightly smaller logo */
+              margin-right: 15px; 
+            }
+            .header-left p { 
+              margin: 0; 
+              font-size: 1.1em; /* Adjusted font size */
+              font-weight: 600; /* Semi-bold */
+              line-height: 1.4;
+            }
+            .header-right h1 { 
+              margin: 0; 
+              font-size: 1.6em; /* Adjusted font size */
+              font-weight: 700; /* Bold */
+            }
+
+            /* Details Styles */
+            .details-section { 
+              margin-bottom: 25px; 
+              border-bottom: 1px solid #eee; 
+              padding-bottom: 15px;
+            }
+            .details-section p { 
+              margin: 4px 0; 
+              line-height: 1.6;
+            }
+            
+            h5 { 
+              border-bottom: 1px solid #dee2e6; 
+              padding-bottom: 8px; 
+              margin-top: 25px; 
+              margin-bottom: 15px;
+              font-size: 1.1em;
+              font-weight: 600;
+            }
+            table { 
+              width: 100%; 
+              border-collapse: collapse; 
+              margin-bottom: 20px; 
+            }
+            th, td { 
+              border: 1px solid #dee2e6; 
+              padding: 10px; 
+              text-align: left; 
+            }
+            th { 
+              background-color: #f8f9fa; /* Lighter header */
+              font-weight: 600;
+            }
+            td:nth-child(2), td:nth-child(3), td:nth-child(4) { text-align: right; } /* Align numbers to the right */
+            th:nth-child(2), th:nth-child(3), th:nth-child(4) { text-align: right; }
+
+            /* Total Section Styles */
+            .total-section { 
+              text-align: right; 
+              margin-top: 20px; 
+              padding-right: 10px;
+            }
+            .total-section p { 
+              margin: 8px 0; 
+              font-size: 1.1em; 
+            }
+            .total-section hr {
+                margin: 8px 0;
+                border: 0;
+                border-top: 1px solid #dee2e6;
+            }
+            .total-section h4 { 
+              margin: 10px 0 0 0; 
+              font-size: 1.3em; 
+              font-weight: 700;
+            }
+
+            /* Payment Details Styles */
+            .payment-details { 
+              margin-top: 25px; 
+              padding-top: 15px; 
+              border-top: 1px solid #eee; 
+            }
+            .payment-details p {
+              margin: 4px 0;
+            }
+
+            .print-button { 
+              display: block; 
+              width: 100px; 
+              margin: 25px auto; 
+              padding: 10px; 
+              background-color: #0d6efd; 
+              color: white; 
+              border: none; 
+              border-radius: 5px; 
+              cursor: pointer; 
+              text-align: center; 
+            }
+            @media print {
+              .print-button { display: none; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="receipt-container">
+            <div class="receipt-header">
+              <div class="header-left">
+                <img src="${logo}" alt="Store Logo" />
+                <p>ร้านของฝากจากลุ่มน้ำทะเลสาบของไทย<br/>โดย ฟาร์มยายขิ้ม</p>
+              </div>
+              <div class="header-right">
+                <h1>ใบเสร็จรับเงิน</h1>
+              </div>
+            </div>
+            
+            <div class="details-section">
+                <p><strong>เลขที่คำสั่งซื้อ:</strong> ${order.order_id}</p>
+                <p><strong>วันที่:</strong> ${new Date(
+                  order.order_date
+                ).toLocaleString("th-TH")}</p>
+                <br/>
+                <p><strong>ลูกค้า:</strong> ${order.shipping_name}</p>
+                <p><strong>ที่อยู่:</strong> ${order.shipping_address}</p>
+                <p><strong>โทร:</strong> ${order.shipping_phone}</p>
+            </div>
+            
+            <h5>รายการสินค้า</h5>
+            <table>
+              <thead>
+                <tr>
+                  <th>สินค้า</th>
+                  <th>จำนวน</th>
+                  <th>ราคาต่อหน่วย</th>
+                  <th>ราคารวม</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${order.items
+                  .map(
+                    (item) => `
+                  <tr>
+                    <td>${item.product_name} ${
+                      item.selected_options
+                        ? `(${Object.entries(item.selected_options)
+                            .map(([k, v]) => `${k}: ${v}`)
+                            .join(", ")})`
+                        : ""
+                    }</td>
+                    <td>${item.quantity}</td>
+                    <td>${parseFloat(item.current_price).toLocaleString(
+                      "en-US",
+                      { minimumFractionDigits: 2 }
+                    )}</td>
+                    <td>${(item.quantity * item.current_price).toLocaleString(
+                      "en-US",
+                      { minimumFractionDigits: 2 }
+                    )}</td>
+                  </tr>
+                `
+                  )
+                  .join("")}
+              </tbody>
+            </table>
+
+            <div class="total-section">
+              <p><strong>ราคารวม:</strong> ${parseFloat(
+                subtotal
+              ).toLocaleString("en-US", { minimumFractionDigits: 2 })} บาท</p>
+              ${
+                discount > 0
+                  ? `<p style="color: #dc3545;"><strong>ส่วนลด (ใช้ ${
+                      order.points_redeemed
+                    } แต้ม):</strong> -${parseFloat(discount).toLocaleString(
+                      "en-US",
+                      { minimumFractionDigits: 2 }
+                    )} บาท</p>`
+                  : ""
+              }
+              <hr/>
+              <h4>ยอดสุทธิ: ${parseFloat(total).toLocaleString("en-US", {
+                minimumFractionDigits: 2,
+              })} บาท</h4>
+            </div>
+
+            <div class="payment-details">
+                <h5>ข้อมูลการชำระเงิน</h5>
+                <p><strong>ช่องทาง:</strong> ${paymentMethodText}</p>
+                ${
+                  order.payment_method === "in_store"
+                    ? `
+                    <p><strong>รับเงินมา:</strong> ${parseFloat(
+                      order.cash_received
+                    ).toLocaleString("en-US", {
+                      minimumFractionDigits: 2,
+                    })} บาท</p>
+                    <p><strong>เงินทอน:</strong> ${parseFloat(
+                      order.change_given
+                    ).toLocaleString("en-US", {
+                      minimumFractionDigits: 2,
+                    })} บาท</p>
+                `
+                    : ""
+                }
+                ${
+                  pointsEarned > 0
+                    ? `<p><strong>แต้มที่ได้รับ:</strong> ${pointsEarned} แต้ม</p>`
+                    : ""
+                }
+            </div>
+
+          </div>
+          <button class="print-button" onclick="window.print()">พิมพ์</button>
+        </body>
+      </html>
+    `);
+    receiptWindow.document.close();
+  };
 
   const fetchStatusCounts = async () => {
     try {
@@ -66,7 +324,7 @@ const OrderManagementPage = () => {
 
   useEffect(() => {
     fetchOrders();
-    fetchStatusCounts(); // <-- เรียกใช้ฟังก์ชันใหม่ที่นี่
+    fetchStatusCounts();
   }, [statusFilter, sortBy]);
 
   const handleUpdateStatus = async (orderId, newStatus) => {
@@ -76,7 +334,6 @@ const OrderManagementPage = () => {
         { status: newStatus },
         API_CONFIG
       );
-      // เมื่ออัปเดตสถานะแล้ว ให้ดึงข้อมูลทั้ง 2 อย่างใหม่
       fetchOrders();
       fetchStatusCounts();
 
@@ -223,7 +480,7 @@ const OrderManagementPage = () => {
                 return (
                   <tr key={order.order_id}>
                     <td className="text-center">{order.order_id}</td>
-                    <td>{order.username}</td>
+                    <td>{order.username || "Walk-in Customer"}</td>
                     <td>
                       {new Date(order.order_date).toLocaleDateString("th-TH", {
                         year: "numeric",
@@ -256,7 +513,6 @@ const OrderManagementPage = () => {
         </Card.Body>
       </Card>
 
-      {/* Modal for viewing receipt */}
       <Modal
         show={showReceiptModal}
         onHide={() => setShowReceiptModal(false)}
@@ -270,7 +526,6 @@ const OrderManagementPage = () => {
         </Modal.Body>
       </Modal>
 
-      {/* Modal for viewing order details */}
       <Modal
         show={showDetailModal}
         onHide={() => setShowDetailModal(false)}
@@ -286,7 +541,8 @@ const OrderManagementPage = () => {
             <div>
               <h5>ข้อมูลลูกค้าและการจัดส่ง</h5>
               <p>
-                <strong>ลูกค้า:</strong> {selectedOrder.username}
+                <strong>ลูกค้า:</strong>{" "}
+                {selectedOrder.username || "Walk-in Customer"}
               </p>
               <p>
                 <strong>ชื่อผู้รับ:</strong> {selectedOrder.shipping_name}
@@ -342,61 +598,123 @@ const OrderManagementPage = () => {
                   ))}
                 </tbody>
               </Table>
+              <div className="text-end">
+                <p className="mb-1">
+                  <strong>ราคารวม:</strong>{" "}
+                  {parseFloat(selectedOrder.subtotal).toLocaleString()} บาท
+                </p>
+                {selectedOrder.discount_amount > 0 && (
+                  <p className="mb-1 text-danger">
+                    <strong>
+                      ส่วนลด (ใช้ {selectedOrder.points_redeemed} แต้ม):
+                    </strong>{" "}
+                    -
+                    {parseFloat(selectedOrder.discount_amount).toLocaleString()}{" "}
+                    บาท
+                  </p>
+                )}
+                <hr className="my-2" />
+                <h5 className="mb-0">
+                  <strong>ยอดสุทธิ:</strong>{" "}
+                  {parseFloat(selectedOrder.total_price).toLocaleString()} บาท
+                </h5>
+              </div>
               <hr />
-              <h5>หลักฐานการชำระเงิน</h5>
-              {selectedOrder.receipt_image_url ? (
-                <Image
-                  src={selectedOrder.receipt_image_url}
-                  fluid
-                  thumbnail
-                  style={{ maxHeight: "400px", cursor: "pointer" }}
-                  onClick={() => viewReceipt(selectedOrder.receipt_image_url)}
-                />
+
+              {selectedOrder.payment_method === "in_store" ? (
+                <div>
+                  <h5>ข้อมูลการชำระเงิน (หน้าร้าน)</h5>
+                  <p>
+                    <strong>รับเงินมา:</strong>{" "}
+                    {parseFloat(selectedOrder.cash_received).toLocaleString()}{" "}
+                    บาท
+                  </p>
+                  <p>
+                    <strong>เงินทอน:</strong>{" "}
+                    {parseFloat(selectedOrder.change_given).toLocaleString()}{" "}
+                    บาท
+                  </p>
+                  <hr />
+                </div>
               ) : (
-                <p>ยังไม่มีการแนบสลิป</p>
+                <div>
+                  <h5>หลักฐานการชำระเงิน</h5>
+                  {selectedOrder.receipt_image_url ? (
+                    <Image
+                      src={selectedOrder.receipt_image_url}
+                      fluid
+                      thumbnail
+                      style={{ maxHeight: "400px", cursor: "pointer" }}
+                      onClick={() =>
+                        viewReceipt(selectedOrder.receipt_image_url)
+                      }
+                    />
+                  ) : (
+                    <p>ยังไม่มีการแนบสลิป</p>
+                  )}
+                </div>
               )}
             </div>
           )}
         </Modal.Body>
-        <Modal.Footer className="justify-content-between">
-          <div>
-            {selectedOrder?.status === "pending_verification" && (
+        <Modal.Footer>
+          <div className="d-flex justify-content-between w-100">
+            <div>
+              {selectedOrder?.status === "pending_verification" && (
+                <Button
+                  variant="success"
+                  onClick={() =>
+                    handleUpdateStatus(selectedOrder.order_id, "processing")
+                  }
+                >
+                  ยืนยันการชำระเงิน
+                </Button>
+              )}
+              {selectedOrder?.status === "processing" && (
+                <Button
+                  variant="primary"
+                  onClick={() =>
+                    handleUpdateStatus(selectedOrder.order_id, "shipped")
+                  }
+                >
+                  แจ้งว่าจัดส่งแล้ว
+                </Button>
+              )}
+              {(selectedOrder?.status === "pending_verification" ||
+                selectedOrder?.status === "processing" ||
+                selectedOrder?.status === "pending_payment") && (
+                <Button
+                  variant="danger"
+                  className="ms-2"
+                  onClick={() =>
+                    handleUpdateStatus(selectedOrder.order_id, "cancelled")
+                  }
+                >
+                  ยกเลิกออเดอร์
+                </Button>
+              )}
+            </div>
+            <div>
+              {selectedOrder &&
+                ["processing", "shipped", "completed"].includes(
+                  selectedOrder.status
+                ) && (
+                  <Button
+                    variant="info"
+                    className="me-2"
+                    onClick={() => handleGenerateReceipt(selectedOrder)}
+                  >
+                    สร้างใบเสร็จ
+                  </Button>
+                )}
               <Button
-                variant="success"
-                onClick={() =>
-                  handleUpdateStatus(selectedOrder.order_id, "processing")
-                }
+                variant="secondary"
+                onClick={() => setShowDetailModal(false)}
               >
-                ยืนยันการชำระเงิน
+                ปิด
               </Button>
-            )}
-            {selectedOrder?.status === "processing" && (
-              <Button
-                variant="primary"
-                onClick={() =>
-                  handleUpdateStatus(selectedOrder.order_id, "shipped")
-                }
-              >
-                แจ้งว่าจัดส่งแล้ว
-              </Button>
-            )}
-            {(selectedOrder?.status === "pending_verification" ||
-              selectedOrder?.status === "processing" ||
-              selectedOrder?.status === "pending_payment") && (
-              <Button
-                variant="danger"
-                className="ms-2"
-                onClick={() =>
-                  handleUpdateStatus(selectedOrder.order_id, "cancelled")
-                }
-              >
-                ยกเลิกออเดอร์
-              </Button>
-            )}
+            </div>
           </div>
-          <Button variant="secondary" onClick={() => setShowDetailModal(false)}>
-            ปิด
-          </Button>
         </Modal.Footer>
       </Modal>
     </Container>

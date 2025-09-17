@@ -1,7 +1,12 @@
 import React, { Suspense, lazy } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "./context/AuthContext";
-import { Spinner, Container } from "react-bootstrap";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import { AuthProvider, useAuth } from "./context/AuthContext";
+import { Spinner } from "react-bootstrap";
 
 // Layouts & Protectors
 import AdminLayout from "./components/AdminLayout";
@@ -59,6 +64,33 @@ const CategoryManagementPage = lazy(() =>
 );
 const POSPage = lazy(() => import("./pages/admin/POSPage"));
 
+// --- [จุดแก้ไขที่ 1] สร้าง Component สำหรับจัดการหน้าแรก ---
+const RootRedirect = () => {
+  const { user, isLoading } = useAuth();
+
+  // ระหว่างรอเช็คสถานะ ให้แสดงหน้าโหลดข้อมูล
+  if (isLoading) {
+    return <LoadingFallback />;
+  }
+
+  // ถ้ามีข้อมูล user (ล็อกอินอยู่)
+  if (user) {
+    // เช็ค role และ redirect ไปยังหน้าที่เหมาะสม
+    if (
+      user.role === "admin" ||
+      user.role === "employee" ||
+      user.role === "staff"
+    ) {
+      return <Navigate to="/admin/dashboard" replace />;
+    }
+    // ถ้าเป็น role อื่น (เช่น customer)
+    return <Navigate to="/index" replace />;
+  }
+
+  // ถ้าไม่มี user (ยังไม่ล็อกอิน) ให้แสดงหน้า LandingPage
+  return <LandingPage />;
+};
+
 function App() {
   return (
     <AuthProvider>
@@ -66,7 +98,8 @@ function App() {
         <Suspense fallback={<LoadingFallback />}>
           <Routes>
             {/* Public Routes */}
-            <Route path="/" element={<LandingPage />} />
+            {/* --- [จุดแก้ไขที่ 2] เปลี่ยน Element ของ Route นี้ --- */}
+            <Route path="/" element={<RootRedirect />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
 
