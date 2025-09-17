@@ -32,13 +32,22 @@ const POSPage = () => {
   const [customerResults, setCustomerResults] = useState([]);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [totalPrice, setTotalPrice] = useState(0);
-  const [message, setMessage] = useState({ type: "", text: "" });
 
-  // --- START: เพิ่ม State สำหรับ Modal ตัวเลือกสินค้า ---
+  // --- START: แก้ไข State ---
   const [showOptionsModal, setShowOptionsModal] = useState(false);
   const [modalProduct, setModalProduct] = useState(null);
   const [selectedOptions, setSelectedOptions] = useState({});
-  // --- END: เพิ่ม State ---
+
+  // --- เพิ่ม State ใหม่สำหรับ Modal การชำระเงิน และผลลัพธ์ ---
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [cashReceived, setCashReceived] = useState("");
+  const [change, setChange] = useState(0);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [lastOrderInfo, setLastOrderInfo] = useState({
+    orderId: null,
+    change: 0,
+  });
+  // --- END: แก้ไข State ---
 
   const { token } = useAuth();
   const API_CONFIG = { headers: { Authorization: `Bearer ${token}` } };
@@ -66,6 +75,16 @@ const POSPage = () => {
     setTotalPrice(total);
   }, [cart]);
 
+  // --- เพิ่ม useEffect ใหม่สำหรับคำนวณเงินทอนอัตโนมัติ ---
+  useEffect(() => {
+    const received = parseFloat(cashReceived);
+    if (!isNaN(received) && received >= totalPrice) {
+      setChange(received - totalPrice);
+    } else {
+      setChange(0);
+    }
+  }, [cashReceived, totalPrice]);
+
   const handleProductSearch = (e) => {
     setSearchTerm(e.target.value);
   };
@@ -76,18 +95,14 @@ const POSPage = () => {
       (p.name_en && p.name_en.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
-  // --- START: แก้ไขฟังก์ชัน addToCart ให้รองรับสินค้ามีตัวเลือก ---
   const addToCart = async (product) => {
-    // ถ้าสินค้ามีตัวเลือก ให้เปิด Modal
     if (product.has_options) {
       try {
         const response = await axios.get(
           `https://api.souvenir-from-lagoon-thailand.com/api/product/${product.product_id}`,
           API_CONFIG
         );
-        setModalProduct(response.data); // เก็บข้อมูลสินค้าทั้งหมด (รวม options)
-
-        // ตั้งค่า selectedOptions เริ่มต้น
+        setModalProduct(response.data);
         const initialOptions = {};
         if (response.data.options && response.data.options.length > 0) {
           response.data.options.forEach((opt) => {
@@ -95,14 +110,13 @@ const POSPage = () => {
           });
         }
         setSelectedOptions(initialOptions);
-        setShowOptionsModal(true); // เปิด Modal
+        setShowOptionsModal(true);
       } catch (err) {
         alert("ไม่สามารถโหลดข้อมูลตัวเลือกสินค้าได้");
       }
       return;
     }
 
-    // ถ้าสินค้าไม่มีตัวเลือก (ทำงานเหมือนเดิม แต่ใช้ cart_id)
     const cartId = product.product_id.toString();
     const existingItem = cart.find((item) => item.cart_id === cartId);
 
@@ -116,9 +130,7 @@ const POSPage = () => {
     }
   };
 
-  // ฟังก์ชันใหม่สำหรับเพิ่มสินค้ามีตัวเลือกจาก Modal
   const handleAddToCartWithOptions = () => {
-    // 1. ตรวจสอบว่าเลือกครบทุกตัวเลือกหรือยัง
     for (const option of modalProduct.options) {
       if (!selectedOptions[option.option_name]) {
         alert(`กรุณาเลือก "${option.option_name}"`);
@@ -126,10 +138,7 @@ const POSPage = () => {
       }
     }
 
-    // 2. สร้าง ID ที่ไม่ซ้ำกันสำหรับสินค้าและตัวเลือกชุดนี้
     const cartId = modalProduct.product_id + JSON.stringify(selectedOptions);
-
-    // 3. เช็คว่ามีสินค้า + ตัวเลือกชุดนี้ในตะกร้าแล้วหรือยัง
     const existingItem = cart.find((item) => item.cart_id === cartId);
 
     if (existingItem) {
@@ -138,15 +147,13 @@ const POSPage = () => {
       const newItem = {
         ...modalProduct,
         quantity: 1,
-        cart_id: cartId, // ใช้ ID ที่สร้างขึ้นใหม่
-        selected_options: selectedOptions, // เก็บตัวเลือกที่เลือก
+        cart_id: cartId,
+        selected_options: selectedOptions,
       };
       setCart([...cart, newItem]);
     }
-
-    setShowOptionsModal(false); // ปิด Modal
+    setShowOptionsModal(false);
   };
-  // --- END: แก้ไขฟังก์ชัน ---
 
   const updateQuantity = (cartId, amount) => {
     setCart(
@@ -190,37 +197,65 @@ const POSPage = () => {
     setSelectedCustomer(null);
   };
 
-  const handleCheckout = async () => {
+  // --- START: แก้ไขฟังก์ชันชำระเงินทั้งหมด ---
+
+  // 1. ฟังก์ชันนี้จะถูกเรียกเมื่อกดปุ่ม "ชำระเงิน" หลัก
+  const handleCheckout = () => {
     if (cart.length === 0) {
       alert("กรุณาเพิ่มสินค้าลงในตะกร้าก่อน");
       return;
     }
+    setCashReceived(""); // รีเซ็ตค่าเงินที่รับ
+    setChange(0); // รีเซ็ตเงินทอน
+    setShowPaymentModal(true); // เปิด Modal รับเงิน
+  };
 
-    const orderData = {
-      items: cart,
-      totalPrice: totalPrice,
-      userId: selectedCustomer ? selectedCustomer.user_id : null,
-    };
+  // 2. ฟังก์ชันนี้จะถูกเรียกเมื่อกด "ยืนยันการชำระเงิน" ใน Modal
+  const handleSubmitOrder = async () => {
+    if (parseFloat(cashReceived) < totalPrice) {
+      alert("จำนวนเงินที่รับมาไม่เพียงพอ");
+      return;
+    }
+    if (isNaN(parseFloat(cashReceived))) {
+      alert("กรุณากรอกจำนวนเงินที่รับมา");
+      return;
+    }
 
     try {
+      const orderData = {
+        items: cart,
+        totalPrice,
+        userId: selectedCustomer ? selectedCustomer.user_id : null,
+        cashReceived: parseFloat(cashReceived), // ส่งค่าเงินที่รับ
+        changeGiven: change, // ส่งค่าเงินทอน
+      };
+
       const response = await axios.post(
         "https://api.souvenir-from-lagoon-thailand.com/api/admin/orders/create-in-store",
         orderData,
         API_CONFIG
       );
-      setMessage({ type: "success", text: response.data.message });
+
+      setLastOrderInfo({ orderId: response.data.orderId, change: change });
+      setShowPaymentModal(false);
+      setShowSuccessModal(true);
+
+      // ล้างข้อมูลสำหรับออเดอร์ถัดไป
       setCart([]);
       setSelectedCustomer(null);
+      setCustomerSearch("");
     } catch (error) {
-      setMessage({
-        type: "danger",
-        text:
-          error.response?.data?.message || "เกิดข้อผิดพลาดในการสร้างออเดอร์",
-      });
-    } finally {
-      setTimeout(() => setMessage({ type: "", text: "" }), 5000);
+      console.error("Error creating order:", error);
+      alert("เกิดข้อผิดพลาดในการสร้างออเดอร์");
     }
   };
+
+  // 3. ฟังก์ชันสำหรับปิด Modal แจ้งเตือนหลังสำเร็จ
+  const handleCloseSuccessModal = () => {
+    setShowSuccessModal(false);
+    setLastOrderInfo({ orderId: null, change: 0 });
+  };
+  // --- END: แก้ไขฟังก์ชันชำระเงิน ---
 
   return (
     <>
@@ -371,18 +406,15 @@ const POSPage = () => {
                     <span>ยอดรวม:</span>
                     <span>{totalPrice.toLocaleString()} บาท</span>
                   </div>
-                  {message.text && (
-                    <Alert variant={message.type} className="mt-3">
-                      {message.text}
-                    </Alert>
-                  )}
                   <div className="d-grid mt-3">
+                    {/* --- ปุ่มนี้จะเรียก handleCheckout เพื่อเปิด Modal --- */}
                     <Button
                       variant="success"
                       size="lg"
                       onClick={handleCheckout}
+                      disabled={cart.length === 0}
                     >
-                      ชำระเงิน (หน้าร้าน)
+                      ชำระเงิน
                     </Button>
                   </div>
                 </div>
@@ -392,7 +424,7 @@ const POSPage = () => {
         </Row>
       </Container>
 
-      {/* --- START: เพิ่ม Modal สำหรับเลือกตัวเลือกสินค้า --- */}
+      {/* Modal สำหรับเลือกตัวเลือกสินค้า */}
       <Modal
         show={showOptionsModal}
         onHide={() => setShowOptionsModal(false)}
@@ -441,7 +473,88 @@ const POSPage = () => {
           </Button>
         </Modal.Footer>
       </Modal>
-      {/* --- END: เพิ่ม Modal --- */}
+
+      {/* --- START: เพิ่ม Modal ใหม่ 2 ตัว --- */}
+      {/* 1. Modal สำหรับรับเงิน */}
+      <Modal
+        show={showPaymentModal}
+        onHide={() => setShowPaymentModal(false)}
+        centered
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>รับชำระเงิน</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <h3 className="text-center mb-3">
+            ยอดรวม: {totalPrice.toLocaleString()} บาท
+          </h3>
+          <Form.Group>
+            <Form.Label>รับเงินมา (บาท)</Form.Label>
+            <Form.Control
+              type="number"
+              placeholder="กรอกจำนวนเงินที่รับ"
+              value={cashReceived}
+              onChange={(e) => setCashReceived(e.target.value)}
+              autoFocus
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  handleSubmitOrder();
+                }
+              }}
+            />
+          </Form.Group>
+          <h4 className="text-center mt-4">
+            เงินทอน:{" "}
+            <span className="text-success">
+              {change.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+            </span>{" "}
+            บาท
+          </h4>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="secondary"
+            onClick={() => setShowPaymentModal(false)}
+          >
+            ยกเลิก
+          </Button>
+          <Button
+            variant="primary"
+            onClick={handleSubmitOrder}
+            disabled={
+              parseFloat(cashReceived) < totalPrice ||
+              isNaN(parseFloat(cashReceived))
+            }
+          >
+            ยืนยันการชำระเงิน
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* 2. Modal สำหรับแสดงผลหลังทำรายการสำเร็จ */}
+      <Modal show={showSuccessModal} onHide={handleCloseSuccessModal} centered>
+        <Modal.Header closeButton>
+          <Modal.Title className="text-success">ทำรายการสำเร็จ!</Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="text-center">
+          <h4>ออเดอร์หมายเลข #{lastOrderInfo.orderId}</h4>
+          <h1 className="display-4 my-3">
+            เงินทอน:{" "}
+            <span className="fw-bold">
+              {lastOrderInfo.change.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+              })}
+            </span>{" "}
+            บาท
+          </h1>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="primary" onClick={handleCloseSuccessModal}>
+            ปิด และเริ่มรายการใหม่
+          </Button>
+        </Modal.Footer>
+      </Modal>
+      {/* --- END: เพิ่ม Modal ใหม่ --- */}
     </>
   );
 };

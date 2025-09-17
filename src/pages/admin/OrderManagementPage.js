@@ -28,8 +28,22 @@ const OrderManagementPage = () => {
   const [showReceiptModal, setShowReceiptModal] = useState(false);
   const [selectedReceipt, setSelectedReceipt] = useState("");
 
+  const [statusCounts, setStatusCounts] = useState({});
+
   const { token } = useAuth();
   const API_CONFIG = { headers: { Authorization: `Bearer ${token}` } };
+
+  const fetchStatusCounts = async () => {
+    try {
+      const response = await axios.get(
+        "https://api.souvenir-from-lagoon-thailand.com/api/admin/orders/status-counts",
+        API_CONFIG
+      );
+      setStatusCounts(response.data);
+    } catch (err) {
+      console.error("ไม่สามารถดึงข้อมูลจำนวนสถานะได้:", err);
+    }
+  };
 
   const fetchOrders = async () => {
     try {
@@ -52,6 +66,7 @@ const OrderManagementPage = () => {
 
   useEffect(() => {
     fetchOrders();
+    fetchStatusCounts(); // <-- เรียกใช้ฟังก์ชันใหม่ที่นี่
   }, [statusFilter, sortBy]);
 
   const handleUpdateStatus = async (orderId, newStatus) => {
@@ -61,7 +76,10 @@ const OrderManagementPage = () => {
         { status: newStatus },
         API_CONFIG
       );
+      // เมื่ออัปเดตสถานะแล้ว ให้ดึงข้อมูลทั้ง 2 อย่างใหม่
       fetchOrders();
+      fetchStatusCounts();
+
       if (showDetailModal) {
         viewOrderDetails(orderId);
       }
@@ -100,6 +118,11 @@ const OrderManagementPage = () => {
     return styles[status] || { bg: "secondary", text: status };
   };
 
+  const totalOrders = Object.values(statusCounts).reduce(
+    (sum, count) => sum + count,
+    0
+  );
+
   if (loading) return <Spinner animation="border" />;
   if (error) return <Alert variant="danger">{error}</Alert>;
 
@@ -119,13 +142,43 @@ const OrderManagementPage = () => {
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
                 >
-                  <option value="all">แสดงทั้งหมด</option>
-                  <option value="pending_payment">รอชำระเงิน</option>
-                  <option value="pending_verification">รอตรวจสอบ</option>
-                  <option value="processing">กำลังจัดเตรียม</option>
-                  <option value="shipped">จัดส่งแล้ว</option>
-                  <option value="completed">เสร็จสมบูรณ์</option>
-                  <option value="cancelled">ยกเลิก</option>
+                  <option value="all">
+                    แสดงทั้งหมด {totalOrders > 0 ? `(${totalOrders})` : ""}
+                  </option>
+                  <option value="pending_payment">
+                    รอชำระเงิน{" "}
+                    {statusCounts.pending_payment
+                      ? `(${statusCounts.pending_payment})`
+                      : ""}
+                  </option>
+                  <option value="pending_verification">
+                    รอตรวจสอบ{" "}
+                    {statusCounts.pending_verification
+                      ? `(${statusCounts.pending_verification})`
+                      : ""}
+                  </option>
+                  <option value="processing">
+                    กำลังจัดเตรียม{" "}
+                    {statusCounts.processing
+                      ? `(${statusCounts.processing})`
+                      : ""}
+                  </option>
+                  <option value="shipped">
+                    จัดส่งแล้ว{" "}
+                    {statusCounts.shipped ? `(${statusCounts.shipped})` : ""}
+                  </option>
+                  <option value="completed">
+                    เสร็จสมบูรณ์{" "}
+                    {statusCounts.completed
+                      ? `(${statusCounts.completed})`
+                      : ""}
+                  </option>
+                  <option value="cancelled">
+                    ยกเลิก{" "}
+                    {statusCounts.cancelled
+                      ? `(${statusCounts.cancelled})`
+                      : ""}
+                  </option>
                 </Form.Select>
               </Form.Group>
             </Col>

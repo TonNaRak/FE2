@@ -11,25 +11,26 @@ import {
 } from "react-bootstrap";
 import { useAuth } from "../context/AuthContext";
 import axios from "axios";
-import { useTranslation } from "react-i18next"; // 1. Import hook
+import { useTranslation } from "react-i18next";
 
 const PaymentConfirmationPage = () => {
   const { orderId } = useParams();
   const [order, setOrder] = useState(null);
-  const [storeInfo, setStoreInfo] = useState(null); // State ใหม่สำหรับข้อมูลร้าน
+  const [storeInfo, setStoreInfo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedFile, setSelectedFile] = useState(null);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const { token } = useAuth();
   const navigate = useNavigate();
-  const { t } = useTranslation(); // 2. เรียกใช้ hook
+  const { t } = useTranslation();
+
+  const [isCopied, setIsCopied] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
       if (!token) return;
       try {
-        // ดึงข้อมูลทั้งสองอย่างพร้อมกันเพื่อประสิทธิภาพ
         const [orderResponse, storeInfoResponse] = await Promise.all([
           axios.get(
             `https://api.souvenir-from-lagoon-thailand.com/api/orders/my-history/${orderId}`,
@@ -52,6 +53,16 @@ const PaymentConfirmationPage = () => {
     };
     fetchData();
   }, [orderId, token]);
+
+  const handleCopy = async (textToCopy) => {
+    try {
+      await navigator.clipboard.writeText(textToCopy);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000); // เปลี่ยนสถานะกลับใน 2 วินาที
+    } catch (err) {
+      console.error("Failed to copy text: ", err);
+    }
+  };
 
   const handleFileChange = (e) => {
     setSelectedFile(e.target.files[0]);
@@ -103,7 +114,9 @@ const PaymentConfirmationPage = () => {
           {t("payment_confirmation_title")}
         </Card.Header>
         <Card.Body className="text-center">
-          <Card.Title>{t("order_number")}: #{order?.order_id}</Card.Title>
+          <Card.Title>
+            {t("order_number")}: #{order?.order_id}
+          </Card.Title>
           <p className="h5 my-3">
             {t("amount_due")} {order?.total_price.toLocaleString()} บาท
           </p>
@@ -122,6 +135,36 @@ const PaymentConfirmationPage = () => {
             </Alert>
           )}
 
+          {/* ==================== โค้ดส่วนที่เพิ่มเข้ามา ==================== */}
+          {storeInfo && storeInfo.account_number && (
+            <div
+              className="mt-3 mb-4 p-3 border rounded text-start"
+              style={{ backgroundColor: "#f8f9fa" }}
+            >
+              <p className="mb-2">
+                <strong>{t("bank_name_label")}:</strong> {storeInfo.bank_name}
+              </p>
+              <p className="mb-2">
+                <strong>{t("account_name_label")}:</strong>{" "}
+                {storeInfo.account_name}
+              </p>
+              <div className="d-flex align-items-center justify-content-between">
+                <p className="mb-0">
+                  <strong>{t("account_number_label")}:</strong>{" "}
+                  {storeInfo.account_number}
+                </p>
+                <Button
+                  variant="outline-secondary"
+                  size="sm"
+                  onClick={() => handleCopy(storeInfo.account_number)}
+                >
+                  {isCopied ? t("copied_button") : t("copy_button")}
+                </Button>
+              </div>
+            </div>
+          )}
+          {/* ============================================================= */}
+
           {message && <Alert variant="success">{message}</Alert>}
           {error && !message && <Alert variant="danger">{error}</Alert>}
 
@@ -135,12 +178,7 @@ const PaymentConfirmationPage = () => {
                   required
                 />
               </Form.Group>
-              <Button
-                type="submit"
-                variant="primary"
-                className="w-100"
-                disabled={!storeInfo || !storeInfo.qr_code_url}
-              >
+              <Button type="submit" variant="primary" className="w-100">
                 {t("confirm_payment_button")}
               </Button>
             </Form>

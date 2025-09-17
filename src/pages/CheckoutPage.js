@@ -11,6 +11,8 @@ import {
   Alert,
   Image,
   Form,
+  InputGroup,
+  Spinner,
 } from "react-bootstrap";
 import axios from "axios";
 import "./CheckoutPage.css";
@@ -23,7 +25,6 @@ const CheckoutPage = () => {
   const { user, token, refreshUserData } = useAuth();
   const { t, i18n } = useTranslation();
 
-  // 1. ดึง isBuyNow มาจาก state ที่ส่งมา
   const { items, subtotal, isBuyNow } = location.state || {
     items: [],
     subtotal: 0,
@@ -37,6 +38,12 @@ const CheckoutPage = () => {
   });
   const [isEditingAddress, setIsEditingAddress] = useState(false);
   const [originalShippingInfo, setOriginalShippingInfo] = useState(null);
+
+  // --- State สำหรับระบบแต้ม ---
+  const [pointsToUse, setPointsToUse] = useState("");
+  const [pointError, setPointError] = useState("");
+  const [discount, setDiscount] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (refreshUserData) {
@@ -53,16 +60,16 @@ const CheckoutPage = () => {
       };
       setShippingInfo(initialInfo);
       setOriginalShippingInfo(initialInfo);
-
-      // ถ้าไม่มีที่อยู่ ให้เปิดโหมดแก้ไข
       if (!user.address) {
         setIsEditingAddress(true);
       } else {
-        // แต่ถ้ามีที่อยู่แล้ว ต้องมั่นใจว่าโหมดแก้ไขถูกปิด
         setIsEditingAddress(false);
       }
     }
   }, [user]);
+
+  // --- คำนวณราคาสุทธิ ---
+  const finalTotal = subtotal - discount;
 
   if (items.length === 0) {
     return (
@@ -75,74 +82,99 @@ const CheckoutPage = () => {
     );
   }
 
-  const total = subtotal;
-
   const handleShippingInfoChange = (e) => {
     setShippingInfo({ ...shippingInfo, [e.target.name]: e.target.value });
   };
-
   const handleEditAddress = () => {
     setOriginalShippingInfo(shippingInfo);
     setIsEditingAddress(true);
   };
-
   const handleCancelEdit = () => {
     setShippingInfo(originalShippingInfo);
     setIsEditingAddress(false);
   };
-
   const handleSaveAddress = () => {
     setIsEditingAddress(false);
   };
 
-  // 2. แก้ไขฟังก์ชัน handleConfirmOrder ทั้งหมด
+  const handleApplyPoints = () => {
+    const points = parseInt(pointsToUse) || 0;
+    setPointError("");
+    if (points < 0) {
+      setPointError("กรุณากรอกแต้มให้ถูกต้อง");
+      return;
+    }
+    if (points > user.points) {
+      setPointError("คุณมีแต้มไม่เพียงพอ");
+      return;
+    }
+    if (points > subtotal) {
+      setPointError("ไม่สามารถใช้แต้มเกินราคาสินค้าได้");
+      return;
+    }
+    setDiscount(points);
+    setPointError("");
+  };
+
+  const handleCancelPoints = () => {
+    setPointsToUse("");
+    setDiscount(0);
+    setPointError("");
+  };
+
+  // --- [จุดแก้ไขหลัก] แก้ไขฟังก์ชัน handleConfirmOrder ให้แยกการทำงาน ---
   const handleConfirmOrder = async () => {
     if (!shippingInfo.name || !shippingInfo.address || !shippingInfo.phone) {
       alert("กรุณากรอกข้อมูลผู้รับและที่อยู่จัดส่งให้ครบถ้วน");
       setIsEditingAddress(true);
       return;
     }
+    setIsSubmitting(true);
+
     try {
       let response;
       const paymentMethod = "online";
+      const baseData = {
+        paymentMethod,
+        shippingInfo,
+        pointsToRedeem: discount,
+      };
 
       if (isBuyNow) {
-        // กรณี "ซื้อทันที"
+        // --- กรณี "ซื้อทันที" ---
         const orderData = {
-          item: items[0], // ส่งข้อมูลสินค้าแค่ชิ้นเดียว
-          totalPrice: total,
-          paymentMethod,
-          shippingInfo,
+          ...baseData,
+          item: items[0], // ส่งเป็น item object เดียว
         };
         response = await axios.post(
           "https://api.souvenir-from-lagoon-thailand.com/api/orders/buy-now",
           orderData,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
+          { headers: { Authorization: `Bearer ${token}` } }
         );
       } else {
-        // กรณีมาจาก "ตะกร้าสินค้า"
+        // --- กรณีมาจาก "ตะกร้าสินค้า" ---
         const orderData = {
-          items: items,
-          totalPrice: total,
-          paymentMethod,
-          shippingInfo,
+          ...baseData,
+          items: items, // ส่งเป็น items array
         };
         response = await axios.post(
           "https://api.souvenir-from-lagoon-thailand.com/api/orders",
           orderData,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
+          { headers: { Authorization: `Bearer ${token}` } }
         );
       }
 
       const newOrderId = response.data.orderId;
+      if (refreshUserData) {
+        await refreshUserData();
+      }
       navigate(`/payment-confirmation/${newOrderId}`);
     } catch (error) {
       console.error("Failed to create order:", error);
-      alert("เกิดข้อผิดพลาดในการสร้างคำสั่งซื้อ");
+      alert(
+        error.response?.data?.message || "เกิดข้อผิดพลาดในการสร้างคำสั่งซื้อ"
+      );
+      setIsSubmitting(false);
     }
   };
 
@@ -233,7 +265,6 @@ const CheckoutPage = () => {
                 )}
               </Card.Body>
             </Card>
-
             <Card className="shadow-sm">
               <Card.Header as="h5">
                 {t("items_list")} ({items.length})
@@ -301,28 +332,93 @@ const CheckoutPage = () => {
                 <hr />
                 <div className="d-flex justify-content-between">
                   <span>{t("subtotal")}</span>
-                  <span>{subtotal.toLocaleString()} {t("baht")}</span>
+                  <span>
+                    {subtotal.toLocaleString()} {t("baht")}
+                  </span>
                 </div>
-                <div className="d-flex justify-content-between text-danger">
-                  <span>{t("discount")}</span>
-                  <span>- {0} {t("baht")}</span>
-                </div>
+
+                {discount > 0 && (
+                  <div className="d-flex justify-content-between text-danger">
+                    <span>ส่วนลดจากแต้ม</span>
+                    <span>
+                      - {discount.toLocaleString()} {t("baht")}
+                    </span>
+                  </div>
+                )}
+
                 <div className="d-flex justify-content-between">
                   <span>{t("shipping")}</span>
                   <span>{t("free")}</span>
                 </div>
                 <hr />
+
+                {user && user.points > 0 && (
+                  <>
+                    <div className="points-redemption-section">
+                      <p className="mb-2">
+                        <strong>ใช้แต้มสะสม</strong> (คุณมี{" "}
+                        {user.points.toLocaleString()} แต้ม)
+                      </p>
+                      {discount > 0 ? (
+                        <div className="d-flex justify-content-between align-items-center">
+                          <Alert
+                            variant="success"
+                            className="py-2 px-3 mb-0 me-2 flex-grow-1"
+                          >
+                            ใช้ {discount.toLocaleString()} แต้ม (ลด{" "}
+                            {discount.toLocaleString()} บาท)
+                          </Alert>
+                          <Button
+                            variant="outline-danger"
+                            size="sm"
+                            onClick={handleCancelPoints}
+                          >
+                            ยกเลิก
+                          </Button>
+                        </div>
+                      ) : (
+                        <InputGroup>
+                          <Form.Control
+                            type="number"
+                            placeholder="กรอกจำนวนแต้ม"
+                            value={pointsToUse}
+                            onChange={(e) => setPointsToUse(e.target.value)}
+                            isInvalid={!!pointError}
+                            max={Math.min(user.points, subtotal)}
+                          />
+                          <Button variant="primary" onClick={handleApplyPoints}>
+                            ใช้
+                          </Button>
+                          {pointError && (
+                            <Form.Control.Feedback type="invalid">
+                              {pointError}
+                            </Form.Control.Feedback>
+                          )}
+                        </InputGroup>
+                      )}
+                    </div>
+                    <hr />
+                  </>
+                )}
+
                 <div className="d-flex justify-content-between h5">
                   <strong>{t("total_amount")}</strong>
-                  <strong>{total.toLocaleString()} {t("baht")}</strong>
+                  <strong>
+                    {finalTotal.toLocaleString()} {t("baht")}
+                  </strong>
                 </div>
                 <div className="d-grid mt-4">
                   <Button
                     variant="success"
                     size="lg"
                     onClick={handleConfirmOrder}
+                    disabled={isSubmitting}
                   >
-                    {t("confirm_order")}
+                    {isSubmitting ? (
+                      <Spinner as="span" animation="border" size="sm" />
+                    ) : (
+                      t("confirm_order")
+                    )}
                   </Button>
                 </div>
               </Card.Body>

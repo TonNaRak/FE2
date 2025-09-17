@@ -1,19 +1,17 @@
-import React from 'react';
-import { Container } from 'react-bootstrap';
-import './DashboardPage.css';
+import React from "react";
+import { Container } from "react-bootstrap";
+import "./DashboardPage.css";
 
 const DashboardPage = () => {
   return (
-    <Container 
-      fluid 
-      className="d-flex align-items-center justify-content-center text-center dashboard-coming-soon"
-    >
-      <div>
-        <h1 className="coming-soon-title">Coming Soon</h1>
-        <p className="coming-soon-subtitle">
-          หน้าแดชบอร์ดกำลังอยู่ในระหว่างการพัฒนา และจะพร้อมใช้งานในเร็วๆ นี้
-        </p>
-      </div>
+    <Container fluid className="dashboard-page-container">
+      {/* ลบ div ที่ครอบ iframe ออกไปได้เลย */}
+      <iframe
+        title="project"
+        className="dashboard-iframe" 
+        src="https://app.powerbi.com/view?r=eyJrIjoiOThmNGI2NDQtNTcyNy00N2NjLTgyMDItMjU1ZDA3ZTY4OTFlIiwidCI6IjhlNjM0ZTY3LTlkNjYtNDZkMi1hNTI5LWUxYjcwOGM1ZDhiYyIsImMiOjEwfQ%3D%3D&pageName=5830365041f6d3ca8de7"
+        allowFullScreen={true}
+      ></iframe>
     </Container>
   );
 };

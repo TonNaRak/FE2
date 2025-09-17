@@ -9,6 +9,7 @@ import {
   BsBoxArrowRight,
   BsAward,
   BsPencilSquare,
+  BsClockHistory,
 } from "react-icons/bs";
 import { useTranslation } from "react-i18next";
 import "./ProfilePage.css";
@@ -84,6 +85,17 @@ const ProfilePage = () => {
               <BsReceipt className="menu-icon" />
               {t("order_history")}
             </ListGroup.Item>
+
+            <ListGroup.Item
+              action
+              as={Link}
+              to="/points-history" // --- ลิงก์ไปยังหน้าใหม่ ---
+              className="profile-menu-item"
+            >
+              <BsClockHistory className="menu-icon" />
+              {t("points_history")}
+            </ListGroup.Item>
+
 
             <ListGroup.Item action href="#" className="profile-menu-item">
               <BsQuestionCircle className="menu-icon" />

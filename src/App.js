@@ -40,6 +40,7 @@ const PaymentConfirmationPage = lazy(() =>
 );
 const OrderHistoryPage = lazy(() => import("./pages/OrderHistoryPage"));
 const EditProfilePage = lazy(() => import("./pages/EditProfilePage"));
+const PointHistoryPage = lazy(() => import("./pages/PointHistoryPage"));
 
 // Admin Pages
 const DashboardPage = lazy(() => import("./pages/admin/DashboardPage"));
@@ -83,6 +84,7 @@ function App() {
                 element={<ProductDetailPage />}
               />
               <Route path="/profile/edit" element={<EditProfilePage />} />
+              <Route path="/points-history" element={<PointHistoryPage />} />
               <Route
                 path="/payment-confirmation/:orderId"
                 element={<PaymentConfirmationPage />}

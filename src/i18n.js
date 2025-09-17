@@ -142,6 +142,12 @@ i18n
             "Receipt uploaded successfully! The store will verify it shortly.",
           upload_fail: "Failed to upload receipt. Please try again.",
           load_order_fail: "Could not load order details.",
+          
+          bank_name_label: "Bank",
+          account_name_label: "Account Name",
+          account_number_label: "Account Number",
+          copy_button: "Copy",
+          copied_button: "Copied!",
 
           // --- Login & Register Page ---
           login_title: "Login",
@@ -291,6 +297,12 @@ i18n
           upload_success: "อัปโหลดสลิปสำเร็จ! ร้านค้าจะทำการตรวจสอบในเร็วๆ นี้",
           upload_fail: "เกิดข้อผิดพลาดในการอัปโหลดสลิป",
           load_order_fail: "ไม่สามารถโหลดข้อมูลออเดอร์ได้",
+
+          bank_name_label: "ธนาคาร",
+          account_name_label: "ชื่อบัญชี",
+          account_number_label: "เลขที่บัญชี",
+          copy_button: "คัดลอก",
+          copied_button: "คัดลอกแล้ว!",
 
           // --- START: Login & Register Page ---
           login_title: "เข้าสู่ระบบ",

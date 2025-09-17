@@ -22,6 +22,9 @@ import {
   BsFacebook,
   BsYoutube,
   BsUpload,
+  BsBank2, // --- [เพิ่ม] ---
+  BsPersonVcard, // --- [เพิ่ม] ---
+  BsCreditCard2Front, // --- [เพิ่ม] ---
 } from "react-icons/bs";
 import "./StoreSettingPage.css";
 import placeholderImage from "../../images/placeholder.png";
@@ -39,6 +42,10 @@ const StoreSettingPage = () => {
     facebook_url: "",
     youtube_url: "",
     qr_code_url: "",
+    // --- [เพิ่ม] State สำหรับข้อมูลบัญชี ---
+    bank_name: "",
+    account_name: "",
+    account_number: "",
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -61,8 +68,7 @@ const StoreSettingPage = () => {
       try {
         setLoading(true);
         const response = await axios.get(
-          "https://api.souvenir-from-lagoon-thailand.com/api/store-info",
-          API_CONFIG
+          "https://api.souvenir-from-lagoon-thailand.com/api/store-info"
         );
         if (response.data) {
           setStoreInfo((prev) => ({ ...prev, ...response.data }));
@@ -104,6 +110,7 @@ const StoreSettingPage = () => {
     setError("");
 
     const formData = new FormData();
+    // --- [แก้ไข] Logic นี้ดีอยู่แล้ว จะจัดการ field ใหม่ให้เองอัตโนมัติ ---
     Object.keys(storeInfo).forEach((key) => {
       if (storeInfo[key] != null) {
         formData.append(key, storeInfo[key]);
@@ -115,19 +122,21 @@ const StoreSettingPage = () => {
     }
     formData.append("existing_image_url", storeInfo.image_url || "");
 
-    // --- START: จุดที่แก้ไข ---
     if (qrCodeFile) {
       formData.append("qr_code_file", qrCodeFile);
     }
-    // ส่ง URL ของ QR Code เดิมกลับไปด้วยเสมอ
     formData.append("existing_qr_code_url", storeInfo.qr_code_url || "");
-    // --- END: จุดที่แก้ไข ---
 
     try {
       await axios.put(
         "https://api.souvenir-from-lagoon-thailand.com/api/store-info",
         formData,
-        API_CONFIG
+        {
+          headers: {
+            ...API_CONFIG.headers,
+            "Content-Type": "multipart/form-data",
+          },
+        }
       );
       setNotificationMessage({
         title: "สำเร็จ",
@@ -338,6 +347,56 @@ const StoreSettingPage = () => {
                 </Form.Group>
               </Card.Body>
             </Card>
+
+            {/* --- [เพิ่ม] Card ใหม่สำหรับข้อมูลบัญชีธนาคาร --- */}
+            <Card className="settings-card shadow-sm mb-4">
+              <Card.Header as="h5">ข้อมูลบัญชีธนาคาร</Card.Header>
+              <Card.Body>
+                <Form.Group className="mb-3">
+                  <Form.Label>ชื่อธนาคาร</Form.Label>
+                  <InputGroup>
+                    <InputGroup.Text>
+                      <BsBank2 />
+                    </InputGroup.Text>
+                    <Form.Control
+                      type="text"
+                      name="bank_name"
+                      value={storeInfo.bank_name || ""}
+                      onChange={handleInputChange}
+                    />
+                  </InputGroup>
+                </Form.Group>
+                <Form.Group className="mb-3">
+                  <Form.Label>ชื่อบัญชี</Form.Label>
+                  <InputGroup>
+                    <InputGroup.Text>
+                      <BsPersonVcard />
+                    </InputGroup.Text>
+                    <Form.Control
+                      type="text"
+                      name="account_name"
+                      value={storeInfo.account_name || ""}
+                      onChange={handleInputChange}
+                    />
+                  </InputGroup>
+                </Form.Group>
+                <Form.Group className="mb-3">
+                  <Form.Label>เลขที่บัญชี</Form.Label>
+                  <InputGroup>
+                    <InputGroup.Text>
+                      <BsCreditCard2Front />
+                    </InputGroup.Text>
+                    <Form.Control
+                      type="text"
+                      name="account_number"
+                      value={storeInfo.account_number || ""}
+                      onChange={handleInputChange}
+                    />
+                  </InputGroup>
+                </Form.Group>
+              </Card.Body>
+            </Card>
+
             <Card className="settings-card shadow-sm mb-4">
               <Card.Header as="h5">QR Code สำหรับชำระเงิน</Card.Header>
               <Card.Body className="text-center">
