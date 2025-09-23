@@ -46,6 +46,9 @@ const PaymentConfirmationPage = lazy(() =>
 const OrderHistoryPage = lazy(() => import("./pages/OrderHistoryPage"));
 const EditProfilePage = lazy(() => import("./pages/EditProfilePage"));
 const PointHistoryPage = lazy(() => import("./pages/PointHistoryPage"));
+const DesktopSearchResultsPage = lazy(() =>
+  import("./pages/DesktopSearchResultsPage")
+);
 
 // Admin Pages
 const DashboardPage = lazy(() => import("./pages/admin/DashboardPage"));
@@ -106,6 +109,7 @@ function App() {
             {/* Customer Routes */}
             <Route element={<CustomerLayout />}>
               <Route path="/index" element={<IndexPage />} />
+              <Route path="/results" element={<DesktopSearchResultsPage />} />
               <Route path="/search" element={<SearchPage />} />
               <Route path="/cart" element={<CartPage />} />
               <Route path="/checkout" element={<CheckoutPage />} />

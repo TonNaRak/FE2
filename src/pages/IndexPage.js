@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   Container,
@@ -19,6 +19,52 @@ import { useTranslation } from "react-i18next";
 import LanguageSwitcher from "../components/LanguageSwitcher";
 import "./IndexPage.css";
 
+import myLogo1 from "../images/icon1.png";
+import myLogo2 from "../images/icon2.png";
+
+// --- [จุดแก้ไข] เพิ่ม useTranslation และเปลี่ยนข้อความเป็น t('key') ---
+const HeroSection = ({ onShopNowClick, scrollY }) => {
+  const { t } = useTranslation(); // เรียกใช้ useTranslation
+
+  const parallaxStyle = {
+    transform: `translateY(${scrollY * 0.2}px)`,
+  };
+
+  return (
+    <div className="hero-section">
+      <div className="hero-content">
+        <div className="reviews">
+          <img src={myLogo1} alt="Logo 1" />
+          <img src={myLogo2} alt="Logo 2" />
+          <span>{t("hero_community_tag")}</span>
+        </div>
+        <h1>{t("hero_title")}</h1>
+        <p>{t("hero_subtitle")}</p>
+        <button className="cta-button" onClick={onShopNowClick}>
+          {t("hero_cta_button")}
+        </button>
+      </div>
+      <div className="hero-images" style={parallaxStyle}>
+        <img
+          src="https://images.pexels.com/photos/4465124/pexels-photo-4465124.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
+          alt="Main skincare model"
+          className="image-main"
+        />
+        <img
+          src="https://images.pexels.com/photos/4041392/pexels-photo-4041392.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
+          alt="Hand with cream"
+          className="image-side1"
+        />
+        <img
+          src="https://images.pexels.com/photos/286951/pexels-photo-286951.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
+          alt="Skincare products"
+          className="image-side2"
+        />
+      </div>
+    </div>
+  );
+};
+
 const IndexPage = () => {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -29,10 +75,27 @@ const IndexPage = () => {
   const [submittedSearchTerm, setSubmittedSearchTerm] = useState("");
   const [isSearched, setIsSearched] = useState(false);
 
+  const productsSectionRef = useRef(null);
+
+  const [scrollY, setScrollY] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrollY(window.scrollY);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   const { t, i18n } = useTranslation();
   const { user, token } = useAuth();
   const navigate = useNavigate();
   const isMobile = useMediaQuery("(max-width: 768px)");
+
+  const handleScrollToProducts = () => {
+    productsSectionRef.current.scrollIntoView({ behavior: "smooth" });
+  };
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -125,7 +188,8 @@ const IndexPage = () => {
 
   return (
     <div className="index-page">
-      <Container className="py-4">
+      <HeroSection onShopNowClick={handleScrollToProducts} scrollY={scrollY} />
+      <Container className="py-4" ref={productsSectionRef}>
         <div className="d-flex justify-content-end mb-3">
           <LanguageSwitcher />
         </div>

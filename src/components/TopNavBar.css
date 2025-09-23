@@ -1,0 +1,150 @@
+/* src/components/TopNavBar.css */
+.top-navbar {
+  background-color: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.top-navbar .navbar-brand {
+  font-size: 1.1rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.top-navbar .nav-link,
+.top-navbar .dropdown-toggle {
+  font-weight: 500;
+  color: #333;
+}
+
+.top-navbar .nav-link:hover,
+.top-navbar .dropdown-toggle:hover {
+  color: var(--bs-primary);
+}
+
+/* --- Dropdown animation --- */
+.top-navbar .dropdown-menu {
+  border-radius: 0.5rem;
+  border: 1px solid #eee;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+
+  display: block;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);             /* เริ่มจากด้านบนเล็กน้อย */
+  transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
+  will-change: transform, opacity;
+}
+
+/* สถานะแสดงผล */
+.top-navbar .dropdown-menu.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+/* ลดช่องว่างระหว่างปุ่มกับเมนู เพื่อเลื่อนไปคลิกได้ไม่หลุด */
+.nav-icon-dropdown .dropdown-menu {
+  margin-top: 6px;
+}
+
+/* --- Search box --- */
+.top-nav-search {
+  position: relative;
+}
+
+.top-nav-search .search-input-static {
+  border-radius: 50px !important;
+  padding-left: 1rem !important;
+  padding-right: 2.5rem !important;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  width: 220px;
+  transition: all 0.2s ease-in-out;
+  background-color: rgba(255, 255, 255, 0.5) !important;
+}
+
+.search-input-static:focus {
+  border-color: var(--bs-primary);
+  box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15);
+  background-color: rgba(255, 255, 255, 0.7) !important;
+}
+
+.search-submit-btn {
+  position: absolute;
+  right: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6c757d;
+  padding: 0.25rem 0.5rem;
+}
+.search-submit-btn:hover {
+  color: var(--bs-primary);
+}
+
+/* --- Icon pills --- */
+.nav-icon-link,
+.nav-icon-dropdown .dropdown-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  color: #333;
+  transition: background-color 0.2s, color 0.2s;
+  cursor: pointer;
+}
+
+.nav-icon-link:hover,
+.nav-icon-dropdown .dropdown-toggle:hover {
+  background-color: #e9ecef;
+  color: var(--bs-primary);
+}
+
+.nav-icon-dropdown .dropdown-toggle::after {
+  display: none;
+}
+
+/* --- Language menu layout --- */
+/* จัด layout ให้สม่ำเสมอ และให้ baseline ตรงกัน */
+.lang-item {
+  display: flex;
+  align-items: center;    /* กึ่งกลางแนวตั้งทั้งไอคอนและข้อความ */
+  gap: 0.5rem;
+  line-height: 1.4;
+}
+
+/* “จองช่อง” สำหรับเครื่องหมายถูกให้กว้างคงที่ทุกแถว */
+.lang-item .check {
+  width: 18px;            /* ปรับได้ 16–20px ตามใจ */
+  flex: 0 0 18px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* กัน SVG มี baseline แปลก ๆ */
+.lang-item .check svg {
+  display: block;
+  width: 16px;
+  height: 16px;
+}
+
+/* เน้นข้อความของภาษาที่เลือก */
+.lang-item.is-active .lang-name {
+  font-weight: 600;
+}
+
+/* ยกเลิกพื้นหลังน้ำเงินของ Bootstrap เมื่อ active/:active */
+.nav-icon-dropdown .dropdown-menu .dropdown-item.active,
+.nav-icon-dropdown .dropdown-menu .dropdown-item:active {
+  background-color: transparent;
+  color: #212529; /* ค่ามาตรฐาน Bootstrap body */
+}
+
+/* Hover ยังมีไฮไลต์อ่อน ๆ */
+.nav-icon-dropdown .dropdown-menu .dropdown-item:hover {
+  background-color: #f1f3f5;
+}

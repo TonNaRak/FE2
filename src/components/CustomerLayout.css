@@ -1,0 +1,11 @@
+/* src/components/CustomerLayout.css */
+
+.content-with-top-nav {
+  /* เว้นที่ด้านบนเท่ากับความสูงของ TopNavBar โดยประมาณ */
+  padding-top: 70px; 
+}
+
+.content-with-bottom-nav {
+  /* เว้นที่ด้านล่างเท่ากับความสูงของ BottomNavBar โดยประมาณ */
+  padding-bottom: 80px;
+}

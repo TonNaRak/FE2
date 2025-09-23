@@ -43,7 +43,7 @@ i18n
           nav_home: "Home",
           nav_cart: "Cart",
           nav_location: "Location",
-          nav_profile: "Profile",
+          nav_profile: "My Profile",
 
           // --- Cart Page ---
           cart_title: "Shopping Cart",
@@ -142,7 +142,7 @@ i18n
             "Receipt uploaded successfully! The store will verify it shortly.",
           upload_fail: "Failed to upload receipt. Please try again.",
           load_order_fail: "Could not load order details.",
-          
+
           bank_name_label: "Bank",
           account_name_label: "Account Name",
           account_number_label: "Account Number",
@@ -173,6 +173,21 @@ i18n
           welcome_title: "Welcome",
           welcome_subtitle:
             "Get started by logging in or creating a new account.",
+
+          // --- TopNavBar ---
+          nav_language: "Language",
+          nav_order_history: "Order History",
+          nav_logout: "Logout",
+          nav_hello: "Hello",
+          nav_login: "Login",
+          nav_register: "Register",
+          search_placeholder_nav: "Search products...",
+
+          // --- Hero Section ---
+          hero_community_tag: "From Our Community to Your Home",
+          hero_title: "Experience the Charm of the Lagoon",
+          hero_subtitle: "Discover a variety of products from local wisdom, delivered directly to your home.",
+          hero_cta_button: "Shop Now",
         },
       },
       th: {
@@ -328,6 +343,21 @@ i18n
           welcome_title: "ยินดีต้อนรับ",
           welcome_subtitle:
             "เริ่มต้นใช้งานโดยการเข้าสู่ระบบ หรือสร้างบัญชีใหม่",
+
+          // --- TopNavBar ---
+          nav_language: "ภาษา",
+          nav_order_history: "ประวัติคำสั่งซื้อ",
+          nav_logout: "ออกจากระบบ",
+          nav_hello: "สวัสดี",
+          nav_login: "เข้าสู่ระบบ",
+          nav_register: "สร้างบัญชี",
+          search_placeholder_nav: "ค้นหาสินค้า...",
+
+          // --- Hero Section ---
+          hero_community_tag: "จากชุมชนสู่มือคุณ",
+          hero_title: "สัมผัสเสน่ห์แห่งลุ่มน้ำทะเลสาบ",
+          hero_subtitle: "พบกับสินค้าหลากหลายจากภูมิปัญญาท้องถิ่น ส่งตรงถึงบ้านคุณ",
+          hero_cta_button: "เลือกซื้อสินค้า",
         },
       },
     },

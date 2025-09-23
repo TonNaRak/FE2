@@ -1,0 +1,38 @@
+/* src/pages/DesktopSearchResultsPage.css */
+
+.search-results-container {
+    min-height: 70vh;
+}
+
+.query-text {
+    color: var(--bs-primary);
+    font-weight: bold;
+}
+
+.product-card {
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    border: 1px solid #eee;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.product-card-img {
+    height: 200px;
+    object-fit: cover;
+}
+
+.product-card-title {
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.product-card-price {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: var(--bs-primary);
+}

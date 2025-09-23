@@ -136,7 +136,7 @@
 .product-image {
   width: 100%;
   aspect-ratio: 1 / 1; /* กำหนดให้กรอบรูปเป็นสี่เหลี่ยมจัตุรัสเสมอ */
-  object-fit: cover;   /* ทำให้รูปเต็มกรอบโดยไม่เสียสัดส่วน (ซูมและ crop อัตโนมัติ) */
+  object-fit: cover; /* ทำให้รูปเต็มกรอบโดยไม่เสียสัดส่วน (ซูมและ crop อัตโนมัติ) */
   transition: transform 0.4s ease;
   border-radius: 15px;
 }
@@ -270,3 +270,145 @@
   margin-bottom: 2px; /* ขยับลงเล็กน้อยให้สวยงาม */
 }
 /* --- END: เพิ่มโค้ด CSS --- */
+
+/* --- [จุดแก้ไข] เพิ่มสไตล์สำหรับ Hero Section --- */
+.hero-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  align-items: center;
+  padding: 60px 5%;
+  /* max-width: 1400px; */
+  margin: 0;
+  background: radial-gradient(
+      800px 400px at 10% 20%,
+      rgba(13, 110, 253, 0.12),
+      transparent 60%
+    ),
+    radial-gradient(
+      600px 300px at 85% 30%,
+      rgba(32, 201, 151, 0.1),
+      transparent 60%
+    ),
+    linear-gradient(180deg, #dbf3fa 0%, #eafaff 60%, #ffffff 100%);
+  overflow: hidden;
+  min-height: 90vh;
+}
+
+.hero-content .reviews {
+  display: flex;
+  align-items: center;
+  gap: -10px;
+  margin-bottom: 20px;
+}
+
+.hero-content .reviews img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 3px solid #f0f8ff;
+  margin-left: -15px;
+}
+.hero-content .reviews img:first-child {
+  margin-left: 0;
+}
+
+.hero-content .reviews span {
+  margin-left: 20px;
+  font-weight: 500;
+}
+
+.hero-content h1 {
+  font-size: 3.5rem;
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: 20px;
+}
+
+.hero-content p {
+  font-size: 1.1rem;
+  color: #555;
+  margin-bottom: 30px;
+  max-width: 500px;
+}
+
+.cta-button {
+  background-color: #0d6efd;
+  color: white;
+  border: none;
+  padding: 15px 30px;
+  border-radius: 50px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.cta-button:hover {
+  background-color: #0b5ed7;
+}
+
+.hero-images {
+  position: relative;
+  width: 100%;
+  height: 500px;
+}
+
+.hero-images img {
+  position: absolute;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  object-fit: cover;
+}
+
+.image-main {
+  width: 60%;
+  height: 90%;
+  top: 5%;
+  left: 20%;
+  z-index: 2;
+}
+
+.image-side1 {
+  width: 35%;
+  height: 40%;
+  top: 0;
+  left: 0;
+  z-index: 1;
+}
+
+.image-side2 {
+  width: 35%;
+  height: 40%;
+  bottom: 0;
+  right: 0;
+  z-index: 3;
+}
+
+@media (max-width: 992px) {
+  .hero-section {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+  .hero-content .reviews {
+    justify-content: center;
+  }
+  .hero-content p {
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .hero-images {
+    grid-row: 1; /* Move images to the top on smaller screens */
+    height: 400px;
+    margin-bottom: 40px;
+  }
+}
+
+@media (max-width: 576px) {
+  .hero-content h1 {
+    font-size: 2.5rem;
+  }
+  .hero-images {
+    height: 300px;
+  }
+}

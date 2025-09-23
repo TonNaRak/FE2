@@ -80,13 +80,16 @@
 
   /* --- Panel ด้านซ้าย --- */
   .left-panel {
-    width: 55%;
-    height: 100vh;
+    width: 65%;
+    margin: 1%;
+    height: 96vh;
     background-image: url("../images/pic.jpeg");
     background-size: cover;
     background-position: center;
     position: relative;
     display: block; /* แสดงผลเฉพาะบนจอคอม */
+    border-radius: 10px;
+
   }
 
   /* Overlay สีเข้ม */
@@ -98,11 +101,12 @@
     width: 100%;
     height: 100%;
     background-color: rgba(0, 0, 0, 0.3); /* สีดำโปร่งใส 30% */
+    border-radius: 10px;
   }
 
   /* --- Panel ด้านขวา --- */
   .right-panel {
-    width: 45%;
+    width: 35%;
     height: 100vh;
     display: flex;
     justify-content: center;
