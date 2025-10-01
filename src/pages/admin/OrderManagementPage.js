@@ -31,6 +31,10 @@ const OrderManagementPage = () => {
 
   const [statusCounts, setStatusCounts] = useState({});
 
+  const [isNotifying, setIsNotifying] = useState(false); // State ควบคุมการแสดงฟอร์ม
+  const [notificationMessage, setNotificationMessage] = useState("");
+  const [isSending, setIsSending] = useState(false);
+
   const { token } = useAuth();
   const API_CONFIG = { headers: { Authorization: `Bearer ${token}` } };
 
@@ -363,6 +367,31 @@ const OrderManagementPage = () => {
     }
   };
 
+  const handleSendNotification = async () => {
+    if (!notificationMessage.trim() || !selectedOrder) {
+      alert("กรุณากรอกข้อความที่จะแจ้งเตือน");
+      return;
+    }
+    setIsSending(true);
+    try {
+      await axios.post(
+        `https://api.souvenir-from-lagoon-thailand.com/api/admin/orders/${selectedOrder.order_id}/notify-issue`,
+        { message: notificationMessage },
+        API_CONFIG
+      );
+      alert("ส่งอีเมลแจ้งเตือนลูกค้าสำเร็จ!");
+      setIsNotifying(false); // กลับสู่สถานะปกติ
+      setNotificationMessage("");
+    } catch (err) {
+      alert(
+        "เกิดข้อผิดพลาดในการส่งอีเมล: " +
+          (err.response?.data?.message || err.message)
+      );
+    } finally {
+      setIsSending(false);
+    }
+  };
+
   const getStatusBadge = (status) => {
     const styles = {
       pending_payment: { bg: "secondary", text: "รอชำระเงิน" },
@@ -657,64 +686,114 @@ const OrderManagementPage = () => {
             </div>
           )}
         </Modal.Body>
-        <Modal.Footer>
-          <div className="d-flex justify-content-between w-100">
-            <div>
-              {selectedOrder?.status === "pending_verification" && (
+        <Modal.Footer
+          className={`justify-content-between ${
+            isNotifying ? "flex-column align-items-stretch" : ""
+          }`}
+        >
+          {isNotifying ? (
+            // ---- โหมดแจ้งปัญหา ----
+            <>
+              <div className="w-100">
+                <p className="mb-1">
+                  <b>ส่งอีเมลแจ้งปัญหาให้ลูกค้า</b>
+                </p>
+                <Form.Control
+                  as="textarea"
+                  rows={3}
+                  value={notificationMessage}
+                  onChange={(e) => setNotificationMessage(e.target.value)}
+                  placeholder="เช่น สินค้าหมดสต็อก, ที่อยู่ไม่ชัดเจน, ฯลฯ"
+                />
+              </div>
+              <div className="d-flex justify-content-end w-100 mt-2">
                 <Button
-                  variant="success"
-                  onClick={() =>
-                    handleUpdateStatus(selectedOrder.order_id, "processing")
-                  }
+                  variant="secondary"
+                  className="me-2"
+                  onClick={() => setIsNotifying(false)}
                 >
-                  ยืนยันการชำระเงิน
+                  ยกเลิก
                 </Button>
-              )}
-              {selectedOrder?.status === "processing" && (
                 <Button
                   variant="primary"
-                  onClick={() =>
-                    handleUpdateStatus(selectedOrder.order_id, "shipped")
-                  }
+                  onClick={handleSendNotification}
+                  disabled={isSending}
                 >
-                  แจ้งว่าจัดส่งแล้ว
+                  {isSending ? <Spinner as="span" size="sm" /> : "ส่งอีเมล"}
                 </Button>
-              )}
-              {(selectedOrder?.status === "pending_verification" ||
-                selectedOrder?.status === "processing" ||
-                selectedOrder?.status === "pending_payment") && (
-                <Button
-                  variant="danger"
-                  className="ms-2"
-                  onClick={() =>
-                    handleUpdateStatus(selectedOrder.order_id, "cancelled")
-                  }
-                >
-                  ยกเลิกออเดอร์
-                </Button>
-              )}
-            </div>
-            <div>
-              {selectedOrder &&
-                ["processing", "shipped", "completed"].includes(
-                  selectedOrder.status
-                ) && (
+              </div>
+            </>
+          ) : (
+            // ---- โหมดปกติ ----
+            <>
+              <div>
+                {selectedOrder &&
+                  !["completed", "cancelled"].includes(
+                    selectedOrder.status
+                  ) && (
+                    <Button
+                      variant="warning"
+                      onClick={() => setIsNotifying(true)}
+                    >
+                      แจ้งปัญหา
+                    </Button>
+                  )}
+              </div>
+              <div className="d-flex align-items-center">
+                {selectedOrder?.status === "pending_verification" && (
                   <Button
-                    variant="info"
-                    className="me-2"
-                    onClick={() => handleGenerateReceipt(selectedOrder)}
+                    variant="success"
+                    onClick={() =>
+                      handleUpdateStatus(selectedOrder.order_id, "processing")
+                    }
                   >
-                    สร้างใบเสร็จ
+                    ยืนยันการชำระเงิน
                   </Button>
                 )}
-              <Button
-                variant="secondary"
-                onClick={() => setShowDetailModal(false)}
-              >
-                ปิด
-              </Button>
-            </div>
-          </div>
+                {selectedOrder?.status === "processing" && (
+                  <Button
+                    variant="primary"
+                    onClick={() =>
+                      handleUpdateStatus(selectedOrder.order_id, "shipped")
+                    }
+                  >
+                    แจ้งว่าจัดส่งแล้ว
+                  </Button>
+                )}
+                {(selectedOrder?.status === "pending_verification" ||
+                  selectedOrder?.status === "pending_payment") && (
+                  <Button
+                    variant="danger"
+                    className="ms-2"
+                    onClick={() =>
+                      handleUpdateStatus(selectedOrder.order_id, "cancelled")
+                    }
+                  >
+                    ยกเลิกออเดอร์
+                  </Button>
+                )}
+                {selectedOrder &&
+                  ["processing", "shipped", "completed"].includes(
+                    selectedOrder.status
+                  ) && (
+                    <Button
+                      variant="info"
+                      className="ms-2"
+                      onClick={() => handleGenerateReceipt(selectedOrder)}
+                    >
+                      สร้างใบเสร็จ
+                    </Button>
+                  )}
+                <Button
+                  variant="secondary"
+                  className="ms-2"
+                  onClick={() => setShowDetailModal(false)}
+                >
+                  ปิด
+                </Button>
+              </div>
+            </>
+          )}
         </Modal.Footer>
       </Modal>
     </Container>

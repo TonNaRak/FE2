@@ -189,9 +189,9 @@ const IndexPage = () => {
   return (
     <div className="index-page">
       <HeroSection onShopNowClick={handleScrollToProducts} scrollY={scrollY} />
-      <Container className="py-4" ref={productsSectionRef}>
+      <Container className="py-4 products-section-container" ref={productsSectionRef}>
         <div className="d-flex justify-content-end mb-3">
-          <LanguageSwitcher />
+          {/* <LanguageSwitcher /> */}
         </div>
 
         {cartMessage && (

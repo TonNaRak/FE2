@@ -324,14 +324,14 @@ const ProductDetailPage = () => {
 
     return (
       <Container className={`product-detail-container my-5`}>
-        <div className="d-flex justify-content-between align-items-center mb-4">
+        {/* <div className="d-flex justify-content-between align-items-center mb-4">
           <Button className="glass-btn" onClick={() => navigate(-1)}>
             <BsArrowLeft className="me-2" /> {t("back_button")}
           </Button>
           <Button className="glass-btn" onClick={() => navigate("/cart")}>
             <BsCart className="me-2" /> {t("go_to_cart")}
           </Button>
-        </div>
+        </div> */}
         <Row>
           <Col md={6}>
             <Image

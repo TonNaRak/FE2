@@ -9,18 +9,38 @@ import {
   Form,
   Spinner,
   Alert,
+  Modal,
 } from "react-bootstrap";
 import { useAuth } from "../context/AuthContext";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import LanguageSwitcher from "../components/LanguageSwitcher";
+import {
+  FaTrashAlt,
+  FaMinusCircle,
+  FaShoppingCart,
+  FaImage,
+} from "react-icons/fa";
 import "./CartPage.css";
+
+// Placeholder Component
+const PlaceholderImage = () => {
+  return (
+    <div className="placeholder-image-container">
+      <FaImage />
+    </div>
+  );
+};
 
 const CartPage = () => {
   const [allItems, setAllItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [selectedItems, setSelectedItems] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+  const [itemToRemove, setItemToRemove] = useState(null);
+  const [removingItems, setRemovingItems] = useState([]); // State สำหรับ transition
+  const [imageLoaded, setImageLoaded] = useState({}); // State สำหรับจัดการรูปภาพ Placeholder
   const { user, token } = useAuth();
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
@@ -28,7 +48,7 @@ const CartPage = () => {
   const fetchCartItems = async () => {
     if (!token) {
       setLoading(false);
-      setError(t("login_prompt_cart"));
+      setError(t("login_to_view_cart_prompt"));
       return;
     }
     try {
@@ -40,6 +60,7 @@ const CartPage = () => {
         }
       );
       setAllItems(response.data);
+      setSelectedItems(response.data.filter((item) => item.sales_status === 1));
       setError("");
     } catch (err) {
       setError(t("fetch_cart_fail"));
@@ -64,19 +85,19 @@ const CartPage = () => {
   );
 
   const subtotal = useMemo(() => {
-    return availableItems.reduce(
+    return selectedItems.reduce(
       (sum, item) => sum + item.price * item.quantity,
       0
     );
-  }, [availableItems]);
+  }, [selectedItems]);
 
   const handleProceedToCheckout = () => {
-    if (availableItems.length === 0) {
+    if (selectedItems.length === 0) {
       alert(t("no_items_for_checkout"));
       return;
     }
     navigate("/checkout", {
-      state: { items: availableItems, subtotal: subtotal },
+      state: { items: selectedItems, subtotal: subtotal },
     });
   };
 
@@ -95,27 +116,78 @@ const CartPage = () => {
             : item
         )
       );
+      setSelectedItems((prevSelectedItems) =>
+        prevSelectedItems.map((item) =>
+          item.cart_item_id === cartItemId
+            ? { ...item, quantity: newQuantity }
+            : item
+        )
+      );
     } catch (err) {
       console.error("Failed to update quantity:", err);
       alert(t("update_quantity_fail"));
     }
   };
 
-  const handleRemoveItem = async (cartItemId) => {
-    if (!window.confirm(t("confirm_remove_item"))) return;
+  const openRemoveModal = (cartItemId) => {
+    setItemToRemove(cartItemId);
+    setShowModal(true);
+  };
+
+  const handleConfirmRemove = async () => {
+    setShowModal(false);
+    if (!itemToRemove) return;
+
+    // เพิ่ม itemToRemove เข้าไปใน state เพื่อเริ่ม transition
+    setRemovingItems((prev) => [...prev, itemToRemove]);
+
     try {
       await axios.delete(
-        `https://api.souvenir-from-lagoon-thailand.com/api/cart/delete/${cartItemId}`,
+        `https://api.souvenir-from-lagoon-thailand.com/api/cart/delete/${itemToRemove}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      setAllItems((prevItems) =>
-        prevItems.filter((item) => item.cart_item_id !== cartItemId)
-      );
+      // ลบออกจาก AllItems หลังจาก delay เพื่อให้ transition เสร็จสิ้น
+      setTimeout(() => {
+        setAllItems((prevItems) =>
+          prevItems.filter((item) => item.cart_item_id !== itemToRemove)
+        );
+        setSelectedItems((prevSelectedItems) =>
+          prevSelectedItems.filter((item) => item.cart_item_id !== itemToRemove)
+        );
+        setItemToRemove(null);
+        setRemovingItems((prev) => prev.filter((id) => id !== itemToRemove));
+      }, 300); // 300ms ควรจะพอดีกับ CSS transition
     } catch (err) {
       console.error("Failed to remove item:", err);
       alert(t("remove_item_fail"));
+      setRemovingItems((prev) => prev.filter((id) => id !== itemToRemove));
+    }
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setItemToRemove(null);
+  };
+
+  const handleItemSelect = (item, isChecked) => {
+    if (isChecked) {
+      setSelectedItems((prevSelected) => [...prevSelected, item]);
+    } else {
+      setSelectedItems((prevSelected) =>
+        prevSelected.filter(
+          (selectedItem) => selectedItem.cart_item_id !== item.cart_item_id
+        )
+      );
+    }
+  };
+
+  const handleSelectAll = (isChecked) => {
+    if (isChecked) {
+      setSelectedItems(availableItems);
+    } else {
+      setSelectedItems([]);
     }
   };
 
@@ -151,8 +223,10 @@ const CartPage = () => {
   return (
     <Container className="cart-page-container my-5">
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h1>{t("cart_title")}</h1>
-        {/* <LanguageSwitcher /> */}
+        <h1>
+          <FaShoppingCart className="me-3" />
+          {t("cart_title")}
+        </h1>
       </div>
 
       {error && <Alert variant="danger">{error}</Alert>}
@@ -163,22 +237,66 @@ const CartPage = () => {
 
       <Row>
         <Col md={8}>
+          {availableItems.length > 0 && (
+            <div className="mb-3">
+              <Form.Check
+                type="checkbox"
+                label={t("select_all")}
+                checked={
+                  selectedItems.length === availableItems.length &&
+                  availableItems.length > 0
+                }
+                onChange={(e) => handleSelectAll(e.target.checked)}
+              />
+            </div>
+          )}
           {availableItems.length > 0 ? (
             availableItems.map((item) => (
-              <Card key={item.cart_item_id} className="mb-3 cart-item-card">
+              <Card
+                key={item.cart_item_id}
+                className={`mb-3 cart-item-card ${
+                  removingItems.includes(item.cart_item_id) ? "is-removing" : ""
+                }`}
+              >
                 <Card.Body>
                   <Row className="align-items-center">
-                    <Col xs={3} md={2}>
-                      <Image
-                        src={item.image_url}
-                        fluid
-                        rounded
-                        onError={(e) => {
-                          e.target.src = "https://via.placeholder.com/100";
-                        }}
+                    <Col xs={1} className="d-flex align-items-center">
+                      <Form.Check
+                        type="checkbox"
+                        checked={selectedItems.some(
+                          (selected) =>
+                            selected.cart_item_id === item.cart_item_id
+                        )}
+                        onChange={(e) =>
+                          handleItemSelect(item, e.target.checked)
+                        }
                       />
                     </Col>
-                    <Col xs={9} md={4}>
+                    <Col xs={3} md={2}>
+                      {imageLoaded[item.cart_item_id] === false ? (
+                        <PlaceholderImage />
+                      ) : (
+                        <Image
+                          src={item.image_url}
+                          fluid
+                          rounded
+                          className="cart-item-image"
+                          onLoad={() =>
+                            setImageLoaded((prev) => ({
+                              ...prev,
+                              [item.cart_item_id]: true,
+                            }))
+                          }
+                          onError={() =>
+                            setImageLoaded((prev) => ({
+                              ...prev,
+                              [item.cart_item_id]: false,
+                            }))
+                          }
+                        />
+                      )}
+                    </Col>
+                    <Col xs={5} md={6}>
                       <h5>
                         {i18n.language === "en" && item.name_en
                           ? item.name_en
@@ -199,42 +317,58 @@ const CartPage = () => {
                       <p className="text-muted mb-0">
                         {t("price")}: {item.price.toLocaleString()} {t("baht")}
                       </p>
-                    </Col>
-                    <Col
-                      xs={6}
-                      md={3}
-                      className="d-flex align-items-center mt-3 mt-md-0"
-                    >
-                      <Form.Label className="me-2 mb-0">
-                        {t("quantity")}:
-                      </Form.Label>
-                      <Form.Control
-                        type="number"
-                        value={item.quantity}
-                        onChange={(e) =>
-                          handleQuantityChange(
-                            item.cart_item_id,
-                            parseInt(e.target.value)
-                          )
-                        }
-                        min="1"
-                        className="quantity-input"
-                      />
-                    </Col>
-                    <Col xs={4} md={2} className="text-md-end mt-3 mt-md-0">
-                      <strong>
+                      <strong className="d-block">
+                        {t("total")}:{" "}
                         {(item.price * item.quantity).toLocaleString()}{" "}
                         {t("baht")}
                       </strong>
                     </Col>
-                    <Col xs={2} md={1} className="text-end">
-                      <Button
-                        variant="outline-danger"
-                        size="sm"
-                        onClick={() => handleRemoveItem(item.cart_item_id)}
-                      >
-                        &times;
-                      </Button>
+                    <Col xs={3} md={3} className="text-end">
+                      <div className="d-flex justify-content-end align-items-center">
+                        <div className="quantity-control-group me-2">
+                          {/* Conditional Rendering สำหรับปุ่มลบ */}
+                          {item.quantity <= 1 ? (
+                            <Button
+                              variant="light"
+                              size="sm"
+                              className="quantity-btn"
+                              onClick={() => openRemoveModal(item.cart_item_id)}
+                            >
+                              <FaTrashAlt />
+                            </Button>
+                          ) : (
+                            <Button
+                              variant="light"
+                              size="sm"
+                              className="quantity-btn"
+                              onClick={() =>
+                                handleQuantityChange(
+                                  item.cart_item_id,
+                                  item.quantity - 1
+                                )
+                              }
+                            >
+                              -
+                            </Button>
+                          )}
+                          <span className="quantity-display">
+                            {item.quantity}
+                          </span>
+                          <Button
+                            variant="light"
+                            size="sm"
+                            className="quantity-btn"
+                            onClick={() =>
+                              handleQuantityChange(
+                                item.cart_item_id,
+                                item.quantity + 1
+                              )
+                            }
+                          >
+                            +
+                          </Button>
+                        </div>
+                      </div>
                     </Col>
                   </Row>
                 </Card.Body>
@@ -251,21 +385,39 @@ const CartPage = () => {
               {unavailableItems.map((item) => (
                 <Card
                   key={item.cart_item_id}
-                  className="mb-3 cart-item-card unavailable-item"
+                  className={`mb-3 unavailable-item ${
+                    removingItems.includes(item.cart_item_id)
+                      ? "is-removing"
+                      : ""
+                  }`}
                 >
                   <Card.Body>
                     <Row className="align-items-center">
                       <Col xs={3} md={2}>
-                        <Image
-                          src={item.image_url}
-                          fluid
-                          rounded
-                          onError={(e) => {
-                            e.target.src = "https://via.placeholder.com/100";
-                          }}
-                        />
+                        {imageLoaded[item.cart_item_id] === false ? (
+                          <PlaceholderImage />
+                        ) : (
+                          <Image
+                            src={item.image_url}
+                            fluid
+                            rounded
+                            className="unavailable-image"
+                            onLoad={() =>
+                              setImageLoaded((prev) => ({
+                                ...prev,
+                                [item.cart_item_id]: true,
+                              }))
+                            }
+                            onError={() =>
+                              setImageLoaded((prev) => ({
+                                ...prev,
+                                [item.cart_item_id]: false,
+                              }))
+                            }
+                          />
+                        )}
                       </Col>
-                      <Col xs={9} md={4}>
+                      <Col xs={6} md={7}>
                         <h5 className="text-muted">
                           <s>
                             {i18n.language === "en" && item.name_en
@@ -277,16 +429,16 @@ const CartPage = () => {
                           {t("quantity")}: {item.quantity}
                         </p>
                       </Col>
-                      <Col xs={12} md={6} className="text-md-end mt-2 mt-md-0">
-                        <span className="text-danger me-2">
-                          {t("item_unavailable")}
-                        </span>
+                      <Col xs={3} md={3} className="text-end">
                         <Button
                           variant="outline-secondary"
                           size="sm"
-                          onClick={() => handleRemoveItem(item.cart_item_id)}
+                          onClick={() => openRemoveModal(item.cart_item_id)}
                         >
-                          {t("remove")}
+                          <FaTrashAlt />
+                          <span className="ms-2 d-none d-md-inline">
+                            {t("remove")}
+                          </span>
                         </Button>
                       </Col>
                     </Row>
@@ -303,7 +455,9 @@ const CartPage = () => {
               <Card.Title>{t("summary")}</Card.Title>
               <hr />
               <div className="d-flex justify-content-between">
-                <span>{t("subtotal")}</span>
+                <span>
+                  {t("subtotal")} ({selectedItems.length} {t("items")})
+                </span>
                 <span>
                   {subtotal.toLocaleString()} {t("baht")}
                 </span>
@@ -332,6 +486,24 @@ const CartPage = () => {
           </Card>
         </Col>
       </Row>
+
+      {/* Modal สำหรับยืนยันการลบ */}
+      <Modal show={showModal} onHide={handleCloseModal} centered>
+        <Modal.Header closeButton>
+          <Modal.Title className="d-flex align-items-center">
+            <FaMinusCircle size={24} className="me-2 text-danger" />
+            <span className="text-danger">{t("ลบสินค้าออกจากตระกร้า")}</span>
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="text-center">
+          <p>{t("confirm_remove_item")}</p>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="danger" onClick={handleConfirmRemove}>
+            {t("remove")}
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </Container>
   );
 };

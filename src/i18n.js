@@ -233,7 +233,7 @@ i18n
           item_unavailable: "ไม่สามารถสั่งซื้อได้",
           remove: "ลบออก",
           summary: "สรุปรายการ",
-          subtotal: "ราคารวม (Subtotal)",
+          subtotal: "ราคารวม",
           shipping: "ค่าจัดส่ง",
           free: "ฟรี",
           total: "ยอดรวมทั้งสิ้น",

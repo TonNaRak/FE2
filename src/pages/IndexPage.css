@@ -412,3 +412,7 @@
     height: 300px;
   }
 }
+
+.products-section-container {
+  scroll-margin-top: 80px; /* <-- ปรับตัวเลขนี้ให้เท่ากับความสูงของ Navbar ของคุณ */
+}
