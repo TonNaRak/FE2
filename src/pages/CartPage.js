@@ -45,6 +45,9 @@ const CartPage = () => {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
 
+  const [shippingCost, setShippingCost] = useState(0); // <-- เพิ่มบรรทัดนี้
+  const [totalWeight, setTotalWeight] = useState(0); // <-- เพิ่มบรรทัดนี้
+
   const fetchCartItems = async () => {
     if (!token) {
       setLoading(false);
@@ -69,6 +72,39 @@ const CartPage = () => {
       setLoading(false);
     }
   };
+
+  // ... (หลังฟังก์ชัน fetchCartItems)
+
+  useEffect(() => {
+    const calculateShipping = async () => {
+      const selectedIds = selectedItems.map((item) => item.cart_item_id);
+
+      if (selectedIds.length === 0) {
+        setShippingCost(0);
+        setTotalWeight(0);
+        return;
+      }
+
+      try {
+        const response = await axios.post(
+          `https://api.souvenir-from-lagoon-thailand.com/api/cart/calculate-shipping`,
+          { cartItemIds: selectedIds },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setShippingCost(response.data.shippingCost);
+        setTotalWeight(response.data.totalWeight);
+      } catch (error) {
+        console.error("Error calculating shipping cost:", error);
+        // ตั้งค่าจัดส่งเป็น 0 หากเกิดข้อผิดพลาด
+        setShippingCost(0);
+        setTotalWeight(0);
+      }
+    };
+
+    if (token) {
+      calculateShipping();
+    }
+  }, [selectedItems, token]); // ทำงานเมื่อ selectedItems หรือ token เปลี่ยน
 
   useEffect(() => {
     fetchCartItems();
@@ -97,7 +133,7 @@ const CartPage = () => {
       return;
     }
     navigate("/checkout", {
-      state: { items: selectedItems, subtotal: subtotal },
+      state: { items: selectedItems, subtotal: subtotal, shippingCost: shippingCost },
     });
   };
 
@@ -463,14 +499,20 @@ const CartPage = () => {
                 </span>
               </div>
               <div className="d-flex justify-content-between">
-                <span>{t("shipping")}</span>
-                <span>{t("free")}</span>
+                <span>
+                  {t("shipping_cost")} ({(totalWeight / 1000).toFixed(2)} kg)
+                </span>
+                <span>
+                  {shippingCost > 0
+                    ? `${shippingCost.toLocaleString()} ${t("baht")}`
+                    : t("free")}
+                </span>
               </div>
               <hr />
               <div className="d-flex justify-content-between h5">
                 <strong>{t("total")}</strong>
                 <strong>
-                  {subtotal.toLocaleString()} {t("baht")}
+                  {(subtotal + shippingCost).toLocaleString()} {t("baht")}
                 </strong>
               </div>
               <div className="d-grid mt-4">

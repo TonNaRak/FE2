@@ -1,0 +1,8 @@
+.sortable-header {
+    cursor: pointer;
+    user-select: none; /* ป้องกันไม่ให้ผู้ใช้ลากคลุมข้อความตอนดับเบิลคลิก */
+}
+
+.sortable-header:hover {
+    background-color: #f8f9fa; /* สีพื้นหลังอ่อนๆ ตอน hover */
+}

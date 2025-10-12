@@ -246,6 +246,15 @@ const OrderManagementPage = () => {
                 subtotal
               ).toLocaleString("en-US", { minimumFractionDigits: 2 })} บาท</p>
               ${
+                order.shipping_cost > 0
+                  ? `<p><strong>ค่าจัดส่ง:</strong> ${parseFloat(
+                      order.shipping_cost
+                    ).toLocaleString("en-US", {
+                      minimumFractionDigits: 2,
+                    })} บาท</p>`
+                  : ""
+              }
+              ${
                 discount > 0
                   ? `<p style="color: #dc3545;"><strong>ส่วนลด (ใช้ ${
                       order.points_redeemed
@@ -632,6 +641,13 @@ const OrderManagementPage = () => {
                   <strong>ราคารวม:</strong>{" "}
                   {parseFloat(selectedOrder.subtotal).toLocaleString()} บาท
                 </p>
+                {selectedOrder.shipping_cost > 0 && (
+                  <p className="mb-1">
+                    <strong>ค่าจัดส่ง:</strong>{" "}
+                    {parseFloat(selectedOrder.shipping_cost).toLocaleString()}{" "}
+                    บาท
+                  </p>
+                )}
                 {selectedOrder.discount_amount > 0 && (
                   <p className="mb-1 text-danger">
                     <strong>

@@ -74,6 +74,8 @@ i18n
           remove_item_fail: "Failed to remove item.",
           fetch_cart_fail: "Error fetching cart data.",
           login_prompt_cart: "Please log in to view your cart.",
+          select_all: "Select All",
+          shipping_cost: "Shipping cost",
 
           // --- Location Page ---
           storefront_alt: "Storefront",
@@ -245,6 +247,8 @@ i18n
           remove_item_fail: "ไม่สามารถลบสินค้าได้",
           fetch_cart_fail: "เกิดข้อผิดพลาดในการดึงข้อมูลตะกร้า",
           login_prompt_cart: "กรุณาเข้าสู่ระบบเพื่อดูตะกร้าสินค้า",
+          select_all: "เลือกทั้งหมด",
+          shipping_cost: "ค่าจัดส่ง",
 
           // --- Location Page ---
           storefront_alt: "หน้าร้าน",

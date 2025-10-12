@@ -25,10 +25,11 @@ const CheckoutPage = () => {
   const { user, token, refreshUserData } = useAuth();
   const { t, i18n } = useTranslation();
 
-  const { items, subtotal, isBuyNow } = location.state || {
+  const { items, subtotal, isBuyNow, shippingCost } = location.state || {
     items: [],
     subtotal: 0,
     isBuyNow: false,
+    shippingCost: 0,
   };
 
   const [shippingInfo, setShippingInfo] = useState({
@@ -69,7 +70,7 @@ const CheckoutPage = () => {
   }, [user]);
 
   // --- คำนวณราคาสุทธิ ---
-  const finalTotal = subtotal - discount;
+  const finalTotal = subtotal + (shippingCost || 0) - discount;
 
   if (items.length === 0) {
     return (
@@ -138,6 +139,7 @@ const CheckoutPage = () => {
         paymentMethod,
         shippingInfo,
         pointsToRedeem: discount,
+        shippingCost: shippingCost,
       };
 
       if (isBuyNow) {
@@ -348,7 +350,11 @@ const CheckoutPage = () => {
 
                 <div className="d-flex justify-content-between">
                   <span>{t("shipping")}</span>
-                  <span>{t("free")}</span>
+                  <span>
+                    {shippingCost > 0
+                      ? `${shippingCost.toLocaleString()} ${t("baht")}`
+                      : t("free")}
+                  </span>
                 </div>
                 <hr />
 

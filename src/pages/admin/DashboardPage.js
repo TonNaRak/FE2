@@ -1,19 +1,38 @@
-import React from "react";
-import { Container } from "react-bootstrap";
-import "./DashboardPage.css";
+import React from 'react';
+import { NavLink, Outlet } from 'react-router-dom';
+import { Nav } from 'react-bootstrap';
+import './DashboardPage.css'; // เราจะสร้างไฟล์ CSS นี้ในขั้นตอนต่อไป
 
 const DashboardPage = () => {
-  return (
-    <Container fluid className="dashboard-page-container">
-      {/* ลบ div ที่ครอบ iframe ออกไปได้เลย */}
-      <iframe
-        title="project"
-        className="dashboard-iframe" 
-        src="https://app.powerbi.com/view?r=eyJrIjoiOThmNGI2NDQtNTcyNy00N2NjLTgyMDItMjU1ZDA3ZTY4OTFlIiwidCI6IjhlNjM0ZTY3LTlkNjYtNDZkMi1hNTI5LWUxYjcwOGM1ZDhiYyIsImMiOjEwfQ%3D%3D&pageName=5830365041f6d3ca8de7"
-        allowFullScreen={true}
-      ></iframe>
-    </Container>
-  );
+    return (
+        <div className="dashboard-container">
+            <h1>Dashboard</h1>
+            
+            {/* เมนูย่อยสำหรับเลือกหน้า */}
+            <Nav variant="tabs" defaultActiveKey="/admin/dashboard" className="mb-4">
+                <Nav.Item>
+                    <Nav.Link as={NavLink} to="/admin/dashboard" end>
+                        ภาพรวม
+                    </Nav.Link>
+                </Nav.Item>
+                <Nav.Item>
+                    <Nav.Link as={NavLink} to="/admin/dashboard/products">
+                        สินค้า & หมวดหมู่
+                    </Nav.Link>
+                </Nav.Item>
+                <Nav.Item>
+                    <Nav.Link as={NavLink} to="/admin/dashboard/customers">
+                        ลูกค้า
+                    </Nav.Link>
+                </Nav.Item>
+            </Nav>
+
+            {/* พื้นที่สำหรับแสดงเนื้อหาของหน้าย่อย (สำคัญมาก!) */}
+            <div className="dashboard-content">
+                <Outlet />
+            </div>
+        </div>
+    );
 };
 
 export default DashboardPage;

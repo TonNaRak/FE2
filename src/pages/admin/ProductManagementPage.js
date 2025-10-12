@@ -38,6 +38,7 @@ const ProductManagementPage = () => {
     name: "",
     name_en: "",
     price: "",
+    weight: "",
     description: "",
     description_en: "",
     category_id: "",
@@ -163,12 +164,24 @@ const ProductManagementPage = () => {
     e.preventDefault();
 
     const formData = new FormData();
+
+    // --- จุดแก้ไข ---
+    // วนลูปเพื่อใส่ข้อมูลลง formData
     Object.keys(currentProduct).forEach((key) => {
+      // ข้าม key ที่ไม่ต้องการส่งโดยตรง
       if (
-        key !== "options" &&
-        key !== "category_name" &&
-        key !== "product_id"
+        key === "options" ||
+        key === "category_name" ||
+        key === "product_id"
       ) {
+        return; // ไปยัง key ตัวถัดไป
+      }
+
+      // สำหรับ 'weight', ถ้าไม่มีค่า (เป็นค่าว่าง) ให้ส่งเป็น 0 แทน
+      if (key === "weight") {
+        formData.append(key, currentProduct[key] || 0);
+      } else {
+        // key อื่นๆ ให้ส่งค่าไปตามปกติ
         formData.append(key, currentProduct[key]);
       }
     });
@@ -241,7 +254,7 @@ const ProductManagementPage = () => {
         }));
       }
 
-      setCurrentProduct(productData);
+      setCurrentProduct({ ...initialProductState, ...productData });
       setSelectedFile(null);
       setImagePreview(productData.image_url);
       setShowModal(true);
@@ -426,6 +439,16 @@ const ProductManagementPage = () => {
               />
             </Form.Group>
             <Form.Group className="mb-3">
+              <Form.Label>น้ำหนัก (กรัม)</Form.Label>
+              <Form.Control
+                type="number"
+                name="weight"
+                placeholder="เช่น 500"
+                value={currentProduct.weight || ""}
+                onChange={handleInputChange}
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
               <Form.Label>คำอธิบาย (ไทย)</Form.Label>
               <Form.Control
                 as="textarea"
@@ -461,7 +484,7 @@ const ProductManagementPage = () => {
                 ))}
               </Form.Select>
             </Form.Group>
-            
+
             <Form.Group className="mb-3">
               <Form.Label>รูปภาพสินค้า</Form.Label>
               <div className="product-image-upload-wrapper mx-auto">
@@ -469,7 +492,10 @@ const ProductManagementPage = () => {
                   src={imagePreview || placeholderImage}
                   className="product-modal-image-preview"
                 />
-                <label htmlFor="product-image-upload" className="product-image-upload-overlay">
+                <label
+                  htmlFor="product-image-upload"
+                  className="product-image-upload-overlay"
+                >
                   <BsUpload size={30} />
                   <span>เปลี่ยนรูปภาพ</span>
                 </label>

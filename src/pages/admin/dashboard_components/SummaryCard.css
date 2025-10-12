@@ -1,0 +1,36 @@
+.summary-card .card-body {
+    display: flex;
+    align-items: center; /* จัดให้เนื้อหาทั้งหมดอยู่กลางแนวตั้ง */
+}
+
+.summary-card .card-content-wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    gap: 1rem; /* เพิ่มช่องว่างระหว่างข้อความกับไอคอน */
+}
+
+.summary-card .text-content {
+    flex-grow: 1; /* ทำให้ส่วนของข้อความยืดขยายเต็มพื้นที่ที่เหลือ */
+    min-width: 0; /* **สำคัญมาก:** อนุญาตให้ส่วนนี้หดตัวได้เมื่อพื้นที่ไม่พอ */
+}
+
+.summary-card .card-subtitle {
+    font-size: 0.9rem;
+    white-space: nowrap; /* ไม่ให้หัวข้อขึ้นบรรทัดใหม่ */
+}
+
+.summary-card .card-value {
+    font-size: 1.8rem;
+    font-weight: 600;
+    white-space: nowrap;   /* ไม่ให้ตัวเลขขึ้นบรรทัดใหม่ */
+    overflow: hidden;      /* ซ่อนส่วนที่ล้น */
+    text-overflow: ellipsis; /* ถ้าตัวเลขยาวไปให้แสดงเป็น ... */
+}
+
+.summary-card .icon-content {
+    font-size: 2.2rem;
+    color: #e9ecef;
+    flex-shrink: 0; /* **สำคัญมาก:** ป้องกันไม่ให้ไอคอนหดตัว */
+}

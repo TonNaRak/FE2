@@ -1,18 +1,5 @@
-/* เปลี่ยนชื่อ class และปรับ style ให้ container ขยายเต็มพื้นที่ที่เหลือ */
-.dashboard-page-container {
-  height: calc(100vh - 56px); /* ความสูงเต็มจอ ลบด้วยความสูงของ Navbar (ถ้ามี) */
-  padding: 0; /* เอา padding ออกเพื่อให้ iframe ชิดขอบ */
+.nav-tabs .nav-link.active {
+    font-weight: bold;
+    color: #0d6efd !important;
+    border-bottom: 2px solid #0d6efd;
 }
-
-/* ทำให้ iframe ขยายเต็ม container ที่ครอบมันอยู่ */
-.dashboard-iframe {
-  width: 100%;
-  height: 100%;
-  border: none; /* เอากรอบของ iframe ออก */
-}
-
-/* ----- ลบ style สองอันนี้ทิ้งได้เลย ไม่ได้ใช้แล้ว ----- */
-/*
-.coming-soon-title { ... }
-.coming-soon-subtitle { ... }
-*/
