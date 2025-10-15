@@ -39,14 +39,14 @@ const CartPage = () => {
   const [selectedItems, setSelectedItems] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [itemToRemove, setItemToRemove] = useState(null);
-  const [removingItems, setRemovingItems] = useState([]); // State สำหรับ transition
-  const [imageLoaded, setImageLoaded] = useState({}); // State สำหรับจัดการรูปภาพ Placeholder
+  const [removingItems, setRemovingItems] = useState([]);
+  const [imageLoaded, setImageLoaded] = useState({});
   const { user, token } = useAuth();
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
 
-  const [shippingCost, setShippingCost] = useState(0); // <-- เพิ่มบรรทัดนี้
-  const [totalWeight, setTotalWeight] = useState(0); // <-- เพิ่มบรรทัดนี้
+  const [shippingCost, setShippingCost] = useState(0);
+  const [totalWeight, setTotalWeight] = useState(0);
 
   const fetchCartItems = async () => {
     if (!token) {
@@ -73,8 +73,6 @@ const CartPage = () => {
     }
   };
 
-  // ... (หลังฟังก์ชัน fetchCartItems)
-
   useEffect(() => {
     const calculateShipping = async () => {
       const selectedIds = selectedItems.map((item) => item.cart_item_id);
@@ -95,7 +93,6 @@ const CartPage = () => {
         setTotalWeight(response.data.totalWeight);
       } catch (error) {
         console.error("Error calculating shipping cost:", error);
-        // ตั้งค่าจัดส่งเป็น 0 หากเกิดข้อผิดพลาด
         setShippingCost(0);
         setTotalWeight(0);
       }
@@ -104,7 +101,7 @@ const CartPage = () => {
     if (token) {
       calculateShipping();
     }
-  }, [selectedItems, token]); // ทำงานเมื่อ selectedItems หรือ token เปลี่ยน
+  }, [selectedItems, token]);
 
   useEffect(() => {
     fetchCartItems();
@@ -133,7 +130,11 @@ const CartPage = () => {
       return;
     }
     navigate("/checkout", {
-      state: { items: selectedItems, subtotal: subtotal, shippingCost: shippingCost },
+      state: {
+        items: selectedItems,
+        subtotal: subtotal,
+        shippingCost: shippingCost,
+      },
     });
   };
 
@@ -174,7 +175,6 @@ const CartPage = () => {
     setShowModal(false);
     if (!itemToRemove) return;
 
-    // เพิ่ม itemToRemove เข้าไปใน state เพื่อเริ่ม transition
     setRemovingItems((prev) => [...prev, itemToRemove]);
 
     try {
@@ -184,7 +184,6 @@ const CartPage = () => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      // ลบออกจาก AllItems หลังจาก delay เพื่อให้ transition เสร็จสิ้น
       setTimeout(() => {
         setAllItems((prevItems) =>
           prevItems.filter((item) => item.cart_item_id !== itemToRemove)
@@ -194,7 +193,7 @@ const CartPage = () => {
         );
         setItemToRemove(null);
         setRemovingItems((prev) => prev.filter((id) => id !== itemToRemove));
-      }, 300); // 300ms ควรจะพอดีกับ CSS transition
+      }, 300);
     } catch (err) {
       console.error("Failed to remove item:", err);
       alert(t("remove_item_fail"));
@@ -257,6 +256,7 @@ const CartPage = () => {
   }
 
   return (
+    <div className="cart-page">
     <Container className="cart-page-container my-5">
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h1>
@@ -296,7 +296,8 @@ const CartPage = () => {
               >
                 <Card.Body>
                   <Row className="align-items-center">
-                    <Col xs={1} className="d-flex align-items-center">
+                    {/* 1. Checkbox: xs=1, md=1 */}
+                    <Col xs={1} md={1} className="d-flex align-items-center">
                       <Form.Check
                         type="checkbox"
                         checked={selectedItems.some(
@@ -308,7 +309,9 @@ const CartPage = () => {
                         }
                       />
                     </Col>
-                    <Col xs={3} md={2}>
+
+                    {/* 2. Image: ขยายเป็น xs=4, md=4 */}
+                    <Col xs={4} md={4}>
                       {imageLoaded[item.cart_item_id] === false ? (
                         <PlaceholderImage />
                       ) : (
@@ -332,7 +335,9 @@ const CartPage = () => {
                         />
                       )}
                     </Col>
-                    <Col xs={5} md={6}>
+
+                    {/* 3. Details + Total: ปรับเป็น xs=4, md=4 */}
+                    <Col xs={4} md={4}>
                       <h5>
                         {i18n.language === "en" && item.name_en
                           ? item.name_en
@@ -350,19 +355,23 @@ const CartPage = () => {
                             )}
                           </div>
                         )}
+                      {/* ราคาต่อหน่วย */}
                       <p className="text-muted mb-0">
                         {t("price")}: {item.price.toLocaleString()} {t("baht")}
                       </p>
+                      {/* ยอดรวมทั้งสิ้น (ย้ายมาที่นี่) */}
                       <strong className="d-block">
                         {t("total")}:{" "}
                         {(item.price * item.quantity).toLocaleString()}{" "}
                         {t("baht")}
                       </strong>
                     </Col>
+
+                    {/* 4. Quantity Control: xs=3, md=3 */}
                     <Col xs={3} md={3} className="text-end">
                       <div className="d-flex justify-content-end align-items-center">
-                        <div className="quantity-control-group me-2">
-                          {/* Conditional Rendering สำหรับปุ่มลบ */}
+                        <div className="quantity-control-group">
+                          {/* Conditional Rendering สำหรับปุ่มลบ/ลดจำนวน */}
                           {item.quantity <= 1 ? (
                             <Button
                               variant="light"
@@ -429,7 +438,8 @@ const CartPage = () => {
                 >
                   <Card.Body>
                     <Row className="align-items-center">
-                      <Col xs={3} md={2}>
+                      {/* ปรับเป็น md=3 ให้รูปภาพใหญ่ขึ้น */}
+                      <Col xs={3} md={3}>
                         {imageLoaded[item.cart_item_id] === false ? (
                           <PlaceholderImage />
                         ) : (
@@ -453,7 +463,8 @@ const CartPage = () => {
                           />
                         )}
                       </Col>
-                      <Col xs={6} md={7}>
+                      {/* ปรับเป็น md=6 */}
+                      <Col xs={6} md={6}>
                         <h5 className="text-muted">
                           <s>
                             {i18n.language === "en" && item.name_en
@@ -465,6 +476,7 @@ const CartPage = () => {
                           {t("quantity")}: {item.quantity}
                         </p>
                       </Col>
+                      {/* คงเดิม md=3 */}
                       <Col xs={3} md={3} className="text-end">
                         <Button
                           variant="outline-secondary"
@@ -547,6 +559,7 @@ const CartPage = () => {
         </Modal.Footer>
       </Modal>
     </Container>
+    </div>
   );
 };
 

@@ -1,33 +1,145 @@
-/* src/pages/LocationPage.css (ฉบับแก้ไข) */
+/* src/pages/LocationPage.css */
 
-.location-page-bg {
-  background-color: #f8f9fa;
-  min-height: 25vh;
-  padding-bottom: 80px;
-  display: flex;
-  align-items: center;
+.location-page-full-width {
+  background-color: #ffffff;
 }
 
-.location-container .card {
-  border-radius: 0.75rem;
+/* --- Card & Cover Photo (Full Width) --- */
+.store-profile-card-full {
   border: none;
+  border-radius: 0;
+  /* box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); */
+  overflow: visible !important;
+  border-bottom: none;
 }
 
-.store-image {
+.store-cover-photo {
+  height: 350px;
+  background-size: cover;
+  background-position: center;
+}
+
+/* --- Card Body & Content Wrapper --- */
+.profile-card-body-full {
+  position: relative;
+  padding: 1.5rem 0;
+}
+
+.profile-content-wrapper {
+  position: relative;
+}
+
+/* --- Logo --- */
+.store-logo-wrapper {
+  position: absolute;
+  top: -110px;
+  left: 0;
+  width: 180px;
+  height: 180px;
+}
+
+.store-logo {
   width: 100%;
-  /* height: 350px; */
-  /* object-fit: cover; */
-  object-fit: contain;
+  height: 100%;
+  border-radius: 50%;
+  border: 5px solid white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  object-fit: cover;
+  background-color: white;
+}
+
+/* --- Store Info --- */
+.info-col {
+  padding-left: 20px;
+}
+
+.store-details-content {
+  padding-top: 15px;
 }
 
 .store-name {
-  font-weight: 700;
-  color: #007bff;
-  margin-bottom: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  color: #4b4f56;
+}
+
+.info-icon {
+  margin-right: 10px;
+  font-size: 1.1rem;
+  color: #8a919d;
+}
+
+/* --- Buttons --- */
+.actions-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1.5rem;
+}
+
+.social-buttons-inline {
+  display: flex;
+  gap: 0.5rem;
 }
 
 .social-btn {
-  display: inline-flex;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
   align-items: center;
-  gap: 0.5rem;
+  justify-content: center;
+  font-size: 1.2rem;
+}
+
+.navigate-btn {
+  border-radius: 6px;
+  font-weight: bold;
+}
+
+/* --- Responsive for Mobile --- */
+@media (max-width: 767px) {
+  .store-cover-photo {
+    height: 180px; /* ลดความสูงปกเล็กน้อย */
+  }
+
+  .profile-card-body-full {
+    padding-top: 1.5rem; /* Reset padding ด้านบนของ card body */
+    padding-bottom: 1.5rem;
+  }
+
+  .store-logo-wrapper {
+    width: 120px;
+    height: 120px;
+    top: -60px; /* ดึงขึ้นครึ่งหนึ่งของความสูง */
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .info-col {
+    padding-left: 0;
+    text-align: center;
+    /* --- [แก้ไขจุดสำคัญ] --- */
+    /* เพิ่ม padding-top เพื่อ "ดัน" เนื้อหาลงมาให้พ้นโลโก้ */
+    padding-top: 70px;
+  }
+
+  .store-details-content {
+    padding-top: 0; /* ไม่ต้องใช้ padding-top ที่นี่แล้ว */
+  }
+
+  .info-item {
+    justify-content: center;
+  }
+
+  .actions-container {
+    flex-direction: column;
+    gap: 1rem;
+  }
 }

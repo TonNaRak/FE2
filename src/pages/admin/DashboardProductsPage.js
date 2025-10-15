@@ -62,7 +62,7 @@ const DashboardProductsPage = () => {
         </div>
       )} */}
 
-      <Row className="gy-4 mb-4">
+      <Row className="g-3 mb-3">
         <Col lg={3}>
           <SummaryCard
             className="w-100"
@@ -102,9 +102,9 @@ const DashboardProductsPage = () => {
         </Col>
       </Row>
 
-      <Row className="gy-4 mb-4">
+      <Row className="g-3 mb-3">
         <Col lg={8}>
-          <Row className="gy-4">
+          <Row className="g-3">
             <Col xl={6}>
               {/* --- [ แก้ไข ] --- ส่ง selectedCategory ไปให้กราฟ --- */}
               <TopProductsChart
@@ -126,7 +126,7 @@ const DashboardProductsPage = () => {
         </Col>
       </Row>
 
-      <Row className="gy-4">
+      <Row className="g-3">
         <Col lg={6}>
           {/* --- [ แก้ไข ] --- ส่ง props สำหรับการคลิกไปให้ Treemap --- */}
           <CategorySalesTreemap

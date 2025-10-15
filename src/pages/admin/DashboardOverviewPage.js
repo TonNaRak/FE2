@@ -67,7 +67,7 @@ const DashboardOverviewPage = () => {
       </Card>
       <hr />
 
-      <Row className="gy-4 mb-4">
+      <Row className="g-3 mb-3">
         <Col md={6} lg={3}>
           <SummaryCard
             title="ยอดขายรวม"
@@ -104,7 +104,7 @@ const DashboardOverviewPage = () => {
         </Col>
       </Row>
 
-      <Row className="gy-4">
+      <Row className="g-3">
         <Col lg={6}>
           <MonthlySalesChart dateRange={dateRange} />
         </Col>
@@ -113,7 +113,7 @@ const DashboardOverviewPage = () => {
         </Col>
       </Row>
 
-      <Row className="gy-4 mt-1">
+      <Row className="g-3 mt-1">
         <Col lg={6}>
           <OrderStatusChart dateRange={dateRange} />
         </Col>
