@@ -43,7 +43,7 @@ const OrderManagementPage = () => {
     const subtotal = order.subtotal || 0;
     const discount = order.discount_amount || 0;
     const total = order.total_price;
-    const pointsEarned = order.user_id ? Math.floor(total / 10) : 0;
+    const pointsEarned = order.user_id ? Math.floor(total / 100) : 0;
     const paymentMethodText =
       order.payment_method === "in_store" ? "ชำระเงินหน้าร้าน" : "โอนเงิน";
 
@@ -777,7 +777,8 @@ const OrderManagementPage = () => {
                   </Button>
                 )}
                 {(selectedOrder?.status === "pending_verification" ||
-                  selectedOrder?.status === "pending_payment") && (
+                  selectedOrder?.status === "pending_payment" ||
+                  selectedOrder?.status === "processing") && (
                   <Button
                     variant="danger"
                     className="ms-2"

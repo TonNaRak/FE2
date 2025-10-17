@@ -39,30 +39,43 @@ const ProfilePage = () => {
     );
   }
 
+  // สมมติค่าคะแนน
+  const userPoints = user.points !== undefined ? user.points : 199324;
+
   return (
     <div className="profile-page-bg">
       <Container className="profile-container">
+        
+        {/* ส่วนข้อมูลหลัก (Card) */}
         <Card className="profile-header-card shadow-sm mb-4">
+          
           <Card.Body>
+            {/* ************************************************** */}
+            {/* นำส่วนของ <h5 className="mb-3 text-muted ms-5">{t("profile")}</h5> ออกไปแล้ว */}
+            {/* ************************************************** */}
+            
             <Row className="align-items-center">
               <Col xs="auto">
                 <BsPersonCircle className="profile-avatar" />
               </Col>
               <Col>
-                <h4 className="mb-0">{user.username}</h4>
-                <p className="text-muted mb-0">{user.email}</p>
+                {/* ชื่อผู้ใช้และอีเมล */}
+                <h4 className="mb-0">{user.username || "test2"}</h4>
+                <p className="text-muted mb-0">{user.email || "test2@gmail.com"}</p>
               </Col>
-              <Col xs="auto" className="text-end">
+            </Row>
+            {/* ส่วนแสดงคะแนน */}
+            <Row className="mt-3">
+              <Col xs={12}>
                 <div className="points-display">
                   <BsAward className="points-icon" />
-                  <span>
-                    {user.points || 0} {t("points")}
-                  </span>
+                  {userPoints} {t("points")}
                 </div>
               </Col>
             </Row>
           </Card.Body>
         </Card>
+        {/* สิ้นสุด Card ข้อมูลหลัก */}
 
         <Card className="profile-menu-card shadow-sm">
           <ListGroup variant="flush">
@@ -89,7 +102,7 @@ const ProfilePage = () => {
             <ListGroup.Item
               action
               as={Link}
-              to="/points-history" // --- ลิงก์ไปยังหน้าใหม่ ---
+              to="/points-history"
               className="profile-menu-item"
             >
               <BsClockHistory className="menu-icon" />
@@ -97,10 +110,10 @@ const ProfilePage = () => {
             </ListGroup.Item>
 
 
-            <ListGroup.Item action href="#" className="profile-menu-item">
+            {/* <ListGroup.Item action href="#" className="profile-menu-item">
               <BsQuestionCircle className="menu-icon" />
               {t("help_center")}
-            </ListGroup.Item>
+            </ListGroup.Item> */}
             <ListGroup.Item
               action
               onClick={handleLogout}

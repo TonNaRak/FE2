@@ -1,15 +1,97 @@
 .edit-profile-page-bg {
-  background-color: #f8f9fa;
+  background-color: #ffffff; /* สีพื้นหลังอ่อน */
   min-height: calc(100vh - 60px); 
   padding-top: 2rem;
   padding-bottom: 80px; 
 }
 
 .edit-profile-container {
-  max-width: 900px;
+  max-width: 1200px;
+  padding: 2rem 0.75rem;
 }
 
-.edit-profile-container .card {
+/* สไตล์ส่วนหัวทั้งหมด (Header) */
+.edit-profile-header {
+    /* ใช้คลาส Bootstrap bg-white, shadow-sm, rounded-3 */
+    border: 1px solid #e9ecef;
+    padding-top: 1.5rem !important;
+    padding-bottom: 1.5rem !important;
+}
+
+/* สไตล์สำหรับ Card */
+.edit-profile-card {
     border: none;
+    border-radius: 1rem; /* เพิ่มมุมโค้งให้มากขึ้น */
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* สไตล์สำหรับ Card.Header */
+.edit-card-header {
+    background-color: #f7f7f7; 
+    border-bottom: 1px solid #e9ecef;
+    border-top-left-radius: 1rem !important;
+    border-top-right-radius: 1rem !important;
+    padding: 1.25rem 1.5rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #495057;
+}
+
+/* ปรับปรุงฟอร์ม */
+.form-control {
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+}
+
+/* สไตล์สำหรับปุ่มย้อนกลับแบบวงกลม */
+.edit-back-circle {
+    /* รีเซ็ตสไตล์เริ่มต้นของปุ่ม/ลิงก์ */
+    padding: 0 !important;
+    height: 40px; 
+    width: 40px;
+    display: inline-block;
+}
+
+/* สไตล์วงกลมและเงา */
+.edit-back-circle > div {
+    /* ใช้สไตล์วงกลมจาก JSX แต่เพิ่ม Shadow และ Transition */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); 
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.edit-back-circle:hover > div {
+    /* เอฟเฟกต์โฮเวอร์ */
+    transform: scale(1.05); 
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
+}
+
+
+/* สไตล์สำหรับปุ่ม */
+.edit-submit-btn,
+.edit-password-btn {
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    font-weight: 600;
     border-radius: 0.75rem;
+}
+
+/* สไตล์สำหรับปุ่มหลัก (บันทึกข้อมูล) */
+.edit-submit-btn {
+    background-color: #068fc6; /* PRIMARY_COLOR */
+    border-color: #068fc6;
+}
+.edit-submit-btn:hover {
+    background-color: #046b97;
+    border-color: #046b97;
+}
+
+/* สไตล์สำหรับปุ่มรอง (เปลี่ยนรหัสผ่าน) */
+.edit-password-btn {
+    border-color: #068fc6;
+    color: #068fc6;
+}
+.edit-password-btn:hover {
+    background-color: #e9f5ff; /* LIGHT_BLUE_BG */
+    color: #068fc6;
+    border-color: #068fc6;
 }

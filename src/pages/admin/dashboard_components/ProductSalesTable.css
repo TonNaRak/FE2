@@ -1,8 +1,27 @@
+/* ใช้คลาสเดิมของ header แบบ sortable */
 .sortable-header {
-    cursor: pointer;
-    user-select: none; /* ป้องกันไม่ให้ผู้ใช้ลากคลุมข้อความตอนดับเบิลคลิก */
+  cursor: pointer;
+  user-select: none;
+}
+.sortable-header:hover {
+  background-color: #f8f9fa;
 }
 
-.sortable-header:hover {
-    background-color: #f8f9fa; /* สีพื้นหลังอ่อนๆ ตอน hover */
+/* กำหนดพื้นที่เลื่อนของตารางให้คงที่ เหมือนตารางลูกค้า */
+.product-table-scroll {
+  /* 360px (สูงการ์ด) - ~56px (Card.Header) = ประมาณ 300px */
+  height: 300px;
+  overflow-y: auto;
+}
+
+/* กันตารางเด้ง */
+.product-table-scroll .table {
+  margin-bottom: 0;
+}
+
+/* ทำหัวตาราง sticky ให้แนบด้านบนตอนเลื่อน */
+.product-table-scroll .sticky-top {
+  position: sticky;
+  top: 0;
+  z-index: 1; /* ให้ลอยเหนือแถวข้อมูล */
 }

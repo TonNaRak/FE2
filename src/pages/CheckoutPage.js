@@ -16,7 +16,7 @@ import {
 } from "react-bootstrap";
 import axios from "axios";
 import "./CheckoutPage.css";
-import { FaEdit } from "react-icons/fa";
+import { FaEdit, FaArrowLeft } from "react-icons/fa"; 
 import { useTranslation } from "react-i18next";
 
 const CheckoutPage = () => {
@@ -105,12 +105,16 @@ const CheckoutPage = () => {
       setPointError("กรุณากรอกแต้มให้ถูกต้อง");
       return;
     }
+    // ใช้แต้มได้สูงสุดเท่ากับแต้มที่มี หรือราคาสินค้า หรือ subtotal
+    const maxPoints = Math.min(user.points, subtotal);
+
     if (points > user.points) {
       setPointError("คุณมีแต้มไม่เพียงพอ");
       return;
     }
     if (points > subtotal) {
-      setPointError("ไม่สามารถใช้แต้มเกินราคาสินค้าได้");
+      // ปรับ logic ตามภาพ: ไม่สามารถใช้เกินราคาสินค้า (subtotal)
+      setPointError(`ใช้ได้สูงสุด ${maxPoints.toLocaleString()} แต้ม`);
       return;
     }
     setDiscount(points);
@@ -182,21 +186,41 @@ const CheckoutPage = () => {
 
   return (
     <div className="checkout-page-bg">
-      <Container className="checkout-container my-5">
-        <h1 className="mb-4 text-center">{t("checkout_title")}</h1>
-        <Row>
+      <Container className="checkout-container">
+        {/* === Header ส่วนบน === */}
+        <div className="mb-4 p-3 bg-white shadow-sm rounded-3 d-flex align-items-center justify-content-center checkout-header-wrapper">
+          {/* ปุ่มย้อนกลับ */}
+          <Button
+            variant="light"
+            onClick={() => navigate(-1)}
+            className="checkout-back-circle position-absolute start-0 ms-3 rounded-circle p-0" 
+            style={{ width: '40px', height: '40px', left: '0' }} 
+          >
+            <div className="d-flex align-items-center justify-content-center rounded-circle shadow-sm checkout-back-inner-circle" 
+                 style={{ width: '40px', height: '40px', backgroundColor: '#068fc6' }} 
+            >
+                <FaArrowLeft size={20} color="#fff" /> 
+            </div>
+          </Button>
+          <h3 className="mb-0 fw-bold" style={{ color: '#068fc6' }}>{t("checkout_title")}</h3> 
+        </div>
+        
+        {/* ใช้ g-4 เพื่อเพิ่มระยะห่างระหว่าง Col */}
+        <Row className="g-4"> 
           <Col lg={8}>
-            <Card className="shadow-sm mb-4">
+            {/* === ข้อมูลจัดส่ง (Shipping Info) === */}
+            <Card className="shadow-sm">
               <Card.Header
                 as="h5"
-                className="d-flex justify-content-between align-items-center"
+                className="d-flex justify-content-between align-items-center checkout-card-header" 
+                style={{ backgroundColor: '#fff', borderBottom: '1px solid #e9ecef' }} 
               >
                 {t("shipping_info")}
                 {!isEditingAddress && (
                   <Button
                     variant="outline-primary"
-                    size="sm"
                     onClick={handleEditAddress}
+                    className="edit-shipping-btn" 
                   >
                     <FaEdit className="me-1" /> {t("edit")}
                   </Button>
@@ -212,6 +236,7 @@ const CheckoutPage = () => {
                         name="name"
                         value={shippingInfo.name}
                         onChange={handleShippingInfoChange}
+                        className="checkout-form-control" 
                       />
                     </Form.Group>
                     <Form.Group className="mb-2">
@@ -221,6 +246,7 @@ const CheckoutPage = () => {
                         name="phone"
                         value={shippingInfo.phone}
                         onChange={handleShippingInfoChange}
+                        className="checkout-form-control" 
                       />
                     </Form.Group>
                     <Form.Group className="mb-3">
@@ -231,62 +257,60 @@ const CheckoutPage = () => {
                         name="address"
                         value={shippingInfo.address}
                         onChange={handleShippingInfoChange}
+                        className="checkout-form-control" 
                       />
                     </Form.Group>
                     <div className="text-end">
                       <Button
                         variant="secondary"
-                        size="sm"
                         onClick={handleCancelEdit}
-                        className="me-2"
+                        className="me-2 checkout-cancel-btn" // ใช้คลาส CSS
                       >
                         {t("cancel")}
                       </Button>
                       <Button
                         variant="primary"
-                        size="sm"
                         onClick={handleSaveAddress}
+                        className="checkout-save-btn" // ใช้คลาส CSS (สีฟ้าถูกกำหนดใน CSS)
                       >
                         {t("save")}
                       </Button>
                     </div>
                   </Form>
                 ) : (
-                  <div>
-                    <p>
-                      <strong>{t("recipient_name")}:</strong>{" "}
+                  // ข้อมูลที่แสดงเมื่อไม่ได้แก้ไข
+                  <div className="shipping-info-display">
+                    <p className="mb-1">
+                      <strong>ชื่อผู้รับ:</strong>{" "}
                       {shippingInfo.name}
                     </p>
-                    <p>
-                      <strong>{t("phone_number")}:</strong> {shippingInfo.phone}
+                    <p className="mb-1">
+                      <strong>เบอร์โทรศัพท์:</strong> {shippingInfo.phone}
                     </p>
-                    <p>
-                      <strong>{t("address")}:</strong> {shippingInfo.address}
+                    <p className="mb-0">
+                      <strong>ที่อยู่:</strong> {shippingInfo.address}
                     </p>
                   </div>
                 )}
               </Card.Body>
             </Card>
-            <Card className="shadow-sm">
-              <Card.Header as="h5">
+            
+            {/* === รายการสินค้า (Items List) === */}
+            <Card className="shadow-sm mt-4"> {/* ใช้ mt-4 เพื่อเว้นระยะห่างด้านบน */}
+              <Card.Header as="h5" className="checkout-card-header" style={{ backgroundColor: '#fff', borderBottom: '1px solid #e9ecef' }}>
                 {t("items_list")} ({items.length})
               </Card.Header>
               <ListGroup variant="flush">
                 {items.map((item) => (
                   <ListGroup.Item
                     key={item.cart_item_id || item.product_id}
-                    className="d-flex justify-content-between align-items-center"
+                    className="d-flex justify-content-between align-items-center checkout-item" 
                   >
                     <div className="d-flex align-items-center">
                       <Image
                         src={item.image_url}
                         rounded
-                        style={{
-                          width: "60px",
-                          height: "60px",
-                          objectFit: "cover",
-                          marginRight: "15px",
-                        }}
+                        className="checkout-item-image" 
                         onError={(e) => {
                           e.target.onerror = null;
                           e.target.src = "https://via.placeholder.com/60";
@@ -328,48 +352,57 @@ const CheckoutPage = () => {
           </Col>
 
           <Col lg={4}>
+            {/* === สรุปยอดชำระเงิน (Summary Card) === */}
             <Card className="shadow-sm summary-card">
               <Card.Body>
-                <Card.Title as="h5">{t("order_summary")}</Card.Title>
-                <hr />
-                <div className="d-flex justify-content-between">
-                  <span>{t("subtotal")}</span>
+                <Card.Title as="h5" className="summary-title mb-3">
+                  {t("order_summary")}
+                </Card.Title>
+                <hr className="my-2" />
+
+                {/* --- สรุปยอดปกติ --- */}
+                <div className="d-flex justify-content-between mb-1">
+                  <span>ราคารวม (Subtotal)</span>
                   <span>
                     {subtotal.toLocaleString()} {t("baht")}
                   </span>
                 </div>
-
-                {discount > 0 && (
-                  <div className="d-flex justify-content-between text-danger">
-                    <span>ส่วนลดจากแต้ม</span>
-                    <span>
-                      - {discount.toLocaleString()} {t("baht")}
-                    </span>
-                  </div>
-                )}
-
-                <div className="d-flex justify-content-between">
-                  <span>{t("shipping")}</span>
+                <div className="d-flex justify-content-between mb-2">
+                  <span>ค่าจัดส่ง</span>
                   <span>
                     {shippingCost > 0
                       ? `${shippingCost.toLocaleString()} ${t("baht")}`
                       : t("free")}
                   </span>
                 </div>
-                <hr />
+                {/* --- ส่วนลดจากแต้ม --- */}
+                {discount > 0 && (
+                  <div className="d-flex justify-content-between mb-2 text-danger">
+                    <span>ส่วนลดจากแต้ม</span>
+                    <span>
+                      - {discount.toLocaleString()} {t("baht")}
+                    </span>
+                  </div>
+                )}
+                <hr className="my-2" />
 
+                {/* --- ส่วนใช้แต้มสะสม --- */}
                 {user && user.points > 0 && (
                   <>
-                    <div className="points-redemption-section">
+                    <div className="points-redemption-section p-3 rounded-3 mb-3">
                       <p className="mb-2">
-                        <strong>ใช้แต้มสะสม</strong> (คุณมี{" "}
-                        {user.points.toLocaleString()} แต้ม)
+                        <strong style={{ color: '#068fc6' }}>ใช้แต้มสะสม</strong> (คุณมี{" "}
+                        <span className="fw-bold text-success">
+                          {user.points.toLocaleString()}
+                        </span>{" "}
+                        แต้ม)
                       </p>
                       {discount > 0 ? (
+                        // แสดงเมื่อมีการใช้แต้มแล้ว
                         <div className="d-flex justify-content-between align-items-center">
                           <Alert
                             variant="success"
-                            className="py-2 px-3 mb-0 me-2 flex-grow-1"
+                            className="py-1 px-3 mb-0 me-2 flex-grow-1"
                           >
                             ใช้ {discount.toLocaleString()} แต้ม (ลด{" "}
                             {discount.toLocaleString()} บาท)
@@ -383,47 +416,59 @@ const CheckoutPage = () => {
                           </Button>
                         </div>
                       ) : (
-                        <InputGroup>
+                        // ช่องกรอกแต้ม
+                        <InputGroup className="checkout-input-group">
+                          {/* ปรับปรุงให้แสดงแต้มสูงสุดตามภาพ */}
+                          <p className="text-muted small mb-1 w-100 text-start">
+                            ใช้ได้สูงสุด {Math.min(user.points, subtotal).toLocaleString()} แต้ม
+                          </p>
                           <Form.Control
                             type="number"
                             placeholder="กรอกจำนวนแต้ม"
                             value={pointsToUse}
                             onChange={(e) => setPointsToUse(e.target.value)}
                             isInvalid={!!pointError}
-                            max={Math.min(user.points, subtotal)}
+                            className="text-center" 
                           />
-                          <Button variant="primary" onClick={handleApplyPoints}>
+                          <Button
+                            variant="primary"
+                            onClick={handleApplyPoints}
+                            className="points-apply-btn" 
+                          >
                             ใช้
                           </Button>
                           {pointError && (
-                            <Form.Control.Feedback type="invalid">
+                            <Form.Control.Feedback type="invalid" className="mt-2">
                               {pointError}
                             </Form.Control.Feedback>
                           )}
                         </InputGroup>
                       )}
                     </div>
-                    <hr />
                   </>
                 )}
-
-                <div className="d-flex justify-content-between h5">
-                  <strong>{t("total_amount")}</strong>
-                  <strong>
+                
+                {/* --- ยอดรวมสุทธิ --- */}
+                <div className="d-flex justify-content-between h4 final-total-display">
+                  <strong>ยอดรวมทั้งสิ้น</strong>
+                  <strong className="text-success">
                     {finalTotal.toLocaleString()} {t("baht")}
                   </strong>
                 </div>
+
+                {/* --- ปุ่มยืนยันคำสั่งซื้อ --- */}
                 <div className="d-grid mt-4">
                   <Button
                     variant="success"
                     size="lg"
                     onClick={handleConfirmOrder}
                     disabled={isSubmitting}
+                    className="confirm-order-btn" 
                   >
                     {isSubmitting ? (
-                      <Spinner as="span" animation="border" size="sm" />
+                      <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
                     ) : (
-                      t("confirm_order")
+                      "ยืนยันคำสั่งซื้อ"
                     )}
                   </Button>
                 </div>

@@ -16,15 +16,16 @@ import { useAuth } from "../context/AuthContext";
 import { BsSearch, BsStarFill } from "react-icons/bs";
 import useMediaQuery from "../hooks/useMediaQuery";
 import { useTranslation } from "react-i18next";
-import LanguageSwitcher from "../components/LanguageSwitcher";
 import "./IndexPage.css";
 
 import myLogo1 from "../images/icon1.png";
 import myLogo2 from "../images/icon2.png";
 
-// --- [จุดแก้ไข] เพิ่ม useTranslation และเปลี่ยนข้อความเป็น t('key') ---
+import LanguageSwitcher from "../components/LanguageSwitcher";
+
+
 const HeroSection = ({ onShopNowClick, scrollY }) => {
-  const { t } = useTranslation(); // เรียกใช้ useTranslation
+  const { t } = useTranslation();
 
   const parallaxStyle = {
     transform: `translateY(${scrollY * 0.2}px)`,
@@ -68,7 +69,7 @@ const HeroSection = ({ onShopNowClick, scrollY }) => {
 const IndexPage = () => {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); // คงไว้ แต่ไม่ใช้โชว์ทั้งกริด เพื่อลด layout shift
   const [activeFilter, setActiveFilter] = useState({ type: "all" });
   const [cartMessage, setCartMessage] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
@@ -77,15 +78,22 @@ const IndexPage = () => {
 
   const productsSectionRef = useRef(null);
 
+  // === ป้องกันกระตุกด้วย overlay + คงความสูงกริดชั่วคราว ===
+  const productsWrapRef = useRef(null);
+  const [isFetching, setIsFetching] = useState(false);
+  const [gridMinHeight, setGridMinHeight] = useState(0);
+
+  // === ใหม่: ใช้เลื่อนจอให้แถบประเภทชิดบน ===
+  const filterScrollRef = useRef(null);
+  const filterBarRef = useRef(null);
+
+  const [thumbStyle, setThumbStyle] = useState({ width: "0%", left: "0%" });
+
   const [scrollY, setScrollY] = useState(0);
-
   useEffect(() => {
-    const handleScroll = () => {
-      setScrollY(window.scrollY);
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    const handleScrollWindow = () => setScrollY(window.scrollY);
+    window.addEventListener("scroll", handleScrollWindow);
+    return () => window.removeEventListener("scroll", handleScrollWindow);
   }, []);
 
   const { t, i18n } = useTranslation();
@@ -94,7 +102,7 @@ const IndexPage = () => {
   const isMobile = useMediaQuery("(max-width: 768px)");
 
   const handleScrollToProducts = () => {
-    productsSectionRef.current.scrollIntoView({ behavior: "smooth" });
+    productsSectionRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   useEffect(() => {
@@ -113,7 +121,11 @@ const IndexPage = () => {
 
   useEffect(() => {
     const fetchProducts = async () => {
+      // ก่อนโหลด: ล็อกความสูงกริดปัจจุบัน + เปิด overlay
+      setGridMinHeight(productsWrapRef.current?.offsetHeight || 0);
+      setIsFetching(true);
       setLoading(true);
+
       let url = "https://api.souvenir-from-lagoon-thailand.com/api/products";
       const params = {};
 
@@ -136,6 +148,9 @@ const IndexPage = () => {
         console.error("Error fetching products:", error);
       } finally {
         setLoading(false);
+        setIsFetching(false);
+        // หน่วงสั้น ๆ ให้ layout ใหม่ takeover แล้วค่อยปล่อย min-height
+        setTimeout(() => setGridMinHeight(0), 50);
       }
     };
     fetchProducts();
@@ -154,44 +169,66 @@ const IndexPage = () => {
     setIsSearched(false);
   };
 
-  // ฟังก์ชัน handleAddToCart ไม่จำเป็นต้องใช้อีกต่อไปในหน้านี้
-  // แต่จะเก็บโค้ดไว้เผื่อคุณอาจจะนำกลับมาใช้ในอนาคต
-  /*
-  const handleAddToCart = async (e, product) => {
-    e.preventDefault();
-    e.stopPropagation();
+  // ===== Scroll Indicator Logic =====
+  const updateThumb = () => {
+    const el = filterScrollRef.current;
+    if (!el) return;
 
-    if (product.has_options) {
-      navigate(`/product/${product.product_id}`);
-      return;
-    }
+    const total = el.scrollWidth;
+    const view = el.clientWidth;
+    const maxScroll = Math.max(total - view, 1);
+    const visibleFrac = Math.min(view / total, 1);
+    const thumbWidthPct = Math.max(visibleFrac * 100, 10);
+    const leftFrac = el.scrollLeft / maxScroll;
+    const leftPct = leftFrac * (100 - thumbWidthPct);
 
-    if (!user) {
-      alert("กรุณาเข้าสู่ระบบเพื่อเพิ่มสินค้าลงตะกร้า");
-      navigate("/login");
-      return;
-    }
-    try {
-      const response = await axios.post(
-        "https://api.souvenir-from-lagoon-thailand.com/api/cart/add",
-        { productId: product.product_id, quantity: 1 },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setCartMessage(response.data.message);
-      setTimeout(() => setCartMessage(""), 2000);
-    } catch (error) {
-      setCartMessage("เกิดข้อผิดพลาดในการเพิ่มสินค้า");
-      setTimeout(() => setCartMessage(""), 2000);
-    }
+    setThumbStyle({
+      width: `${thumbWidthPct}%`,
+      left: `${leftPct}%`,
+    });
   };
-  */
+
+  useEffect(() => {
+    updateThumb();
+    const el = filterScrollRef.current;
+    if (!el) return;
+    const onScroll = () => updateThumb();
+    el.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", updateThumb);
+    return () => {
+      el.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", updateThumb);
+    };
+  }, [categories]);
+
+  // ===== ใหม่: เลื่อนให้แถบประเภทชิดบนเมื่อเลือกกรอง =====
+  const scrollToFilterTop = () => {
+    if (!filterBarRef.current) return;
+    const rect = filterBarRef.current.getBoundingClientRect();
+    const docTop = window.pageYOffset || document.documentElement.scrollTop || 0;
+
+    // เผื่อระยะบนสำหรับ Desktop ที่มี Top Navbar
+    const offset = window.innerWidth >= 992 ? 72 : 8;
+
+    const targetTop = rect.top + docTop - offset;
+    window.scrollTo({ top: Math.max(0, targetTop), behavior: "smooth" });
+  };
+
+  const handleSelectFilter = (next) => {
+    setActiveFilter(next);
+    // กำหนดเลื่อนหลัง setState เพื่อให้ตำแหน่ง DOM คงที่
+    // ใช้ rAF เพื่อให้แน่ใจว่าเบราว์เซอร์คำนวน layout รอบถัดไปแล้ว
+    requestAnimationFrame(() => {
+      scrollToFilterTop();
+    });
+  };
 
   return (
     <div className="index-page">
       <HeroSection onShopNowClick={handleScrollToProducts} scrollY={scrollY} />
       <Container className="py-4 products-section-container" ref={productsSectionRef}>
-        <div className="d-flex justify-content-end mb-3">
-          {/* <LanguageSwitcher /> */}
+        <div className="d-flex justify-content-end mb-3 d-md-none">
+          <LanguageSwitcher />
         </div>
 
         {cartMessage && (
@@ -240,66 +277,86 @@ const IndexPage = () => {
         )}
 
         {!isSearched && (
-          <div className="filter-bar-container mb-5">
-            <div
-              className={`filter-item ${
-                activeFilter.type === "all" ? "active" : ""
-              }`}
-              onClick={() => setActiveFilter({ type: "all" })}
-            >
-              <div className="category-icon-wrapper">
-                <span className="icon-text">All</span>
-              </div>
-              <span className="category-name">{t("All")}</span>
-            </div>
-
-            <div
-              className={`filter-item ${
-                activeFilter.type === "recommended" ? "active" : ""
-              }`}
-              onClick={() => setActiveFilter({ type: "recommended" })}
-            >
-              <div className="category-icon-wrapper">⭐</div>
-              <span className="category-name">{t("Recommended_Products")}</span>
-            </div>
-
-            {categories.map((cat) => (
-              <div
-                key={cat.category_id}
-                className={`filter-item ${
-                  activeFilter.id === cat.category_id ? "active" : ""
-                }`}
-                onClick={() =>
-                  setActiveFilter({ type: "category", id: cat.category_id })
-                }
-              >
-                <div className="category-icon-wrapper">
-                  {cat.icon_url ? (
-                    <img
-                      src={cat.icon_url}
-                      alt={cat.category_name}
-                      className="category-icon"
-                    />
-                  ) : (
-                    <span className="icon-placeholder"></span>
-                  )}
+          <div className="filter-bar-container mb-3" ref={filterBarRef}>
+            {/* --- แนวนอน + 2 แถว (มือถือ) --- */}
+            <div className="filter-scroll" ref={filterScrollRef}>
+              <div className="filter-grid">
+                <div
+                  className={`filter-item ${
+                    activeFilter.type === "all" ? "active" : ""
+                  }`}
+                  onClick={() => handleSelectFilter({ type: "all" })}
+                >
+                  <div className="category-icon-wrapper">
+                    <span className="icon-text">All</span>
+                  </div>
+                  <span className="category-name">{t("All")}</span>
                 </div>
-                <span className="category-name">
-                  {i18n.language === "en" && cat.category_name_en
-                    ? cat.category_name_en
-                    : cat.category_name}
-                </span>
+
+                <div
+                  className={`filter-item ${
+                    activeFilter.type === "recommended" ? "active" : ""
+                  }`}
+                  onClick={() => handleSelectFilter({ type: "recommended" })}
+                >
+                  <div className="category-icon-wrapper">⭐</div>
+                  <span className="category-name">{t("Recommended_Products")}</span>
+                </div>
+
+                {categories.map((cat) => (
+                  <div
+                    key={cat.category_id}
+                    className={`filter-item ${
+                      activeFilter.id === cat.category_id ? "active" : ""
+                    }`}
+                    onClick={() =>
+                      handleSelectFilter({ type: "category", id: cat.category_id })
+                    }
+                  >
+                    <div className="category-icon-wrapper">
+                      {cat.icon_url ? (
+                        <img
+                          src={cat.icon_url}
+                          alt={cat.category_name}
+                          className="category-icon"
+                        />
+                      ) : (
+                        <span className="icon-placeholder"></span>
+                      )}
+                    </div>
+                    <span className="category-name">
+                      {i18n.language === "en" && cat.category_name_en
+                        ? cat.category_name_en
+                        : cat.category_name}
+                    </span>
+                  </div>
+                ))}
               </div>
-            ))}
+            </div>
+
+            {/* Scroll indicator bar (mobile only via CSS) */}
+            <div className="scroll-indicator d-md-none">
+              <div
+                className="scroll-thumb"
+                style={thumbStyle}
+                aria-hidden="true"
+              />
+            </div>
           </div>
         )}
 
-        {loading ? (
-          <div className="text-center py-5">
-            <Spinner animation="border" variant="primary" />
-          </div>
-        ) : (
-          <Row xs={2} sm={2} md={3} lg={4} className="g-3">
+        {/* === คงกริดเดิมไว้เสมอ + overlay ตอนโหลด === */}
+        <div
+          ref={productsWrapRef}
+          style={{ minHeight: gridMinHeight || undefined, position: "relative" }}
+        >
+          {isFetching && (
+            <div className="grid-overlay">
+              <Spinner animation="border" variant="primary" />
+            </div>
+          )}
+
+          <Row xs={2} sm={2} md={3} lg={4} className="g-3 products-grid">
             {products.length > 0 ? (
               products.map((product) => (
                 <Col key={product.product_id}>
@@ -347,7 +404,7 @@ const IndexPage = () => {
               </Col>
             )}
           </Row>
-        )}
+        </div>
       </Container>
     </div>
   );

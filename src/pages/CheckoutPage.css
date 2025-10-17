@@ -1,20 +1,169 @@
+/* ========================================================== */
+/* *** สไตล์สำหรับหน้า Checkout (CheckoutPage) *** */
+/* ========================================================== */
+
 .checkout-page-bg {
-    background-color: #f8f9fa;
-    min-height: calc(100vh - 60px);
-    padding: 1rem 0;
+  background-color: #f0f2f5;
+  min-height: calc(100vh - 60px);
+  padding: 3rem 0;
 }
 
+.checkout-container {
+  max-width: 1200px;
+}
+
+/* สไตล์สำหรับ Container Header ที่มีพื้นหลังขาว */
+.checkout-header-wrapper {
+  position: relative;
+}
+
+/* สไตล์สำหรับปุ่มย้อนกลับแบบวงกลม */
+.checkout-back-circle {
+  padding: 0 !important;
+  height: 40px;
+  width: 40px;
+  z-index: 10;
+}
+
+.checkout-back-inner-circle {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.checkout-back-circle:hover .checkout-back-inner-circle {
+  transform: scale(1.05);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
+}
+
+/* สไตล์สำหรับ Card หลักทั้งหมด */
 .checkout-container .card {
-    border: none;
-    border-radius: 0.5rem;
+  border: none;
+  border-radius: 1rem;
 }
 
-.checkout-container .card-header {
-    background-color: white;
-    border-bottom: 1px solid #dee2e6;
+/* สไตล์ Card Header */
+.checkout-card-header {
+  background-color: #fff !important;
+  border-bottom: 1px solid #e9ecef !important;
+  border-top-left-radius: 1rem !important;
+  border-top-right-radius: 1rem !important;
+  padding: 1.25rem 1.5rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #495057;
 }
 
+/* ปุ่มแก้ไขที่อยู่ */
+.edit-shipping-btn {
+  border-radius: 0.5rem;
+  font-weight: 600;
+  border-color: #068fc6 !important;
+  color: #068fc6 !important;
+}
+
+/* สไตล์ฟอร์มและ Input */
+.checkout-form-control {
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+}
+
+/* [แก้ไข] กำหนดความกว้างเท่ากันสำหรับปุ่ม ยกเลิก และ บันทึก */
+.checkout-save-btn,
+.checkout-cancel-btn {
+  width: 90px; /* กำหนดความกว้างคงที่เพื่อให้เท่ากัน */
+  border-radius: 0.5rem;
+  font-weight: 600;
+  padding: 0.5rem 0; /* ปรับ padding เล็กน้อยเพื่อให้ดูดีกับความกว้างใหม่ */
+}
+
+/* [แก้ไข] สไตล์ปุ่มบันทึกให้เป็นสีฟ้า #068fc6 */
+.checkout-save-btn {
+  background-color: #068fc6 !important;
+  border-color: #068fc6 !important;
+  color: #fff !important; /* ตัวอักษรสีขาว */
+}
+
+/* สไตล์ปุ่มยกเลิก (คงเดิมจาก Bootstrap Secondary) */
+.checkout-cancel-btn {
+  /* ใช้ค่าเริ่มต้นของ Bootstrap Secondary */
+  background-color: #6c757d;
+  border-color: #6c757d;
+  color: #fff;
+}
+
+/* สไตล์รายการสินค้า */
+.checkout-item {
+  padding: 1rem 1.5rem !important;
+}
+.checkout-item-image {
+  width: 70px !important;
+  height: 70px !important;
+  border-radius: 0.5rem !important;
+  border: 1px solid #eee !important;
+  object-fit: cover;
+  margin-right: 1rem !important;
+}
+.checkout-item:last-child {
+  border-bottom-left-radius: 1rem;
+  border-bottom-right-radius: 1rem;
+}
+
+/* สไตล์ Card สรุปยอด (Summary Card) */
 .summary-card {
-    position: sticky;
-    top: 20px;
+  position: sticky;
+  top: 3rem;
+  background-color: #fff;
+  border: 1px solid #068fc6;
+}
+.summary-card .card-body {
+  padding: 1.5rem;
+}
+
+.summary-title {
+  color: #068fc6;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+/* ส่วนใช้แต้ม */
+.points-redemption-section {
+  /* border: 1px solid #068fc6; 
+    background-color: #f8fafd;  */
+  border: none; /* ตัดกรอบออก */
+  background-color: transparent; /* เอาพื้นหลังฟ้าออก */
+}
+.checkout-input-group .form-control {
+  border-radius: 0.5rem 0 0 0.5rem !important;
+  text-align: center;
+}
+.checkout-input-group .points-apply-btn {
+  background-color: #068fc6;
+  border-color: #068fc6;
+  font-weight: 600;
+  border-radius: 0 0.5rem 0.5rem 0 !important;
+}
+.checkout-input-group .points-apply-btn:hover {
+  background-color: #046b97;
+  border-color: #046b97;
+}
+
+/* ส่วนแสดงยอดสุทธิ */
+.final-total-display {
+  border-top: 2px solid #068fc6;
+  padding-top: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+/* ปุ่มยืนยันคำสั่งซื้อ */
+.confirm-order-btn {
+  background-color: #28a745;
+  border-color: #28a745;
+  font-size: 1.25rem;
+  font-weight: 700;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+}
+.confirm-order-btn:hover {
+  background-color: #1e7e34;
+  border-color: #1c7430;
 }

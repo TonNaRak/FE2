@@ -10,6 +10,16 @@
   --primary-hover-color: #007399; /* ⭐️ สี Hover/Active ⭐️ */
 }
 
+/* ===== Header Card Style (เหมือนหน้าโปรไฟล์) ===== */
+.cart-header {
+  border: 1px solid #e9ecef;
+  padding-top: 1.5rem !important;
+  padding-bottom: 1.5rem !important;
+  border-radius: 1rem;
+  background-color: #ffffff;
+}
+
+
 /* ⭐️ สไตล์ Checkbox ⭐️ */
 .cart-page .form-check-input:checked {
   background-color: var(--primary-color);
@@ -23,10 +33,10 @@
 
 .cart-page-container {
   max-width: 1200px;
-  padding: 2rem 1rem;
+  padding: 2rem 0.75rem;
 }
 
-h1 {
+.cart-page h1 {
   /* ⭐️ ตะกร้าสินค้า Header ⭐️ */
   font-weight: 600;
   color: #068fc6; 
@@ -61,7 +71,7 @@ h1 {
 }
 
 .cart-item-card:hover {
-  box-shadow: 0 10px 30px var(--shadow-color-strong);
+  box-shadow: 0 6px 20px var(--shadow-color-strong);
 }
 
 .cart-item-card .card-body,
@@ -209,7 +219,7 @@ h1 {
   .cart-item-card .card-body .row,
   .unavailable-item .card-body .row {
     flex-wrap: wrap; 
-    align-items: flex-start !important; 
+    align-items: center !important; 
   }
   
   /* ลด padding ด้านล่างของ Card Body บนมือถือ */
@@ -327,4 +337,9 @@ h1 {
     top: auto;
     margin-top: 2rem;
   }
+}
+
+/* --- Cart Item Card --- */
+.cart-item-card .card-body .row {
+  align-items: center;
 }

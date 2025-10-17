@@ -1,4 +1,10 @@
-/* === สไตล์สำหรับ Desktop === */
+:root {
+  --primary-blue: #068fc6;
+  --primary-blue-dark: #0477a8;
+  --primary-blue-light: #d7f1fa;
+}
+
+/* === Desktop Base === */
 .product-detail-container {
   max-width: 960px;
 }
@@ -7,7 +13,12 @@
   max-height: 500px;
   width: 100%;
   object-fit: cover;
-  border-radius: 1rem; /* เพิ่มความโค้งมนให้รูปในจอคอม */
+  border-radius: 1rem;
+  cursor: pointer;
+  transition: opacity 0.2s ease-in-out;
+}
+.product-main-image:hover {
+  opacity: 0.92;
 }
 
 .product-info {
@@ -24,187 +35,15 @@
 .product-price-detail {
   font-size: 2rem;
   font-weight: 700;
-  color: var(--primary-color);
-  margin-bottom: 1.5rem;
+  color: var(--primary-blue);
+  margin-bottom: 1.25rem;
 }
 
 .product-description {
   color: #6c757d;
-  line-height: 1.6;
+  line-height: 1.7;
   white-space: pre-wrap;
-}
-
-/* === สไตล์ปุ่ม Glassmorphism (ปรับปรุงใหม่) === */
-.glass-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem; /* ระยะห่างระหว่างไอคอนกับข้อความ */
-  padding: 0.6rem 1.2rem; /* ใช้ padding แทนการกำหนดขนาดตายตัว */
-  border-radius: 50px; /* ทำให้เป็นทรงแคปซูล */
-
-  /* เอฟเฟกต์กระจกฝ้า */
-  background: rgba(255, 255, 255, 0.6);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-
-  color: #333;
-  font-weight: 600;
-  text-decoration: none;
-  transition: all 0.2s ease-in-out;
-}
-.glass-btn:hover,
-.glass-btn:focus {
-  background: rgba(255, 255, 255, 0.9);
-  color: #000;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  border-color: rgba(0, 0, 0, 0.15);
-}
-
-/* === สไตล์สำหรับ Mobile === */
-
-.mobile-product-page {
-  padding-bottom: 100px;
-}
-
-.mobile-header {
-  /* position: absolute; */
-  position: fixed;
-  top: 1rem;
-  left: 1rem;
-  right: 1rem;
-  z-index: 20;
-  display: flex;
-  justify-content: space-between;
-}
-
-.mobile-header .glass-btn {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  padding: 0;
-}
-
-.mobile-product-image {
-  width: 100vh;
-  height: 40vh;
-  object-fit: cover;
-}
-
-.mobile-info-container {
-  background-color: #ffffff;
-  padding: 1.5rem;
-  border-radius: 24px 24px 0 0;
-  margin-top: -24px;
-  position: relative;
-  z-index: 10;
-}
-
-/* แถบปุ่ม Fixed ที่ขอบล่าง */
-.mobile-action-bar {
-  /* position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  width: 100%;
-  background-color: #ffffff;
-  padding: 1rem;
-  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
-  z-index: 1000;
-  display: flex;
-  gap: 1rem; */
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  width: 100%;
-  background-color: #ffffff;
-  padding: 1rem;
-  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
-  z-index: 1000;
-  display: flex;
-  gap: 1rem;
-  align-items: stretch; /* ทำให้ปุ่มสูงเท่ากัน */
-}
-
-.mobile-action-bar .btn {
-  /* flex: 1;
-  padding: 0.75rem;
-  font-size: 1rem;
-  font-weight: 600;
-  border-radius: 8px; */
-  padding: 0.75rem;
-  font-size: 1rem;
-  font-weight: 600;
-  border-radius: 8px;
-}
-
-.mobile-cart-btn {
-  /* display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  flex-grow: 1.2; */
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-}
-
-.mobile-buy-btn {
-  /* flex-grow: 1; */
-  flex: 3;
-}
-
-/* --- CSS สำหรับ Modal รูปภาพ --- */
-
-/* ทำให้รูปภาพดูเหมือนกดได้ โดยเปลี่ยน cursor เป็นรูปมือ */
-.product-main-image,
-.mobile-product-image {
-  cursor: pointer;
-  transition: opacity 0.2s ease-in-out;
-}
-
-.product-main-image:hover,
-.mobile-product-image:hover {
-  opacity: 0.9;
-}
-
-/* สไตล์สำหรับ Modal แสดงภาพเต็ม */
-.image-modal .modal-content {
-  background-color: rgba(0, 0, 0, 0.8); /* พื้นหลังโปร่งแสงสีดำ */
-  border: none;
-  box-shadow: none;
-}
-
-.image-modal .modal-body {
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.image-modal .modal-header {
-  border-bottom: none; /* ลบเส้นคั่นออก */
-  position: absolute; /* ทำให้ปุ่มปิดลอยอยู่ด้านบน */
-  top: 0;
-  right: 0;
-  z-index: 1056; /* ให้อยู่เหนือรูปภาพ */
-}
-
-.image-modal .modal-body img {
-  max-width: 100%;
-  max-height: 90vh;
-  object-fit: contain;
-}
-
-/* ทำให้ปุ่มปิด (X) เป็นสีขาว */
-.image-modal .btn-close {
-  filter: brightness(0) invert(1);
-  opacity: 0.8;
+  word-break: break-word;
 }
 
 /* ====== ปุ่มตัวเลือกแบบ TILE ====== */
@@ -224,9 +63,6 @@
   cursor: pointer;
   transition: box-shadow 0.15s ease, border-color 0.15s ease, transform 0.05s;
   user-select: none;
-  /* -webkit-appearance: none; 
-  appearance: none;
-  color: var(--bs-body-color, #212529);  */
 }
 .tile-btn:hover,
 .tile-btn:focus {
@@ -238,17 +74,9 @@
   transform: translateY(1px);
 }
 .tile-btn.active {
-  border-color: var(--primary-color, #0d6efd);
-  background: rgba(13, 110, 253, 0.08); /* เฉด primary อ่อน */
-  color: var(--primary-color, #0d6efd);
-}
-
-/* ให้ tile ขยายพอดีมือบนมือถือ */
-@media (max-width: 767px) {
-  .tile-btn {
-    padding: 0.6rem 1rem;
-    font-size: 1rem;
-  }
+  border-color: var(--primary-blue);
+  background: rgba(6, 143, 198, 0.08);
+  color: var(--primary-blue);
 }
 
 /* ====== ตัวเพิ่ม-ลดจำนวน ====== */
@@ -285,4 +113,228 @@
   font-weight: 700;
   margin: 0 0.5rem;
   font-variant-numeric: tabular-nums;
+}
+
+/* ====== Glass Button (icon action บนหัว) ====== */
+.glass-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  padding: 0;
+
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+
+  color: #333;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease-in-out;
+}
+.glass-btn:hover,
+.glass-btn:focus {
+  background: rgba(255, 255, 255, 0.9);
+  color: #000;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  border-color: rgba(0, 0, 0, 0.12);
+}
+
+/* === Mobile Layout === */
+.mobile-product-page {
+  padding-bottom: calc(96px + env(safe-area-inset-bottom));
+}
+
+.mobile-header {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  right: 1rem;
+  z-index: 20;
+  display: flex;
+  justify-content: space-between;
+}
+
+.mobile-product-image {
+  width: 100%;
+  height: 42vh;
+  object-fit: cover;
+}
+
+.mobile-info-container {
+  background-color: #ffffff;
+  padding: 1.25rem 1.25rem 0.5rem;
+  border-radius: 24px 24px 0 0;
+  margin-top: -22px;
+  position: relative;
+  z-index: 10;
+}
+
+/* ====== Action Bar (Fixed Bottom) ====== */
+.mobile-action-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.78);
+  backdrop-filter: saturate(120%) blur(8px);
+  -webkit-backdrop-filter: saturate(120%) blur(8px);
+  padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom));
+  box-shadow: 0 -6px 18px rgba(0, 0, 0, 0.08);
+  z-index: 1000;
+
+  display: flex;
+  gap: 0.75rem;
+  align-items: stretch;
+}
+
+/* ====== ปุ่มสมัยใหม่ (มือถือ) ====== */
+.btn-buy-now,
+.btn-add-cart {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+
+  border: 0;
+  border-radius: 14px;
+  padding: 0.9rem 1rem;
+  font-weight: 700;
+  font-size: 1rem;
+  line-height: 1;
+
+  box-shadow: 0 8px 28px rgba(6, 143, 198, 0.18);
+  transform: translateZ(0);
+  transition: transform 0.06s ease, box-shadow 0.2s ease, opacity 0.2s;
+  will-change: transform;
+}
+
+.btn-buy-now:active,
+.btn-add-cart:active {
+  transform: translateY(1px);
+}
+
+/* ซื้อทันที = เด่น (Gradient Blue tone) */
+.btn-buy-now {
+  flex: 1.7;
+  color: #fff;
+  background-image: linear-gradient(
+    135deg,
+    #42baf2 0%,
+    var(--primary-blue) 45%,
+    var(--primary-blue-dark) 100%
+  );
+}
+.btn-buy-now:hover {
+  box-shadow: 0 10px 30px rgba(6, 143, 198, 0.28);
+  opacity: 0.97;
+}
+
+.btn-buy-now:disabled {
+  opacity: 0.6;
+  box-shadow: none;
+}
+
+/* เพิ่มลงตะกร้า = โทนอ่อน + เส้นขอบ */
+.btn-add-cart {
+  flex: 1;
+  color: var(--primary-blue);
+  background: #fff;
+  border: 2px solid rgba(6, 143, 198, 0.22);
+}
+.btn-add-cart:hover {
+  border-color: rgba(6, 143, 198, 0.36);
+  box-shadow: 0 8px 24px rgba(6, 143, 198, 0.12);
+  opacity: 0.96;
+}
+.btn-add-cart:disabled {
+  opacity: 0.55;
+  box-shadow: none;
+}
+
+/* ไอคอน/ตัวหนังสือในปุ่ม */
+.btn-buy-now .btn-ic,
+.btn-add-cart .btn-ic {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-buy-now .btn-text,
+.btn-add-cart .btn-text {
+  white-space: nowrap;
+}
+
+/* ====== Modal รูปภาพ ====== */
+.image-modal .modal-content {
+  background-color: rgba(0, 0, 0, 0.8);
+  border: none;
+  box-shadow: none;
+}
+
+.image-modal .modal-body {
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.image-modal .modal-header {
+  border-bottom: none;
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 1056;
+}
+
+.image-modal .modal-body img {
+  max-width: 100%;
+  max-height: 90vh;
+  object-fit: contain;
+}
+
+.image-modal .btn-close {
+  filter: brightness(0) invert(1);
+  opacity: 0.8;
+}
+
+/* ====== Mobile fine-tuning ====== */
+@media (max-width: 767px) {
+  .tile-btn {
+    padding: 0.6rem 1rem;
+    font-size: 1rem;
+  }
+}
+
+/* ====== Desktop Button Theme Overrides (เฉพาะหน้านี้) ====== */
+@media (min-width: 768px) {
+  /* ปุ่ม primary (เพิ่มลงตะกร้า) ให้เป็นโทนฟ้าเดียวกัน */
+  .product-detail-container .btn-primary {
+    background-color: var(--primary-blue) !important;
+    border-color: var(--primary-blue) !important;
+    color: #fff !important;
+  }
+  .product-detail-container .btn-primary:hover,
+  .product-detail-container .btn-primary:focus {
+    background-color: var(--primary-blue-dark) !important;
+    border-color: var(--primary-blue-dark) !important;
+  }
+
+  /* ปุ่มเส้นขอบ (ซื้อทันที) เปลี่ยนจากเขียว → ฟ้าเดียวกัน */
+  .product-detail-container .btn-outline-success {
+    color: var(--primary-blue) !important;
+    border-color: var(--primary-blue) !important;
+  }
+  .product-detail-container .btn-outline-success:hover,
+  .product-detail-container .btn-outline-success:focus {
+    background-color: var(--primary-blue) !important;
+    border-color: var(--primary-blue) !important;
+    color: #fff !important;
+  }
 }

@@ -15,3 +15,13 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+/* === Theme Tokens (Global) === */
+:root {
+  /* โทนฟ้าหลักของแบรนด์ */
+  --primary-blue: #068fc6;
+
+  /* เฉดที่ใช้บ่อย — ไว้ให้ทุกหน้าหยิบใช้ */
+  --primary-blue-hover: #057dad;  /* เข้มขึ้นเล็กน้อยสำหรับ :hover */
+  --primary-blue-light: #e6f7fd;  /* พื้นหลัง/ไฮไลต์อ่อน ๆ */
+}

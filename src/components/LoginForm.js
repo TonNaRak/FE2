@@ -105,11 +105,11 @@ const LoginPage = () => {
               </div>
             </Form.Group>
 
-            <div className="text-end mb-4">
+            {/* <div className="text-end mb-4">
               <a href="#forgot" className="text-link">
                 {t("forgot_password")}
               </a>
-            </div>
+            </div> */}
 
             <div className="d-grid">
               <Button variant="primary" type="submit" size="lg">

@@ -15,6 +15,9 @@ import { useNavigate } from "react-router-dom";
 import { BsArrowLeft } from "react-icons/bs";
 import "./EditProfilePage.css";
 
+// กำหนดสีหลักเพื่อให้เข้ากันกับหน้าอื่น
+const PRIMARY_COLOR = "#068fc6";
+
 const EditProfilePage = () => {
   const { user, token, refreshUserData } = useAuth();
   const navigate = useNavigate();
@@ -50,7 +53,7 @@ const EditProfilePage = () => {
       // หากไม่มีข้อมูล user ใน context ให้ลอง fetch ใหม่
       refreshUserData().then(() => setLoading(false));
     }
-  }, [user]);
+  }, [user, refreshUserData]);
 
   const handleFormChange = (e) => {
     const { name, value } = e.target;
@@ -67,9 +70,13 @@ const EditProfilePage = () => {
     setError("");
     setSuccess("");
     try {
-      await axios.put("https://api.souvenir-from-lagoon-thailand.com/api/user/profile", formData, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await axios.put(
+        "https://api.souvenir-from-lagoon-thailand.com/api/user/profile",
+        formData,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       setSuccess("บันทึกข้อมูลส่วนตัวสำเร็จ!");
       await refreshUserData(); // ดึงข้อมูลใหม่หลังอัปเดต
     } catch (err) {
@@ -128,17 +135,51 @@ const EditProfilePage = () => {
   return (
     <div className="edit-profile-page-bg">
       <Container className="edit-profile-container">
-        <Button
-          variant="light"
-          onClick={() => navigate(-1)}
-          className="mb-3"
-        >
-          <BsArrowLeft /> กลับไปหน้าโปรไฟล์
-        </Button>
+        {/* === [แก้ไขใหม่] ส่วนหัวของหน้า: ปุ่มย้อนกลับวงกลม + หัวข้อหลัก (มีพื้นหลังขาว/เงา) === */}
+        <div className="edit-profile-header mb-4 p-4 bg-white shadow-sm rounded-3">
+          {/* จัดวางปุ่มย้อนกลับและหัวข้อ */}
+          <div className="d-flex align-items-center justify-content-center position-relative">
+            {/* ปุ่มย้อนกลับ: ไอคอนวงกลมสีฟ้า */}
+            <Button
+              variant="link"
+              onClick={() => navigate(-1)}
+              className="position-absolute start-0 text-decoration-none edit-back-circle"
+              style={{ color: PRIMARY_COLOR, zIndex: 10 }}
+            >
+              {/* Div สำหรับสร้างวงกลมสีฟ้าและทำให้ไอคอนเป็นสีขาว */}
+              <div
+                className="p-2 rounded-circle d-flex align-items-center justify-content-center"
+                style={{
+                  backgroundColor: PRIMARY_COLOR,
+                  width: "40px",
+                  height: "40px",
+                }}
+              >
+                {/* ใช้ BsArrowLeft (ลูกศร) เป็นไอคอนสีขาว */}
+                <BsArrowLeft
+                  className="text-white"
+                  style={{ fontSize: "1.2rem" }}
+                />
+              </div>
+            </Button>
+
+            {/* หัวข้อหลัก */}
+            <h2
+              className="w-100 text-center mb-0"
+              style={{ color: PRIMARY_COLOR, fontWeight: 700 }}
+            >
+              แก้ไขข้อมูลโปรไฟล์
+            </h2>
+          </div>
+        </div>
+        {/* ==================================================== */}
+
         <Row>
           <Col md={6}>
-            <Card className="shadow-sm mb-4">
-              <Card.Header as="h5">แก้ไขข้อมูลส่วนตัว</Card.Header>
+            <Card className="shadow-lg mb-4 edit-profile-card">
+              <Card.Header as="h5" className="edit-card-header">
+                แก้ไขข้อมูลส่วนตัว
+              </Card.Header>
               <Card.Body>
                 {error && <Alert variant="danger">{error}</Alert>}
                 {success && <Alert variant="success">{success}</Alert>}
@@ -161,6 +202,7 @@ const EditProfilePage = () => {
                       value={formData.email}
                       onChange={handleFormChange}
                       required
+                      readOnly // ไม่ควรให้แก้ไขอีเมล
                     />
                   </Form.Group>
                   <Form.Group className="mb-3">
@@ -182,8 +224,12 @@ const EditProfilePage = () => {
                       onChange={handleFormChange}
                     />
                   </Form.Group>
-                  <div className="d-grid">
-                    <Button variant="primary" type="submit">
+                  <div className="d-grid mt-4">
+                    <Button
+                      variant="primary"
+                      type="submit"
+                      className="edit-submit-btn"
+                    >
                       บันทึกข้อมูล
                     </Button>
                   </div>
@@ -192,8 +238,10 @@ const EditProfilePage = () => {
             </Card>
           </Col>
           <Col md={6}>
-            <Card className="shadow-sm mb-4">
-              <Card.Header as="h5">เปลี่ยนรหัสผ่าน</Card.Header>
+            <Card className="shadow-lg mb-4 edit-profile-card">
+              <Card.Header as="h5" className="edit-card-header">
+                เปลี่ยนรหัสผ่าน
+              </Card.Header>
               <Card.Body>
                 {passwordError && (
                   <Alert variant="danger">{passwordError}</Alert>
@@ -232,8 +280,12 @@ const EditProfilePage = () => {
                       required
                     />
                   </Form.Group>
-                  <div className="d-grid">
-                    <Button variant="outline-primary" type="submit">
+                  <div className="d-grid mt-4">
+                    <Button
+                      variant="outline-primary"
+                      type="submit"
+                      className="edit-password-btn"
+                    >
                       เปลี่ยนรหัสผ่าน
                     </Button>
                   </div>

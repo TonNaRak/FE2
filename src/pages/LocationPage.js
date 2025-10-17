@@ -19,7 +19,8 @@ import {
   FaEnvelope,
 } from "react-icons/fa";
 import { useTranslation } from "react-i18next";
-import "./LocationPage.css"; 
+import "./LocationPage.css";
+import fixedLogo from "../images/Logo.jpg";
 
 const LocationPage = () => {
   const [storeInfo, setStoreInfo] = useState(null);
@@ -47,7 +48,10 @@ const LocationPage = () => {
 
   if (loading) {
     return (
-      <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '100vh' }}>
+      <div
+        className="d-flex justify-content-center align-items-center"
+        style={{ minHeight: "100vh" }}
+      >
         <Spinner animation="border" />
       </div>
     );
@@ -55,7 +59,10 @@ const LocationPage = () => {
 
   if (error) {
     return (
-      <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '100vh' }}>
+      <div
+        className="d-flex justify-content-center align-items-center"
+        style={{ minHeight: "100vh" }}
+      >
         <Alert variant="danger">{error}</Alert>
       </div>
     );
@@ -63,49 +70,57 @@ const LocationPage = () => {
 
   if (!storeInfo) {
     return (
-      <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '100vh' }}>
+      <div
+        className="d-flex justify-content-center align-items-center"
+        style={{ minHeight: "100vh" }}
+      >
         <Alert variant="warning">ไม่พบข้อมูลร้านค้า</Alert>
       </div>
     );
   }
-  
+
   const currentLanguage = i18n.language;
-  const storeName = currentLanguage === 'th' ? storeInfo.name : storeInfo.name_en || storeInfo.name;
-  const storeAddress = currentLanguage === 'th' ? storeInfo.address : storeInfo.address_en || storeInfo.address;
-  const logoUrl = storeInfo.mini_image_url || storeInfo.image_url;
+  const storeName =
+    currentLanguage === "th"
+      ? storeInfo.name
+      : storeInfo.name_en || storeInfo.name;
+  const storeAddress =
+    currentLanguage === "th"
+      ? storeInfo.address
+      : storeInfo.address_en || storeInfo.address;
 
   return (
-    // 1. ลบ div ที่มีพื้นหลังสีเทาออก ให้เป็นพื้นหลังสีขาวปกติ
     <div className="location-page-full-width">
       <Card className="store-profile-card-full">
-        {/* Part 1: Cover Photo */}
+        {/* Cover Photo */}
         <div
           className="store-cover-photo"
-          style={{ backgroundImage: `url(${storeInfo.image_url || '/images/placeholder.png'})` }}
+          style={{
+            backgroundImage: `url(${
+              storeInfo.image_url || "/images/placeholder.png"
+            })`,
+          }}
         ></div>
 
-        {/* Part 2: Card Body with Overlapping Logo and Info */}
         <Card.Body className="profile-card-body-full">
-          {/* 2. สร้าง Container เพื่อจัดเนื้อหาให้อยู่ตรงกลาง ไม่กว้างเกินไป */}
           <Container>
             <div className="profile-content-wrapper">
-              {/* --- Overlapping Logo --- */}
+              {/* Logo */}
               <div className="store-logo-wrapper">
                 <Image
-                  src={logoUrl || '/images/placeholder.png'}
+                  src={fixedLogo}
+                  alt="Store Logo"
                   className="store-logo"
                 />
               </div>
 
               <Row>
-                {/* --- Spacer Column (for desktop) --- */}
                 <Col md={4} className="d-none d-md-block"></Col>
 
-                {/* --- Info Column --- */}
                 <Col md={8} className="info-col">
                   <div className="store-details-content">
                     <h2 className="store-name">{storeName}</h2>
-                    
+
                     <div className="info-item">
                       <FaMapPin className="info-icon" />
                       <span>{storeAddress}</span>
@@ -118,27 +133,44 @@ const LocationPage = () => {
                       <FaEnvelope className="info-icon" />
                       <span>{storeInfo.email}</span>
                     </div>
-                    
+
                     <hr className="my-3" />
 
-                    <div className="actions-container">
-                      <div className="social-buttons-inline">
+                    {/* ✅ ปุ่ม Facebook / YouTube ซ้าย - ปุ่มนำทาง ขวา */}
+                    <div className="actions-container split-row">
+                      <div className="left-buttons">
                         {storeInfo.facebook_url && (
-                          <Button variant="outline-primary" href={storeInfo.facebook_url} target="_blank" className="social-btn">
+                          <Button
+                            href={storeInfo.facebook_url}
+                            target="_blank"
+                            className="social-btn facebook"
+                          >
                             <FaFacebook />
                           </Button>
                         )}
+
                         {storeInfo.youtube_url && (
-                          <Button variant="outline-danger" href={storeInfo.youtube_url} target="_blank" className="social-btn">
+                          <Button
+                            href={storeInfo.youtube_url}
+                            target="_blank"
+                            className="social-btn youtube"
+                          >
                             <FaYoutube />
                           </Button>
                         )}
                       </div>
 
-                      <Button variant="success" href={storeInfo.map_url} target="_blank" className="navigate-btn">
-                        <FaMapMarkedAlt className="me-2" />
-                        {t("navigate_button") || "นำทาง"}
-                      </Button>
+                      <div className="right-button">
+                        <Button
+                          variant="primary"
+                          href={storeInfo.map_url}
+                          target="_blank"
+                          className="navigate-btn"
+                        >
+                          <FaMapMarkedAlt className="me-2" />
+                          {t("navigate_button") || "นำทาง"}
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </Col>

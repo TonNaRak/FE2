@@ -1,13 +1,16 @@
+/* โค้ด CSS เดิม: สไตล์พื้นฐานของหน้าและ Profile Page */
 
 .profile-page-bg {
   background-color: #f8f9fa;
-  min-height: calc(100vh - 60px); 
+  min-height: calc(100vh - 60px);
   padding-top: 2rem;
-  padding-bottom: 80px; 
+  padding-bottom: 80px;
 }
 
+/* ลบ padding-top ชดเชยออก */
 .profile-container {
-  max-width: 800px;
+  max-width: 1200px;
+  padding: 2rem 0.75rem; /* ✅ เท่ากับ CartPage (2rem บน-ล่าง, 0.75rem ซ้าย-ขวา) */
 }
 
 .profile-header-card,
@@ -16,9 +19,18 @@
   border-radius: 0.75rem;
 }
 
+/* สไตล์สำหรับ Card.Header */
+.profile-page-header {
+  background-color: #f7f7f7;
+  border-bottom: 1px solid #e9ecef;
+  border-top-left-radius: 0.75rem !important;
+  border-top-right-radius: 0.75rem !important;
+  padding: 1rem 1.25rem;
+}
+
 .profile-avatar {
-  font-size: 4rem; 
-  color: #6c757d;
+  font-size: 4rem;
+  color: #068fc6;
 }
 
 .points-display {
@@ -26,8 +38,8 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background-color: #e9f5ff;
-  color: #007bff;
+  background-color: #cfebff;
+  color: #068fc6;
   padding: 0.5rem 1rem;
   border-radius: 0.5rem;
   font-weight: 600;
@@ -63,5 +75,78 @@
 }
 
 .profile-menu-item:hover {
-    background-color: #f8f9fa;
+  background-color: #f8f9fa;
+}
+
+/* ========================================================== */
+/* *** สไตล์สำหรับหน้าประวัติคะแนน (PointHistoryPage) *** */
+/* ========================================================== */
+
+/* ลบสไตล์ Fixed Header ออกทั้งหมด */
+.sticky-header-global {
+  /* ไม่มีสไตล์พิเศษสำหรับการตรึง */
+}
+
+/* สไตล์พื้นฐานของรายการประวัติ */
+.point-history-item {
+  transition: background-color 0.3s ease, transform 0.1s ease,
+    box-shadow 0.3s ease;
+  border-left: none !important;
+  border-right: none !important;
+  border-bottom: 1px solid #eee;
+}
+
+/* [ใหม่] สไตล์รายการที่ถูกปรับปรุง */
+.point-history-list-item {
+  padding: 1rem 1.25rem !important; /* เพิ่ม Padding เล็กน้อย */
+  border-radius: 0.5rem; /* เพิ่มมุมโค้งเล็กน้อย */
+}
+
+/* Hover Effect สำหรับรายการ */
+.point-history-item:hover {
+  background-color: #f7f7f7; /* เปลี่ยนสีพื้นหลังเมื่อโฮเวอร์ */
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  cursor: pointer; /* เปลี่ยนเป็น pointer เพื่อให้รู้สึกว่าคลิกได้ */
+  z-index: 10;
+  position: relative;
+}
+
+/* จัดการขอบของ ListGroup */
+.card .list-group-item:first-child {
+  border-top: none !important;
+}
+
+.card .list-group-item:last-child {
+  border-bottom: none !important;
+}
+
+/* สไตล์วงกลม Icon ในรายการ */
+.point-history-item > div > div:first-child {
+  width: 35px;
+  height: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+/* ปรับให้ส่วนของคะแนนและวันที่อยู่ชิดขวาเสมอ */
+.point-history-item .text-end {
+  min-width: 100px;
+}
+
+.back-button-circle {
+  display: inline-block;
+}
+
+/* สไตล์วงกลมและเงา */
+.back-button-circle > div {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: transform 0.15s ease;
+}
+
+.back-button-circle:hover > div {
+  transform: scale(1.05);
 }

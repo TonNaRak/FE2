@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Card, Table, Spinner } from "react-bootstrap";
 import { format } from "date-fns";
+import "./ProductSalesTable.css";
 
 const numericKeys = new Set(["totalQuantity", "totalRevenue"]);
 
@@ -16,7 +17,6 @@ const sortArray = (arr, { key, direction }) => {
     if (isNumeric) {
       return A < B ? Bfirst : A > B ? Afirst : 0;
     }
-    // เรียงข้อความรองรับภาษาไทย
     return direction === "asc"
       ? A.localeCompare(B, "th")
       : B.localeCompare(A, "th");
@@ -44,7 +44,6 @@ const ProductSalesTable = ({ dateRange, selectedCategory }) => {
           params.append("startDate", format(dateRange.from, "yyyy-MM-dd"));
           params.append("endDate", format(dateRange.to, "yyyy-MM-dd"));
         }
-
         if (selectedCategory) {
           params.append("categoryName", selectedCategory);
         }
@@ -54,7 +53,6 @@ const ProductSalesTable = ({ dateRange, selectedCategory }) => {
           { headers: { Authorization: `Bearer ${token}` }, params }
         );
 
-        // 🔧 แปลงฟิลด์เป็นตัวเลขให้แน่ใจ
         const normalized = (response.data || []).map((r) => ({
           ...r,
           totalQuantity: Number(r.totalQuantity) || 0,
@@ -62,7 +60,7 @@ const ProductSalesTable = ({ dateRange, selectedCategory }) => {
         }));
 
         setSalesData(normalized);
-        setSortedData(sortArray(normalized, sortConfig)); // เรียงตามค่าเริ่มต้น
+        setSortedData(sortArray(normalized, sortConfig));
       } catch (err) {
         setError("ไม่สามารถโหลดข้อมูลตารางได้");
         console.error(err);
@@ -72,7 +70,7 @@ const ProductSalesTable = ({ dateRange, selectedCategory }) => {
     };
 
     if (dateRange) fetchSalesData();
-  }, [dateRange, selectedCategory, sortConfig.key, sortConfig.direction]); // ให้ sync initial sort เสมอเมื่อช่วงเวลาเปลี่ยน
+  }, [dateRange, selectedCategory, sortConfig.key, sortConfig.direction]);
 
   const handleSort = (key) => {
     const direction =
@@ -84,87 +82,108 @@ const ProductSalesTable = ({ dateRange, selectedCategory }) => {
 
   const renderSortIcon = (key) => {
     if (sortConfig.key !== key) return null;
-    return (
-      <span className="ms-1">{sortConfig.direction === "asc" ? "▲" : "▼"}</span>
-    );
+    return <span className="ms-1">{sortConfig.direction === "asc" ? "▲" : "▼"}</span>;
   };
 
-  const renderContent = () => {
+  const renderTbody = () => {
     if (isLoading) {
       return (
-        <div className="text-center p-5">
-          <Spinner animation="border" />
-        </div>
+        <tbody>
+          <tr>
+            <td colSpan="4" className="text-center p-5">
+              <Spinner animation="border" />
+            </td>
+          </tr>
+        </tbody>
       );
     }
-    if (error) return <p className="text-danger text-center p-3">{error}</p>;
-    if (sortedData.length === 0)
+
+    if (error) {
       return (
-        <p className="text-muted text-center p-3">
-          ไม่มีข้อมูลการขายสำหรับช่วงเวลานี้
-        </p>
+        <tbody>
+          <tr>
+            <td colSpan="4" className="text-danger text-center p-5">
+              {error}
+            </td>
+          </tr>
+        </tbody>
       );
+    }
+
+    if (sortedData.length === 0) {
+      return (
+        <tbody>
+          <tr>
+            <td colSpan="4" className="text-muted text-center p-5">
+              ไม่มีข้อมูลการขายสำหรับช่วงเวลานี้
+            </td>
+          </tr>
+        </tbody>
+      );
+    }
 
     return (
-      <Table striped bordered hover responsive="sm" className="mb-0">
-        <thead className="table-light">
-          <tr>
-            <th
-              style={{ cursor: "pointer" }}
-              onClick={() => handleSort("productName")}
-            >
-              ชื่อสินค้า {renderSortIcon("productName")}
-            </th>
-            <th
-              style={{ cursor: "pointer" }}
-              onClick={() => handleSort("categoryName")}
-            >
-              หมวดหมู่ {renderSortIcon("categoryName")}
-            </th>
-            <th
-              className="text-end"
-              style={{ cursor: "pointer" }}
-              onClick={() => handleSort("totalQuantity")}
-            >
-              จำนวน (ชิ้น) {renderSortIcon("totalQuantity")}
-            </th>
-            <th
-              className="text-end"
-              style={{ cursor: "pointer" }}
-              onClick={() => handleSort("totalRevenue")}
-            >
-              ยอดขาย (บาท) {renderSortIcon("totalRevenue")}
-            </th>
+      <tbody>
+        {sortedData.map((item, idx) => (
+          <tr key={idx}>
+            <td>{item.productName}</td>
+            <td>{item.categoryName}</td>
+            <td className="text-end">
+              {Number(item.totalQuantity).toLocaleString("th-TH")}
+            </td>
+            <td className="text-end">
+              {Number(item.totalRevenue).toLocaleString("th-TH", {
+                minimumFractionDigits: 2,
+              })}
+            </td>
           </tr>
-        </thead>
-        <tbody>
-          {sortedData.map((item, idx) => (
-            <tr key={idx}>
-              <td>{item.productName}</td>
-              <td>{item.categoryName}</td>
-              <td className="text-end">
-                {Number(item.totalQuantity).toLocaleString("th-TH")}
-              </td>
-              <td className="text-end">
-                {Number(item.totalRevenue).toLocaleString("th-TH", {
-                  minimumFractionDigits: 2,
-                })}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </Table>
+        ))}
+      </tbody>
     );
   };
 
   return (
-    <Card>
+    <Card style={{ height: "360px" }}>
       <Card.Header>
         <Card.Title as="h5" className="mb-0">
           สรุปยอดขายรายสินค้า
         </Card.Title>
       </Card.Header>
-      {renderContent()}
+
+      {/* ทำส่วนตารางให้เลื่อนในตัว และหัวตาราง sticky */}
+      <div className="product-table-scroll">
+        <Table striped bordered hover responsive="sm" className="mb-0">
+          <thead className="table-light sticky-top">
+            <tr>
+              <th
+                className="sortable-header"
+                onClick={() => handleSort("productName")}
+              >
+                ชื่อสินค้า {renderSortIcon("productName")}
+              </th>
+              <th
+                className="sortable-header"
+                onClick={() => handleSort("categoryName")}
+              >
+                หมวดหมู่ {renderSortIcon("categoryName")}
+              </th>
+              <th
+                className="text-end sortable-header"
+                onClick={() => handleSort("totalQuantity")}
+              >
+                จำนวน (ชิ้น) {renderSortIcon("totalQuantity")}
+              </th>
+              <th
+                className="text-end sortable-header"
+                onClick={() => handleSort("totalRevenue")}
+              >
+                ยอดขาย (บาท) {renderSortIcon("totalRevenue")}
+              </th>
+            </tr>
+          </thead>
+          {renderTbody()}
+        </Table>
+      </div>
     </Card>
   );
 };
