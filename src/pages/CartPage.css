@@ -343,3 +343,51 @@
 .cart-item-card .card-body .row {
   align-items: center;
 }
+
+/* ======================= ▼ เพิ่มสำหรับแถบดำโปร่งใสใต้รูป ▼ ======================= */
+.cart-item-image-wrapper {
+  position: relative;
+  width: 100%;
+  display: block;
+}
+
+.stock-tag {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: rgba(0, 0, 0, 0.65); /* ดำโปร่งใส */
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-align: center;
+  padding: 0.3rem 0;
+  border-bottom-left-radius: 8px;  /* ให้โค้งรับกับรูป */
+  border-bottom-right-radius: 8px; /* ให้โค้งรับกับรูป */
+}
+/* ================================================================================ */
+
+/* แจ้งเตือนรวมด้านบนว่ามีสินค้าเกินสต็อก */
+.stock-alert {
+  border-left: 4px solid #dc3545;
+}
+
+/* เอฟเฟกต์สั่นเบา ๆ เมื่อปุ่มถูกปิดจากสต็อกไม่พอ (ช่วยให้ผู้ใช้สังเกต) */
+.btn-disabled-shake {
+  animation: none;
+}
+.btn-disabled-shake[disabled] {
+  animation: subtle-shake 0.4s ease-in-out 1;
+}
+@keyframes subtle-shake {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-1px); }
+  50% { transform: translateX(1px); }
+  75% { transform: translateX(-1px); }
+  100% { transform: translateX(0); }
+}
+
+/* (ตัวเลือก) ขีดกรอบแดงบาง ๆ ให้การ์ดที่เกินสต็อกดูเด่นขึ้น */
+.cart-item-overstock {
+  box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.15);
+}

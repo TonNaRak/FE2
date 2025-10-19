@@ -20,6 +20,7 @@ import "./IndexPage.css";
 
 import myLogo1 from "../images/icon1.png";
 import myLogo2 from "../images/icon2.png";
+import recommendedIcon from "../images/recommended.png";
 
 import LanguageSwitcher from "../components/LanguageSwitcher";
 
@@ -299,7 +300,14 @@ const IndexPage = () => {
                   }`}
                   onClick={() => handleSelectFilter({ type: "recommended" })}
                 >
-                  <div className="category-icon-wrapper">⭐</div>
+                  {/* <div className="category-icon-wrapper">⭐</div> */}
+                  <div className="category-icon-wrapper">
+                    <img
+                      src={recommendedIcon}
+                      alt="Recommended"
+                      className="category-icon"
+                    />
+                  </div>
                   <span className="category-name">{t("Recommended_Products")}</span>
                 </div>
 

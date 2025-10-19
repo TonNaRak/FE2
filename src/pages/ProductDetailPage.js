@@ -82,6 +82,10 @@ const ProductDetailPage = () => {
           });
         }
         setSelectedOptions(initial);
+
+        // ถ้าสต็อกหมด ให้ quantity เป็น 0 เพื่อกันซื้อ/เพิ่ม
+        const avail = Number(response.data.stock_qty ?? 0);
+        if (avail <= 0) setQuantity(0);
       } catch (err) {
         setError(t("product_not_found") || "ไม่สามารถโหลดข้อมูลสินค้าได้");
         console.error(err);
@@ -99,10 +103,31 @@ const ProductDetailPage = () => {
     setSelectedOptions((prev) => ({ ...prev, [optionName]: value }));
   };
 
-  const incrementQuantity = () =>
-    setQuantity((q) => (Number.isFinite(q) ? q + 1 : 1));
-  const decrementQuantity = () =>
+  // ====== เพิ่มตัวคุมจำนวนตามสต็อก ======
+  const availableStock = Number(product?.stock_qty ?? 0);
+
+  const incrementQuantity = () => {
+    if (availableStock <= 0) return;
+    const next = (Number.isFinite(quantity) ? quantity : 1) + 1;
+    if (next > availableStock) {
+      // เกินสต็อก → เตือนและปรับกลับไปค่าสูงสุดที่มี
+      setQuantity(availableStock);
+      showNotification(
+        i18n.language === "en" ? "Stock limit" : "จำนวนคงเหลือไม่พอ",
+        i18n.language === "en"
+          ? `Only ${availableStock} left in stock.`
+          : `ขออภัย สินค้ามีคงเหลือ ${availableStock} ชิ้น`,
+        "warning"
+      );
+      return;
+    }
+    setQuantity(next);
+  };
+
+  const decrementQuantity = () => {
+    if (availableStock <= 0) return;
     setQuantity((q) => (Number.isFinite(q) && q > 1 ? q - 1 : 1));
+  };
 
   // ---------- Add to Cart ----------
   const handleAddToCart = async () => {
@@ -116,6 +141,29 @@ const ProductDetailPage = () => {
       return;
     }
 
+    // กันกรณีสต็อกหมด/ไม่พอ
+    if (availableStock <= 0) {
+      showNotification(
+        i18n.language === "en" ? "Out of stock" : "สินค้าหมด",
+        i18n.language === "en"
+          ? "This item is currently out of stock."
+          : "ขออภัย สินค้าหมดชั่วคราว",
+        "warning"
+      );
+      return;
+    }
+    if (Number(quantity || 0) > availableStock) {
+      setQuantity(availableStock);
+      showNotification(
+        i18n.language === "en" ? "Stock limit" : "จำนวนคงเหลือไม่พอ",
+        i18n.language === "en"
+          ? `Only ${availableStock} left in stock.`
+          : `ขออภัย สินค้ามีคงเหลือ ${availableStock} ชิ้น`,
+        "warning"
+      );
+      return;
+    }
+
     const hasOptions = product?.options && product.options.length > 0;
     if (hasOptions) {
       const allSelected = product.options.every(
@@ -124,8 +172,7 @@ const ProductDetailPage = () => {
       if (!allSelected) {
         showNotification(
           t("please_select_options") || "กรุณาเลือกตัวเลือกสินค้า",
-          t("product_options_must_be_selected") ||
-            "ต้องเลือกตัวเลือกสินค้าก่อน",
+          t("product_options_must_be_selected") || "ต้องเลือกตัวเลือกสินค้าก่อน",
           "warning"
         );
         return;
@@ -137,7 +184,7 @@ const ProductDetailPage = () => {
         "https://api.souvenir-from-lagoon-thailand.com/api/cart/add",
         {
           productId: product.product_id,
-          quantity,
+          quantity, // ❗️ไม่หักสต็อกที่นี่ แค่เพิ่มลงตะกร้า
           selectedOptions,
         },
         {
@@ -145,7 +192,6 @@ const ProductDetailPage = () => {
         }
       );
 
-      // ✅ ส่งตัวแปรให้ i18next แทนค่าในสตริง (ไม่แสดงราคา)
       const displayName =
         i18n.language === "th" ? product.name : product.name_en || product.name;
 
@@ -181,6 +227,29 @@ const ProductDetailPage = () => {
       return;
     }
 
+    // กันกรณีสต็อกหมด/ไม่พอ
+    if (availableStock <= 0) {
+      showNotification(
+        i18n.language === "en" ? "Out of stock" : "สินค้าหมด",
+        i18n.language === "en"
+          ? "This item is currently out of stock."
+          : "ขออภัย สินค้าหมดชั่วคราว",
+        "warning"
+      );
+      return;
+    }
+    if (Number(quantity || 0) > availableStock) {
+      setQuantity(availableStock);
+      showNotification(
+        i18n.language === "en" ? "Stock limit" : "จำนวนคงเหลือไม่พอ",
+        i18n.language === "en"
+          ? `Only ${availableStock} left in stock.`
+          : `ขออภัย สินค้ามีคงเหลือ ${availableStock} ชิ้น`,
+        "warning"
+      );
+      return;
+    }
+
     const hasOptions = product?.options && product.options.length > 0;
     if (hasOptions) {
       const allSelected = product.options.every(
@@ -189,8 +258,7 @@ const ProductDetailPage = () => {
       if (!allSelected) {
         showNotification(
           t("please_select_options") || "กรุณาเลือกตัวเลือกสินค้า",
-          t("product_options_must_be_selected") ||
-            "ต้องเลือกตัวเลือกสินค้าก่อน",
+          t("product_options_must_be_selected") || "ต้องเลือกตัวเลือกสินค้าก่อน",
           "warning"
         );
         return;
@@ -255,12 +323,43 @@ const ProductDetailPage = () => {
       ? product.description
       : product.description_en || product.description);
 
+  // helper: แสดงป้ายสต็อกเล็กๆ
+  const renderStockChip = () => {
+    const qty = Number(product?.stock_qty ?? 0);
+    const lang = i18n.language;
+
+    if (qty <= 0) {
+      return (
+        <span className="stock-chip stock-out" aria-live="polite">
+          <span className="stock-dot" />
+          {lang === "en" ? "Out of stock" : "สินค้าหมด"}
+        </span>
+      );
+    }
+    if (qty <= 5) {
+      return (
+        <span className="stock-chip stock-low" aria-live="polite">
+          <span className="stock-dot" />
+          {lang === "en" ? `Only ${qty} left` : `เหลือ ${qty} ชิ้น`}
+        </span>
+      );
+    }
+    return (
+      <span className="stock-chip stock-ok" aria-live="polite">
+        <span className="stock-dot" />
+        {lang === "en" ? `In stock: ${qty}` : `คงเหลือ ${qty} ชิ้น`}
+      </span>
+    );
+  };
+
   const ProductInfoContent = () => (
     <>
       <h1 className="product-title-detail">{productName}</h1>
       <p className="product-price-detail">
         {product.price.toLocaleString()} {t("baht")}
       </p>
+
+      <div className="mb-2">{renderStockChip()}</div>
 
       <div className="section-sep"></div>
 
@@ -346,7 +445,7 @@ const ProductDetailPage = () => {
               className="qty-btn"
               onClick={decrementQuantity}
               aria-label={t("remove") || "ลดจำนวน"}
-              disabled={isProcessing}
+              disabled={isProcessing || availableStock <= 0}
             >
               -
             </button>
@@ -358,7 +457,7 @@ const ProductDetailPage = () => {
               className="qty-btn"
               onClick={incrementQuantity}
               aria-label={t("add_to_cart") || "เพิ่ม"}
-              disabled={isProcessing}
+              disabled={isProcessing || availableStock <= 0}
             >
               +
             </button>
@@ -480,7 +579,7 @@ const ProductDetailPage = () => {
               type="button"
               className="btn-buy-now"
               onClick={handleBuyNow}
-              disabled={isProcessing}
+              disabled={isProcessing || availableStock <= 0}
             >
               <span className="btn-ic" aria-hidden>
                 {isProcessing ? (
@@ -496,7 +595,7 @@ const ProductDetailPage = () => {
               type="button"
               className="btn-add-cart"
               onClick={handleAddToCart}
-              disabled={isProcessing}
+              disabled={isProcessing || availableStock <= 0}
             >
               <span className="btn-ic" aria-hidden>
                 <BsBagPlusFill size={18} />
@@ -548,7 +647,7 @@ const ProductDetailPage = () => {
                 size="lg"
                 onClick={handleAddToCart}
                 className="add-to-cart-button"
-                disabled={isProcessing}
+                disabled={isProcessing || availableStock <= 0}
               >
                 {t("add_to_cart")}
               </Button>
@@ -556,7 +655,7 @@ const ProductDetailPage = () => {
                 variant="outline-success"
                 size="lg"
                 onClick={handleBuyNow}
-                disabled={isProcessing}
+                disabled={isProcessing || availableStock <= 0}
               >
                 {isProcessing ? (
                   <Spinner as="span" animation="border" size="sm" />

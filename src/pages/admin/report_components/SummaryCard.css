@@ -1,0 +1,36 @@
+.summary-card .card-body {
+  display: flex;
+  align-items: center;
+}
+
+.summary-card .card-content-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  gap: 1rem;
+}
+
+.summary-card .text-content {
+  flex-grow: 1;
+  min-width: 0;
+}
+
+.summary-card .card-subtitle {
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.summary-card .card-value {
+  font-size: 1.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.summary-card .icon-content {
+  font-size: 2.2rem;
+  color: #e9ecef;
+  flex-shrink: 0;
+}

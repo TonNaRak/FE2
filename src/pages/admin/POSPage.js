@@ -1,3 +1,4 @@
+// src/pages/admin/POSPage.js
 import React, { useState, useEffect } from "react";
 import {
   Container,
@@ -33,39 +34,44 @@ const POSPage = () => {
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [totalPrice, setTotalPrice] = useState(0);
 
-  // --- START: แก้ไข State ---
+  // --- START: Modals & Payment State ---
   const [showOptionsModal, setShowOptionsModal] = useState(false);
   const [modalProduct, setModalProduct] = useState(null);
   const [selectedOptions, setSelectedOptions] = useState({});
 
-  // --- เพิ่ม State ใหม่สำหรับ Modal การชำระเงิน และผลลัพธ์ ---
+  // ใหม่: modal เลือกช่องทางชำระ
+  const [showChannelModal, setShowChannelModal] = useState(false);
+  const [paymentChannel, setPaymentChannel] = useState("cash"); // 'cash' | 'transfer'
+
+  // เดิม: modal รับเงินสด
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [cashReceived, setCashReceived] = useState("");
   const [change, setChange] = useState(0);
+
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [lastOrderInfo, setLastOrderInfo] = useState({
     orderId: null,
     change: 0,
   });
-  // --- END: แก้ไข State ---
+  // --- END ---
 
   const { token } = useAuth();
   const API_CONFIG = { headers: { Authorization: `Bearer ${token}` } };
+  const API_BASE = "https://api.souvenir-from-lagoon-thailand.com";
+
+  const fetchAllProducts = async () => {
+    try {
+      const response = await axios.get(`${API_BASE}/api/products`, API_CONFIG);
+      setProducts(response.data);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+    }
+  };
 
   useEffect(() => {
-    const fetchAllProducts = async () => {
-      try {
-        const response = await axios.get(
-          "https://api.souvenir-from-lagoon-thailand.com/api/products",
-          API_CONFIG
-        );
-        setProducts(response.data);
-      } catch (error) {
-        console.error("Error fetching products:", error);
-      }
-    };
+    if (!token) return;
     fetchAllProducts();
-  }, []);
+  }, [token]);
 
   useEffect(() => {
     const total = cart.reduce(
@@ -75,7 +81,7 @@ const POSPage = () => {
     setTotalPrice(total);
   }, [cart]);
 
-  // --- เพิ่ม useEffect ใหม่สำหรับคำนวณเงินทอนอัตโนมัติ ---
+  // คำนวณเงินทอนอัตโนมัติสำหรับเงินสด
   useEffect(() => {
     const received = parseFloat(cashReceived);
     if (!isNaN(received) && received >= totalPrice) {
@@ -85,9 +91,7 @@ const POSPage = () => {
     }
   }, [cashReceived, totalPrice]);
 
-  const handleProductSearch = (e) => {
-    setSearchTerm(e.target.value);
-  };
+  const handleProductSearch = (e) => setSearchTerm(e.target.value);
 
   const filteredProducts = products.filter(
     (p) =>
@@ -95,19 +99,36 @@ const POSPage = () => {
       (p.name_en && p.name_en.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
+  const getStockForItem = (itemLike) => Number(itemLike?.stock_qty ?? 0);
+
+  const canIncrease = (item, incBy = 1) => {
+    const stock = getStockForItem(item);
+    const nextQty = (item?.quantity ?? 0) + incBy;
+    return nextQty <= stock;
+  };
+
   const addToCart = async (product) => {
+    if (getStockForItem(product) <= 0) {
+      alert("สินค้านี้หมดสต็อกแล้ว");
+      return;
+    }
+
     if (product.has_options) {
       try {
         const response = await axios.get(
-          `https://api.souvenir-from-lagoon-thailand.com/api/product/${product.product_id}`,
+          `${API_BASE}/api/product/${product.product_id}`,
           API_CONFIG
         );
-        setModalProduct(response.data);
+        const data = response.data || {};
+        data.stock_qty =
+          typeof data.stock_qty === "number"
+            ? data.stock_qty
+            : product.stock_qty;
+
+        setModalProduct(data);
         const initialOptions = {};
-        if (response.data.options && response.data.options.length > 0) {
-          response.data.options.forEach((opt) => {
-            initialOptions[opt.option_name] = "";
-          });
+        if (data.options && data.options.length > 0) {
+          data.options.forEach((opt) => (initialOptions[opt.option_name] = ""));
         }
         setSelectedOptions(initialOptions);
         setShowOptionsModal(true);
@@ -121,8 +142,18 @@ const POSPage = () => {
     const existingItem = cart.find((item) => item.cart_id === cartId);
 
     if (existingItem) {
+      if (!canIncrease(existingItem, 1)) {
+        alert(
+          `สต็อกคงเหลือ ${getStockForItem(existingItem)} ชิ้น ไม่สามารถเพิ่มได้`
+        );
+        return;
+      }
       updateQuantity(cartId, 1);
     } else {
+      if (getStockForItem(product) < 1) {
+        alert("สินค้านี้หมดสต็อกแล้ว");
+        return;
+      }
       setCart([
         ...cart,
         { ...product, quantity: 1, cart_id: cartId, selected_options: null },
@@ -138,10 +169,21 @@ const POSPage = () => {
       }
     }
 
+    if (getStockForItem(modalProduct) <= 0) {
+      alert("สินค้านี้หมดสต็อกแล้ว");
+      return;
+    }
+
     const cartId = modalProduct.product_id + JSON.stringify(selectedOptions);
     const existingItem = cart.find((item) => item.cart_id === cartId);
 
     if (existingItem) {
+      if (!canIncrease(existingItem, 1)) {
+        alert(
+          `สต็อกคงเหลือ ${getStockForItem(existingItem)} ชิ้น ไม่สามารถเพิ่มได้`
+        );
+        return;
+      }
       updateQuantity(cartId, 1);
     } else {
       const newItem = {
@@ -150,18 +192,30 @@ const POSPage = () => {
         cart_id: cartId,
         selected_options: selectedOptions,
       };
+      newItem.stock_qty = getStockForItem(modalProduct);
       setCart([...cart, newItem]);
     }
     setShowOptionsModal(false);
   };
 
   const updateQuantity = (cartId, amount) => {
-    setCart(
-      cart.map((item) =>
-        item.cart_id === cartId
-          ? { ...item, quantity: Math.max(1, item.quantity + amount) }
-          : item
-      )
+    setCart((prev) =>
+      prev.map((item) => {
+        if (item.cart_id !== cartId) return item;
+
+        if (amount < 0) {
+          const nextQty = Math.max(1, item.quantity + amount);
+          return { ...item, quantity: nextQty };
+        }
+
+        const stock = getStockForItem(item);
+        const nextQty = item.quantity + amount;
+        if (nextQty > stock) {
+          alert(`สต็อกคงเหลือ ${stock} ชิ้น ไม่สามารถเพิ่มได้`);
+          return item;
+        }
+        return { ...item, quantity: nextQty };
+      })
     );
   };
 
@@ -175,7 +229,7 @@ const POSPage = () => {
     if (query.length > 1) {
       try {
         const response = await axios.get(
-          `https://api.souvenir-from-lagoon-thailand.com/api/admin/users/search?q=${query}`,
+          `${API_BASE}/api/admin/users/search?q=${encodeURIComponent(query)}`,
           API_CONFIG
         );
         setCustomerResults(response.data);
@@ -191,33 +245,69 @@ const POSPage = () => {
     setSelectedCustomer(customer);
     setCustomerSearch("");
     setCustomerResults([]);
+    // (ทางเลือก) จะให้เด้งเลือกช่องทางตรงนี้เลยก็ได้ แต่เพื่อ UX ที่คุ้นเคย
+    // เราจะเด้งตอนกดปุ่ม "ชำระเงิน" แทน
   };
 
-  const clearCustomer = () => {
-    setSelectedCustomer(null);
-  };
+  const clearCustomer = () => setSelectedCustomer(null);
 
-  // --- START: แก้ไขฟังก์ชันชำระเงินทั้งหมด ---
+  // ===== ชำระเงิน =====
 
-  // 1. ฟังก์ชันนี้จะถูกเรียกเมื่อกดปุ่ม "ชำระเงิน" หลัก
+  // กดปุ่ม "ชำระเงิน" → เปิด "เลือกช่องทางชำระ"
   const handleCheckout = () => {
     if (cart.length === 0) {
       alert("กรุณาเพิ่มสินค้าลงในตะกร้าก่อน");
       return;
     }
-    setCashReceived(""); // รีเซ็ตค่าเงินที่รับ
-    setChange(0); // รีเซ็ตเงินทอน
-    setShowPaymentModal(true); // เปิด Modal รับเงิน
-  };
-
-  // 2. ฟังก์ชันนี้จะถูกเรียกเมื่อกด "ยืนยันการชำระเงิน" ใน Modal
-  const handleSubmitOrder = async () => {
-    if (parseFloat(cashReceived) < totalPrice) {
-      alert("จำนวนเงินที่รับมาไม่เพียงพอ");
+    const overItems = cart.filter((it) => it.quantity > getStockForItem(it));
+    if (overItems.length > 0) {
+      const names = overItems
+        .map((it) => `${it.name} (คงเหลือ ${getStockForItem(it)})`)
+        .join(", ");
+      alert(`บางรายการเกินจำนวนคงเหลือ: ${names}`);
       return;
     }
-    if (isNaN(parseFloat(cashReceived))) {
-      alert("กรุณากรอกจำนวนเงินที่รับมา");
+    // เปิด modal เลือกช่องทาง
+    setPaymentChannel("cash"); // default เป็นเงินสด
+    setShowChannelModal(true);
+  };
+
+  // กดยืนยันช่องทางใน modal
+  const handleConfirmChannel = () => {
+    if (paymentChannel === "cash") {
+      setCashReceived("");
+      setChange(0);
+      setShowChannelModal(false);
+      setShowPaymentModal(true); // ไปหน้าใส่เงินรับ/ทอน
+    } else {
+      // โอน → ส่งออเดอร์ได้เลย (ไม่ต้องกรอกเงินสด)
+      setShowChannelModal(false);
+      handleSubmitOrder("transfer");
+    }
+  };
+
+  // ส่งคำสั่งซื้อจริง
+  const handleSubmitOrder = async (channelParam) => {
+    const channel = channelParam || paymentChannel;
+
+    if (channel === "cash") {
+      if (isNaN(parseFloat(cashReceived))) {
+        alert("กรุณากรอกจำนวนเงินที่รับมา");
+        return;
+      }
+      if (parseFloat(cashReceived) < totalPrice) {
+        alert("จำนวนเงินที่รับมาไม่เพียงพอ");
+        return;
+      }
+    }
+
+    // กันพลาดอีกรอบก่อนส่ง
+    const overItems = cart.filter((it) => it.quantity > getStockForItem(it));
+    if (overItems.length > 0) {
+      const names = overItems
+        .map((it) => `${it.name} (คงเหลือ ${getStockForItem(it)})`)
+        .join(", ");
+      alert(`บางรายการเกินจำนวนคงเหลือ: ${names}`);
       return;
     }
 
@@ -226,36 +316,68 @@ const POSPage = () => {
         items: cart,
         totalPrice,
         userId: selectedCustomer ? selectedCustomer.user_id : null,
-        cashReceived: parseFloat(cashReceived), // ส่งค่าเงินที่รับ
-        changeGiven: change, // ส่งค่าเงินทอน
+        paymentChannel: channel, // << สำคัญ: ส่ง 'cash' หรือ 'transfer'
+        cashReceived: channel === "cash" ? parseFloat(cashReceived) : undefined,
+        changeGiven: channel === "cash" ? change : undefined,
       };
 
       const response = await axios.post(
-        "https://api.souvenir-from-lagoon-thailand.com/api/admin/orders/create-in-store",
+        `${API_BASE}/api/admin/orders/create-in-store`,
         orderData,
         API_CONFIG
       );
 
-      setLastOrderInfo({ orderId: response.data.orderId, change: change });
+      // อัปเดตสต็อกแบบเร็ว
+      const qtyByProduct = new Map();
+      for (const it of cart) {
+        const pid = Number(it.product_id);
+        qtyByProduct.set(
+          pid,
+          (qtyByProduct.get(pid) || 0) + Number(it.quantity || 0)
+        );
+      }
+      setProducts((prev) =>
+        prev.map((p) => {
+          const minus = qtyByProduct.get(p.product_id) || 0;
+          if (!minus) return p;
+          const newStock = Math.max(0, (Number(p.stock_qty) || 0) - minus);
+          return {
+            ...p,
+            stock_qty: newStock,
+            sales_status: newStock <= 0 ? 0 : p.sales_status,
+          };
+        })
+      );
+
+      await fetchAllProducts();
+
+      setLastOrderInfo({
+        orderId: response.data.orderId,
+        change: channel === "cash" ? change : 0,
+      });
+
       setShowPaymentModal(false);
       setShowSuccessModal(true);
 
-      // ล้างข้อมูลสำหรับออเดอร์ถัดไป
+      // Reset สำหรับรอบถัดไป
       setCart([]);
       setSelectedCustomer(null);
       setCustomerSearch("");
+      setPaymentChannel("cash");
+      setCashReceived("");
+      setChange(0);
     } catch (error) {
       console.error("Error creating order:", error);
       alert("เกิดข้อผิดพลาดในการสร้างออเดอร์");
     }
   };
 
-  // 3. ฟังก์ชันสำหรับปิด Modal แจ้งเตือนหลังสำเร็จ
   const handleCloseSuccessModal = () => {
     setShowSuccessModal(false);
     setLastOrderInfo({ orderId: null, change: 0 });
   };
-  // --- END: แก้ไขฟังก์ชันชำระเงิน ---
+
+  const hasOverStock = cart.some((it) => it.quantity > getStockForItem(it));
 
   return (
     <>
@@ -286,6 +408,15 @@ const POSPage = () => {
                   <Card.Body>
                     <Card.Title>{product.name}</Card.Title>
                     <Card.Text>{product.price.toLocaleString()} บาท</Card.Text>
+                    {typeof product.stock_qty === "number" && (
+                      <small
+                        className={
+                          product.stock_qty <= 0 ? "text-danger" : "text-muted"
+                        }
+                      >
+                        คงเหลือ: {product.stock_qty} ชิ้น
+                      </small>
+                    )}
                   </Card.Body>
                 </Card>
               ))}
@@ -344,55 +475,89 @@ const POSPage = () => {
                   )}
                 </div>
 
+                {hasOverStock && (
+                  <Alert variant="warning" className="py-2">
+                    บางรายการเกินจำนวนคงเหลือในสต็อก
+                    โปรดลดจำนวนให้ไม่เกินคงเหลือก่อนชำระเงิน
+                  </Alert>
+                )}
+
                 <ListGroup
                   variant="flush"
                   className="flex-grow-1 cart-items-list"
                 >
-                  {cart.map((item) => (
-                    <ListGroup.Item
-                      key={item.cart_id}
-                      className="d-flex align-items-center"
-                    >
-                      <Image
-                        src={item.image_url || "https://via.placeholder.com/50"}
-                        thumbnail
-                        className="me-3"
-                        style={{ width: "50px" }}
-                      />
-                      <div className="flex-grow-1">
-                        <div>{item.name}</div>
-                        {item.selected_options && (
-                          <small className="text-muted d-block">
-                            {Object.values(item.selected_options).join(", ")}
-                          </small>
-                        )}
-                      </div>
-                      <div className="d-flex align-items-center">
-                        <Button
-                          size="sm"
-                          variant="outline-secondary"
-                          onClick={() => updateQuantity(item.cart_id, -1)}
-                        >
-                          <BsDash />
-                        </Button>
-                        <span className="mx-2">{item.quantity}</span>
-                        <Button
-                          size="sm"
-                          variant="outline-secondary"
-                          onClick={() => updateQuantity(item.cart_id, 1)}
-                        >
-                          <BsPlus />
-                        </Button>
-                      </div>
-                      <Button
-                        variant="link"
-                        className="text-danger ms-2"
-                        onClick={() => removeFromCart(item.cart_id)}
+                  {cart.map((item) => {
+                    const stock = getStockForItem(item);
+                    const atMax = item.quantity >= stock && stock > 0;
+                    return (
+                      <ListGroup.Item
+                        key={item.cart_id}
+                        className="d-flex align-items-center"
                       >
-                        <BsTrash />
-                      </Button>
-                    </ListGroup.Item>
-                  ))}
+                        <Image
+                          src={
+                            item.image_url || "https://via.placeholder.com/50"
+                          }
+                          thumbnail
+                          className="me-3"
+                          style={{ width: "50px" }}
+                        />
+                        <div className="flex-grow-1">
+                          <div>{item.name}</div>
+                          {item.selected_options && (
+                            <small className="text-muted d-block">
+                              {Object.values(item.selected_options).join(", ")}
+                            </small>
+                          )}
+                          {typeof stock === "number" && (
+                            <small
+                              className={
+                                stock <= 0 ? "text-danger" : "text-muted"
+                              }
+                            >
+                              คงเหลือ: {stock} ชิ้น
+                            </small>
+                          )}
+                        </div>
+                        <div className="d-flex align-items-center">
+                          <Button
+                            size="sm"
+                            variant="outline-secondary"
+                            onClick={() => updateQuantity(item.cart_id, -1)}
+                            disabled={item.quantity <= 1}
+                            title={
+                              item.quantity <= 1 ? "ลดไม่ได้ ต่ำสุดคือ 1" : ""
+                            }
+                          >
+                            <BsDash />
+                          </Button>
+                          <span className="mx-2">{item.quantity}</span>
+                          <Button
+                            size="sm"
+                            variant="outline-secondary"
+                            onClick={() => updateQuantity(item.cart_id, 1)}
+                            disabled={stock <= 0 || atMax}
+                            title={
+                              stock <= 0
+                                ? "สินค้าหมดสต็อก"
+                                : atMax
+                                ? `เพิ่มไม่ได้ เกินคงเหลือ (${stock})`
+                                : ""
+                            }
+                          >
+                            <BsPlus />
+                          </Button>
+                        </div>
+                        <Button
+                          variant="link"
+                          className="text-danger ms-2"
+                          onClick={() => removeFromCart(item.cart_id)}
+                        >
+                          <BsTrash />
+                        </Button>
+                      </ListGroup.Item>
+                    );
+                  })}
                   {cart.length === 0 && (
                     <p className="text-center text-muted">
                       ยังไม่มีสินค้าในรายการ
@@ -407,12 +572,12 @@ const POSPage = () => {
                     <span>{totalPrice.toLocaleString()} บาท</span>
                   </div>
                   <div className="d-grid mt-3">
-                    {/* --- ปุ่มนี้จะเรียก handleCheckout เพื่อเปิด Modal --- */}
                     <Button
                       variant="success"
                       size="lg"
                       onClick={handleCheckout}
-                      disabled={cart.length === 0}
+                      disabled={cart.length === 0 || hasOverStock}
+                      title={hasOverStock ? "มีรายการเกินคงเหลือในสต็อก" : ""}
                     >
                       ชำระเงิน
                     </Button>
@@ -424,7 +589,7 @@ const POSPage = () => {
         </Row>
       </Container>
 
-      {/* Modal สำหรับเลือกตัวเลือกสินค้า */}
+      {/* Modal: เลือกตัวเลือกสินค้า */}
       <Modal
         show={showOptionsModal}
         onHide={() => setShowOptionsModal(false)}
@@ -434,7 +599,7 @@ const POSPage = () => {
           <Modal.Title>เลือกตัวเลือกสำหรับ: {modalProduct?.name}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          {modalProduct?.options.map((option) => (
+          {modalProduct?.options?.map((option) => (
             <div key={option.option_id} className="mb-3">
               <Form.Label className="fw-bold">{option.option_name}:</Form.Label>
               <div className="option-tiles-container-pos">
@@ -460,6 +625,15 @@ const POSPage = () => {
               </div>
             </div>
           ))}
+          {typeof modalProduct?.stock_qty === "number" && (
+            <small
+              className={
+                modalProduct.stock_qty <= 0 ? "text-danger" : "text-muted"
+              }
+            >
+              คงเหลือ: {modalProduct.stock_qty} ชิ้น
+            </small>
+          )}
         </Modal.Body>
         <Modal.Footer>
           <Button
@@ -468,21 +642,69 @@ const POSPage = () => {
           >
             ยกเลิก
           </Button>
-          <Button variant="primary" onClick={handleAddToCartWithOptions}>
+          <Button
+            variant="primary"
+            onClick={handleAddToCartWithOptions}
+            disabled={(modalProduct?.stock_qty ?? 0) <= 0}
+            title={(modalProduct?.stock_qty ?? 0) <= 0 ? "สินค้าหมดสต็อก" : ""}
+          >
             เพิ่มลงรายการ
           </Button>
         </Modal.Footer>
       </Modal>
 
-      {/* --- START: เพิ่ม Modal ใหม่ 2 ตัว --- */}
-      {/* 1. Modal สำหรับรับเงิน */}
+      {/* Modal: เลือกช่องทางชำระ (ใหม่) */}
+      <Modal
+        show={showChannelModal}
+        onHide={() => setShowChannelModal(false)}
+        centered
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>เลือกช่องทางการชำระเงิน</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form>
+            <div className="d-flex gap-4">
+              <Form.Check
+                type="radio"
+                id="pay-cash"
+                name="pos-pay"
+                label="เงินสด"
+                checked={paymentChannel === "cash"}
+                onChange={() => setPaymentChannel("cash")}
+              />
+              <Form.Check
+                type="radio"
+                id="pay-transfer"
+                name="pos-pay"
+                label="โอน/บัตร/QR"
+                checked={paymentChannel === "transfer"}
+                onChange={() => setPaymentChannel("transfer")}
+              />
+            </div>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="secondary"
+            onClick={() => setShowChannelModal(false)}
+          >
+            ยกเลิก
+          </Button>
+          <Button variant="primary" onClick={handleConfirmChannel}>
+            ดำเนินการต่อ
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Modal: รับเงินสด */}
       <Modal
         show={showPaymentModal}
         onHide={() => setShowPaymentModal(false)}
         centered
       >
         <Modal.Header closeButton>
-          <Modal.Title>รับชำระเงิน</Modal.Title>
+          <Modal.Title>รับชำระเงิน (เงินสด)</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <h3 className="text-center mb-3">
@@ -497,9 +719,7 @@ const POSPage = () => {
               onChange={(e) => setCashReceived(e.target.value)}
               autoFocus
               onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  handleSubmitOrder();
-                }
+                if (e.key === "Enter") handleSubmitOrder("cash");
               }}
             />
           </Form.Group>
@@ -520,7 +740,7 @@ const POSPage = () => {
           </Button>
           <Button
             variant="primary"
-            onClick={handleSubmitOrder}
+            onClick={() => handleSubmitOrder("cash")}
             disabled={
               parseFloat(cashReceived) < totalPrice ||
               isNaN(parseFloat(cashReceived))
@@ -531,22 +751,26 @@ const POSPage = () => {
         </Modal.Footer>
       </Modal>
 
-      {/* 2. Modal สำหรับแสดงผลหลังทำรายการสำเร็จ */}
+      {/* Modal: สำเร็จ */}
       <Modal show={showSuccessModal} onHide={handleCloseSuccessModal} centered>
         <Modal.Header closeButton>
           <Modal.Title className="text-success">ทำรายการสำเร็จ!</Modal.Title>
         </Modal.Header>
         <Modal.Body className="text-center">
           <h4>ออเดอร์หมายเลข #{lastOrderInfo.orderId}</h4>
-          <h1 className="display-4 my-3">
-            เงินทอน:{" "}
-            <span className="fw-bold">
-              {lastOrderInfo.change.toLocaleString(undefined, {
-                minimumFractionDigits: 2,
-              })}
-            </span>{" "}
-            บาท
-          </h1>
+
+          {lastOrderInfo.paymentChannel === "cash" &&
+          lastOrderInfo.change > 0 ? (
+            <h1 className="display-6 my-3">
+              เงินทอน:{" "}
+              <span className="fw-bold">
+                {lastOrderInfo.change.toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                })}
+              </span>{" "}
+              บาท
+            </h1>
+          ) : null}
         </Modal.Body>
         <Modal.Footer>
           <Button variant="primary" onClick={handleCloseSuccessModal}>
@@ -554,7 +778,6 @@ const POSPage = () => {
           </Button>
         </Modal.Footer>
       </Modal>
-      {/* --- END: เพิ่ม Modal ใหม่ --- */}
     </>
   );
 };

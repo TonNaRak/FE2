@@ -122,7 +122,7 @@ const DashboardProductsPage = () => {
           </Row>
         </Col>
         <Col lg={4}>
-          <ProductStatusChart />
+          <ProductStatusChart selectedCategory={selectedCategory} />
         </Col>
       </Row>
 

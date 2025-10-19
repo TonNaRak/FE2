@@ -11,6 +11,7 @@ import "./DashboardPage.css";
 import axios from "axios";
 import { PeopleFill, ArrowRepeat, StarFill } from "react-bootstrap-icons";
 import { Row, Col, Card } from "react-bootstrap"; // Import Card เพิ่ม
+import TopPointRedeemersChart from "./dashboard_components/TopPointRedeemersChart";
 
 const DashboardCustomersPage = () => {
   const [summaryData, setSummaryData] = useState(null);
@@ -105,19 +106,28 @@ const DashboardCustomersPage = () => {
       </Row>
 
       {/* --- Row 2: Growth Chart & Top Charts --- */}
+      {/* --- Row: Charts (2x2 equal) --- */}
       <Row className="g-3 mb-4">
-        <Col lg={7}>
+        {/* บนซ้าย: กราฟเส้น */}
+        <Col xs={12} md={6} lg={6}>
           <CustomerGrowthChart dateRange={dateRange} />
         </Col>
-        <Col lg={5}>
-          <Row className="g-3">
-            <Col xs={12}>
-              <TopSpendersChart dateRange={dateRange} />
-            </Col>
-            <Col xs={12}>
-              <TopFrequentCustomersChart dateRange={dateRange} />
-            </Col>
-          </Row>
+
+        {/* บนขวา: กราฟแท่ง (แนะนำใช้ TopSpenders) */}
+        <Col xs={12} md={6} lg={6}>
+          <TopSpendersChart dateRange={dateRange} />
+        </Col>
+      </Row>
+
+      <Row className="g-3 mb-4">
+        {/* ล่างซ้าย: กราฟแท่ง (Top Frequent) */}
+        <Col xs={12} md={6} lg={6}>
+          <TopPointRedeemersChart dateRange={dateRange} />
+        </Col>
+
+        {/* ล่างขวา: กราฟแท่ง (Top Point Redeemers) */}
+        <Col xs={12} md={6} lg={6}>
+          <TopFrequentCustomersChart dateRange={dateRange} />
         </Col>
       </Row>
 

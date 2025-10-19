@@ -129,60 +129,84 @@ const CheckoutPage = () => {
 
   // --- [จุดแก้ไขหลัก] แก้ไขฟังก์ชัน handleConfirmOrder ให้แยกการทำงาน ---
   const handleConfirmOrder = async () => {
-    if (!shippingInfo.name || !shippingInfo.address || !shippingInfo.phone) {
-      alert("กรุณากรอกข้อมูลผู้รับและที่อยู่จัดส่งให้ครบถ้วน");
-      setIsEditingAddress(true);
+  if (!shippingInfo.name || !shippingInfo.address || !shippingInfo.phone) {
+    alert("กรุณากรอกข้อมูลผู้รับและที่อยู่จัดส่งให้ครบถ้วน");
+    setIsEditingAddress(true);
+    return;
+  }
+  setIsSubmitting(true);
+
+  try {
+    // 1) ตรวจสต็อกก่อน
+    const checkPayload = isBuyNow
+      ? { item: { product_id: items[0].product_id, quantity: items[0].quantity } }
+      : { items: items.map((it) => ({ product_id: it.product_id, quantity: it.quantity })) };
+
+    const checkRes = await axios.post(
+      "https://api.souvenir-from-lagoon-thailand.com/api/orders/check-stock",
+      checkPayload,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    if (!checkRes.data?.ok) {
+      const problems = checkRes.data?.problems || [];
+      const msg = problems
+        .map(
+          (p) =>
+            `${p.name || "Unknown"} — คงเหลือ ${p.available} ชิ้น แต่คุณใส่ ${p.requested}`
+        )
+        .join("\n");
+      alert(`สต็อกไม่พอ:\n\n${msg}`);
+      setIsSubmitting(false);
       return;
     }
-    setIsSubmitting(true);
 
-    try {
-      let response;
-      const paymentMethod = "online";
-      const baseData = {
-        paymentMethod,
-        shippingInfo,
-        pointsToRedeem: discount,
-        shippingCost: shippingCost,
+    // 2) ผ่านแล้วค่อยสร้างคำสั่งซื้อ
+    let response;
+    const paymentMethod = "online";
+    const baseData = {
+      paymentMethod,
+      shippingInfo,
+      pointsToRedeem: discount,
+      shippingCost: shippingCost,
+    };
+
+    if (isBuyNow) {
+      // --- กรณี "ซื้อทันที" ---
+      const orderData = {
+        ...baseData,
+        item: items[0], // ส่งเป็น item object เดียว (มี product_id, quantity, price, selected_options)
       };
-
-      if (isBuyNow) {
-        // --- กรณี "ซื้อทันที" ---
-        const orderData = {
-          ...baseData,
-          item: items[0], // ส่งเป็น item object เดียว
-        };
-        response = await axios.post(
-          "https://api.souvenir-from-lagoon-thailand.com/api/orders/buy-now",
-          orderData,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-      } else {
-        // --- กรณีมาจาก "ตะกร้าสินค้า" ---
-        const orderData = {
-          ...baseData,
-          items: items, // ส่งเป็น items array
-        };
-        response = await axios.post(
-          "https://api.souvenir-from-lagoon-thailand.com/api/orders",
-          orderData,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-      }
-
-      const newOrderId = response.data.orderId;
-      if (refreshUserData) {
-        await refreshUserData();
-      }
-      navigate(`/payment-confirmation/${newOrderId}`);
-    } catch (error) {
-      console.error("Failed to create order:", error);
-      alert(
-        error.response?.data?.message || "เกิดข้อผิดพลาดในการสร้างคำสั่งซื้อ"
+      response = await axios.post(
+        "https://api.souvenir-from-lagoon-thailand.com/api/orders/buy-now",
+        orderData,
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-      setIsSubmitting(false);
+    } else {
+      // --- กรณีมาจาก "ตะกร้าสินค้า" ---
+      const orderData = {
+        ...baseData,
+        items: items, // ส่งเป็น items array
+      };
+      response = await axios.post(
+        "https://api.souvenir-from-lagoon-thailand.com/api/orders",
+        orderData,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
     }
-  };
+
+    const newOrderId = response.data.orderId;
+    if (refreshUserData) {
+      await refreshUserData();
+    }
+    navigate(`/payment-confirmation/${newOrderId}`);
+  } catch (error) {
+    console.error("Failed to create order:", error);
+    alert(error.response?.data?.message || "เกิดข้อผิดพลาดในการสร้างคำสั่งซื้อ");
+    setIsSubmitting(false);
+  }
+};
+
 
   return (
     <div className="checkout-page-bg">

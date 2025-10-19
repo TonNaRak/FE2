@@ -12,6 +12,7 @@ import {
   FaCashRegister,
   FaBars,
   FaUserCircle, // เพิ่มไอคอน User
+  FaChartBar,
 } from "react-icons/fa";
 import "./AdminSidebar.css";
 
@@ -33,6 +34,14 @@ const AdminSidebar = ({ isCollapsed, toggleSidebar }) => {
         </button>
       </div>
       <ul className="sidebar-nav">
+        <li>
+          <NavLink
+            to="/admin/reports"
+            className={({ isActive }) => (isActive ? "active" : "")}
+          >
+            <FaChartBar /> <span>รายงาน (Reports)</span>
+          </NavLink>
+        </li>
         <li>
           <NavLink
             to="/admin/dashboard"

@@ -39,6 +39,7 @@ const ProductManagementPage = () => {
     name_en: "",
     price: "",
     weight: "",
+    stock_qty: "",
     description: "",
     description_en: "",
     category_id: "",
@@ -325,6 +326,7 @@ const ProductManagementPage = () => {
                   <th className="text-center">รูปภาพ</th>
                   <th className="text-center">ชื่อสินค้า</th>
                   <th className="text-center">ราคา</th>
+                  <th className="text-center">จำนวนคงเหลือ</th>
                   <th className="text-center">ประเภท</th>
                   <th className="text-center">แนะนำ</th>
                   <th className="text-center">วางขาย</th>
@@ -349,6 +351,11 @@ const ProductManagementPage = () => {
                     <td>{product.name}</td>
                     <td className="text-center">
                       {product.price.toLocaleString()}
+                    </td>
+                    <td className="text-center">
+                      {product.stock_qty !== undefined
+                        ? product.stock_qty
+                        : "-"}
                     </td>
                     <td>{product.category_name}</td>
                     <td className="text-center">
@@ -439,6 +446,18 @@ const ProductManagementPage = () => {
               />
             </Form.Group>
             <Form.Group className="mb-3">
+              <Form.Label>จำนวนคงเหลือ (Stock)</Form.Label>
+              <Form.Control
+                type="number"
+                name="stock_qty"
+                placeholder="เช่น 10"
+                value={currentProduct.stock_qty ?? ""}
+                onChange={handleInputChange}
+                min={0}
+                required
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
               <Form.Label>น้ำหนัก (กรัม)</Form.Label>
               <Form.Control
                 type="number"
@@ -484,7 +503,6 @@ const ProductManagementPage = () => {
                 ))}
               </Form.Select>
             </Form.Group>
-
             <Form.Group className="mb-3">
               <Form.Label>รูปภาพสินค้า</Form.Label>
               <div className="product-image-upload-wrapper mx-auto">
@@ -508,14 +526,12 @@ const ProductManagementPage = () => {
                 />
               </div>
             </Form.Group>
-
             <hr />
             <h5>ประเภทตัวเลือกสินค้า (Variations)</h5>
             <p className="text-muted small">
               เพิ่มประเภทตัวเลือก เช่น ขนาด, สี
               จากนั้นใส่ตัวเลือกย่อยโดยการพิมพ์แล้วกด Enter
             </p>
-
             {currentProduct.options.map((option, index) => (
               <div key={index} className="variation-group">
                 <div className="variation-header">
@@ -585,7 +601,6 @@ const ProductManagementPage = () => {
                 />
               </div>
             ))}
-
             <Button
               variant="outline-success"
               size="sm"
@@ -594,7 +609,6 @@ const ProductManagementPage = () => {
               + เพิ่มประเภทตัวเลือก
             </Button>
             <hr />
-
             <Form.Group className="mb-3">
               <Form.Check
                 type="switch"

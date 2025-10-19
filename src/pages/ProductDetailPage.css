@@ -338,3 +338,44 @@
     color: #fff !important;
   }
 }
+
+/* === Stock chip (pill) === */
+.stock-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid rgba(0,0,0,0.08);
+  user-select: none;
+}
+
+.stock-chip .stock-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+/* สถานะต่างๆ */
+.stock-ok {
+  background: #ecfdf5;
+  color: #0f766e;
+  border-color: rgba(15,118,110,0.15);
+}
+.stock-ok .stock-dot { background: #0ea5a4; }
+
+.stock-low {
+  background: #fff7ed;
+  color: #b45309;
+  border-color: rgba(180,83,9,0.15);
+}
+.stock-low .stock-dot { background: #fb923c; }
+
+.stock-out {
+  background: #fef2f2;
+  color: #b91c1c;
+  border-color: rgba(185,28,28,0.15);
+}
+.stock-out .stock-dot { background: #ef4444; }

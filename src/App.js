@@ -75,6 +75,10 @@ const DashboardProductsPage = lazy(() =>
 const DashboardCustomersPage = lazy(() =>
   import("./pages/admin/DashboardCustomersPage")
 );
+const ReportsPage = lazy(() => import("./pages/admin/ReportsPage"));
+const DailyReportPage = lazy(() => import("./pages/admin/DailyReportPage"));
+const MonthlyReportPage = lazy(() => import("./pages/admin/MonthlyReportPage"));
+const YearlyReportPage = lazy(() => import("./pages/admin/YearlyReportPage"));
 // --- [จุดแก้ไขที่ 1] สร้าง Component สำหรับจัดการหน้าแรก ---
 const RootRedirect = () => {
   const { user, isLoading } = useAuth();
@@ -151,6 +155,11 @@ function App() {
                     element={<DashboardCustomersPage />}
                   />
                 </Route>{" "}
+                <Route path="/admin/reports" element={<ReportsPage />}>
+                  <Route index element={<DailyReportPage />} />
+                  <Route path="monthly" element={<MonthlyReportPage />} />
+                  <Route path="yearly" element={<YearlyReportPage />} />
+                </Route>
                 <Route path="/admin/pos" element={<POSPage />} />
                 <Route
                   path="/admin/products"

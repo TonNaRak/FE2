@@ -4,7 +4,7 @@ import { Card, Table, Spinner } from "react-bootstrap";
 import { format } from "date-fns";
 import "./ProductSalesTable.css";
 
-const numericKeys = new Set(["totalQuantity", "totalRevenue"]);
+const numericKeys = new Set(["totalQuantity", "totalRevenue", "stockQty"]);
 
 const sortArray = (arr, { key, direction }) => {
   const isNumeric = numericKeys.has(key);
@@ -57,6 +57,7 @@ const ProductSalesTable = ({ dateRange, selectedCategory }) => {
           ...r,
           totalQuantity: Number(r.totalQuantity) || 0,
           totalRevenue: Number(r.totalRevenue) || 0,
+          stockQty: Number(r.stockQty) || 0,
         }));
 
         setSalesData(normalized);
@@ -82,7 +83,9 @@ const ProductSalesTable = ({ dateRange, selectedCategory }) => {
 
   const renderSortIcon = (key) => {
     if (sortConfig.key !== key) return null;
-    return <span className="ms-1">{sortConfig.direction === "asc" ? "▲" : "▼"}</span>;
+    return (
+      <span className="ms-1">{sortConfig.direction === "asc" ? "▲" : "▼"}</span>
+    );
   };
 
   const renderTbody = () => {
@@ -129,6 +132,9 @@ const ProductSalesTable = ({ dateRange, selectedCategory }) => {
             <td>{item.productName}</td>
             <td>{item.categoryName}</td>
             <td className="text-end">
+              {Number(item.stockQty).toLocaleString("th-TH")}
+            </td>
+            <td className="text-end">
               {Number(item.totalQuantity).toLocaleString("th-TH")}
             </td>
             <td className="text-end">
@@ -146,7 +152,7 @@ const ProductSalesTable = ({ dateRange, selectedCategory }) => {
     <Card style={{ height: "360px" }}>
       <Card.Header>
         <Card.Title as="h5" className="mb-0">
-          สรุปยอดขายรายสินค้า
+          รายการสินค้า
         </Card.Title>
       </Card.Header>
 
@@ -156,28 +162,37 @@ const ProductSalesTable = ({ dateRange, selectedCategory }) => {
           <thead className="table-light sticky-top">
             <tr>
               <th
-                className="sortable-header"
+                style={{ width: "25%" }}
                 onClick={() => handleSort("productName")}
               >
                 ชื่อสินค้า {renderSortIcon("productName")}
               </th>
               <th
-                className="sortable-header"
+                style={{ width: "20%" }}
                 onClick={() => handleSort("categoryName")}
               >
                 หมวดหมู่ {renderSortIcon("categoryName")}
               </th>
               <th
                 className="text-end sortable-header"
-                onClick={() => handleSort("totalQuantity")}
+                style={{ width: "15%" }}
+                onClick={() => handleSort("stockQty")}
               >
-                จำนวน (ชิ้น) {renderSortIcon("totalQuantity")}
+                คงเหลือ {renderSortIcon("stockQty")}
               </th>
               <th
                 className="text-end sortable-header"
+                style={{ width: "20%" }}
+                onClick={() => handleSort("totalQuantity")}
+              >
+                ขายได้ (หน่วย) {renderSortIcon("totalQuantity")}
+              </th>
+              <th
+                className="text-end sortable-header"
+                style={{ width: "20%" }}
                 onClick={() => handleSort("totalRevenue")}
               >
-                ยอดขาย (บาท) {renderSortIcon("totalRevenue")}
+                ยอดขาย (฿) {renderSortIcon("totalRevenue")}
               </th>
             </tr>
           </thead>

@@ -124,9 +124,35 @@ const CartPage = () => {
     );
   }, [selectedItems]);
 
+  // ---------- ✅ ตรวจว่า “จำนวนในตะกร้าเกินสต็อก” หรือไม่ ----------
+  const insufficientItems = useMemo(() => {
+    return selectedItems.filter(
+      (it) =>
+        typeof it.stock_qty === "number" &&
+        it.stock_qty >= 0 &&
+        it.quantity > it.stock_qty
+    );
+  }, [selectedItems]);
+
+  const hasInsufficient = insufficientItems.length > 0;
+
   const handleProceedToCheckout = () => {
     if (selectedItems.length === 0) {
       alert(t("no_items_for_checkout"));
+      return;
+    }
+    // ถ้ามีสินค้าเกินสต็อก → ไม่ให้ไปหน้า checkout
+    if (hasInsufficient) {
+      // แจ้งรวมรายการที่เกิน
+      const msgLines = insufficientItems.map((it) => {
+        const name = i18n.language === "en" && it.name_en ? it.name_en : it.name;
+        return `${name} — คงเหลือ ${it.stock_qty} ชิ้น แต่คุณใส่ ${it.quantity}`;
+      });
+      alert(
+        `มีสินค้าบางชิ้นเกินจำนวนคงเหลือในสต็อก:\n\n${msgLines.join(
+          "\n"
+        )}\n\nโปรดปรับจำนวนก่อนทำรายการต่อ`
+      );
       return;
     }
     navigate("/checkout", {
@@ -140,6 +166,25 @@ const CartPage = () => {
 
   const handleQuantityChange = async (cartItemId, newQuantity) => {
     if (newQuantity < 1) return;
+
+    // ✅ กันไม่ให้เพิ่มเกิน stock ที่ client-side
+    const targetItem = allItems.find((x) => x.cart_item_id === cartItemId);
+    if (targetItem) {
+      const stock = typeof targetItem.stock_qty === "number" ? targetItem.stock_qty : Infinity;
+      const currentQty = targetItem.quantity;
+
+      if (newQuantity > stock && newQuantity > currentQty) {
+        const name =
+          i18n.language === "en" && targetItem.name_en
+            ? targetItem.name_en
+            : targetItem.name;
+        alert(
+          `${name} — คงเหลือ ${stock} ชิ้น ไม่สามารถเพิ่มเป็น ${newQuantity} ชิ้นได้`
+        );
+        return;
+      }
+    }
+
     try {
       await axios.put(
         `https://api.souvenir-from-lagoon-thailand.com/api/cart/update/${cartItemId}`,
@@ -273,6 +318,24 @@ const CartPage = () => {
 
         {error && <Alert variant="danger">{error}</Alert>}
 
+        {/* ✅ แถบแจ้งเตือนถ้ามี “จำนวนเกินสต็อก” */}
+        {/* {hasInsufficient && (
+          <Alert variant="danger" className="mb-3 stock-alert">
+            <div className="fw-bold mb-1">จำนวนบางรายการเกินสต็อก</div>
+            <ul className="mb-0 ps-3">
+              {insufficientItems.map((it) => {
+                const name =
+                  i18n.language === "en" && it.name_en ? it.name_en : it.name;
+                return (
+                  <li key={it.cart_item_id}>
+                    {name} — คงเหลือ {it.stock_qty} ชิ้น แต่คุณใส่ {it.quantity}
+                  </li>
+                );
+              })}
+            </ul>
+          </Alert>
+        )} */}
+
         {unavailableItems.length > 0 && (
           <Alert variant="warning">{t("unavailable_items_warning")}</Alert>
         )}
@@ -293,143 +356,177 @@ const CartPage = () => {
               </div>
             )}
             {availableItems.length > 0 ? (
-              availableItems.map((item) => (
-                <Card
-                  key={item.cart_item_id}
-                  className={`mb-3 cart-item-card ${
-                    removingItems.includes(item.cart_item_id)
-                      ? "is-removing"
-                      : ""
-                  }`}
-                >
-                  <Card.Body>
-                    <Row className="align-items-center">
-                      {/* 1. Checkbox: xs=1, md=1 */}
-                      <Col xs={1} md={1} className="d-flex align-items-center">
-                        <Form.Check
-                          type="checkbox"
-                          checked={selectedItems.some(
-                            (selected) =>
-                              selected.cart_item_id === item.cart_item_id
-                          )}
-                          onChange={(e) =>
-                            handleItemSelect(item, e.target.checked)
-                          }
-                        />
-                      </Col>
+              availableItems.map((item) => {
+                const isOverStock =
+                  typeof item.stock_qty === "number" &&
+                  item.stock_qty >= 0 &&
+                  item.quantity > item.stock_qty;
 
-                      {/* 2. Image: ขยายเป็น xs=4, md=4 */}
-                      <Col xs={4} md={4}>
-                        {imageLoaded[item.cart_item_id] === false ? (
-                          <PlaceholderImage />
-                        ) : (
-                          <Image
-                            src={item.image_url}
-                            fluid
-                            rounded
-                            className="cart-item-image"
-                            onLoad={() =>
-                              setImageLoaded((prev) => ({
-                                ...prev,
-                                [item.cart_item_id]: true,
-                              }))
-                            }
-                            onError={() =>
-                              setImageLoaded((prev) => ({
-                                ...prev,
-                                [item.cart_item_id]: false,
-                              }))
+                return (
+                  <Card
+                    key={item.cart_item_id}
+                    className={`mb-3 cart-item-card ${
+                      removingItems.includes(item.cart_item_id)
+                        ? "is-removing"
+                        : ""
+                    } ${isOverStock ? "cart-item-overstock" : ""}`}
+                  >
+                    <Card.Body>
+                      <Row className="align-items-center">
+                        {/* 1. Checkbox: xs=1, md=1 */}
+                        <Col xs={1} md={1} className="d-flex align-items-center">
+                          <Form.Check
+                            type="checkbox"
+                            checked={selectedItems.some(
+                              (selected) =>
+                                selected.cart_item_id === item.cart_item_id
+                            )}
+                            onChange={(e) =>
+                              handleItemSelect(item, e.target.checked)
                             }
                           />
-                        )}
-                      </Col>
+                        </Col>
 
-                      {/* 3. Details + Total: ปรับเป็น xs=4, md=4 */}
-                      <Col xs={4} md={4}>
-                        <h5>
-                          {i18n.language === "en" && item.name_en
-                            ? item.name_en
-                            : item.name}
-                        </h5>
-                        {item.selected_options &&
-                          typeof item.selected_options === "object" && (
-                            <div className="text-muted small">
-                              {Object.entries(item.selected_options).map(
-                                ([key, value]) => (
-                                  <span key={key} className="me-3">
-                                    <strong>{key}:</strong> {value}
-                                  </span>
-                                )
+                        {/* 2. Image: xs=4, md=4 */}
+                        <Col xs={4} md={4}>
+                          <div className="cart-item-image-wrapper">
+                            {imageLoaded[item.cart_item_id] === false ? (
+                              <PlaceholderImage />
+                            ) : (
+                              <Image
+                                src={item.image_url}
+                                fluid
+                                rounded
+                                className="cart-item-image"
+                                onLoad={() =>
+                                  setImageLoaded((prev) => ({
+                                    ...prev,
+                                    [item.cart_item_id]: true,
+                                  }))
+                                }
+                                onError={() =>
+                                  setImageLoaded((prev) => ({
+                                    ...prev,
+                                    [item.cart_item_id]: false,
+                                  }))
+                                }
+                              />
+                            )}
+                            {typeof item.stock_qty !== "undefined" &&
+                              item.stock_qty <= 5 && (
+                                <span className="stock-tag">
+                                  {i18n.language === "en"
+                                    ? `Only ${item.stock_qty} left`
+                                    : `เหลือ ${item.stock_qty} ชิ้น`}
+                                </span>
                               )}
+                          </div>
+                        </Col>
+
+                        {/* 3. Details + Total: xs=4, md=4 */}
+                        <Col xs={4} md={4}>
+                          <h5 className={`${isOverStock ? "text-danger" : ""}`}>
+                            {i18n.language === "en" && item.name_en
+                              ? item.name_en
+                              : item.name}
+                          </h5>
+
+                          {item.selected_options &&
+                            typeof item.selected_options === "object" && (
+                              <div className="text-muted small">
+                                {Object.entries(item.selected_options).map(
+                                  ([key, value]) => (
+                                    <span key={key} className="me-3">
+                                      <strong>{key}:</strong> {value}
+                                    </span>
+                                  )
+                                )}
+                              </div>
+                            )}
+
+                          {/* ถ้าเกินสต็อก แสดงบรรทัดเตือนเล็ก ๆ */}
+                          {isOverStock && (
+                            <div className="small text-danger fw-semibold mt-1">
+                              {i18n.language === "en"
+                                ? `Only ${item.stock_qty} in stock`
+                                : `คงเหลือในสต็อก ${item.stock_qty} ชิ้น`}
                             </div>
                           )}
-                        {/* ราคาต่อหน่วย */}
-                        <p className="text-muted mb-0">
-                          {t("price")}: {item.price.toLocaleString()}{" "}
-                          {t("baht")}
-                        </p>
-                        {/* ยอดรวมทั้งสิ้น (ย้ายมาที่นี่) */}
-                        <strong className="d-block">
-                          {t("total")}:{" "}
-                          {(item.price * item.quantity).toLocaleString()}{" "}
-                          {t("baht")}
-                        </strong>
-                      </Col>
 
-                      {/* 4. Quantity Control: xs=3, md=3 */}
-                      <Col xs={3} md={3} className="text-end">
-                        <div className="d-flex justify-content-end align-items-center">
-                          <div className="quantity-control-group">
-                            {/* Conditional Rendering สำหรับปุ่มลบ/ลดจำนวน */}
-                            {item.quantity <= 1 ? (
+                          {/* ราคาต่อหน่วย */}
+                          <p className="text-muted mb-0">
+                            {t("price")}: {item.price.toLocaleString()}{" "}
+                            {t("baht")}
+                          </p>
+                          {/* ยอดรวมทั้งสิ้น */}
+                          <strong className="d-block">
+                            {t("total")}:{" "}
+                            {(item.price * item.quantity).toLocaleString()}{" "}
+                            {t("baht")}
+                          </strong>
+                        </Col>
+
+                        {/* 4. Quantity Control: xs=3, md=3 */}
+                        <Col xs={3} md={3} className="text-end">
+                          <div className="d-flex justify-content-end align-items-center">
+                            <div className="quantity-control-group">
+                              {/* ลบ/ลดจำนวน */}
+                              {item.quantity <= 1 ? (
+                                <Button
+                                  variant="light"
+                                  size="sm"
+                                  className="quantity-btn"
+                                  onClick={() =>
+                                    openRemoveModal(item.cart_item_id)
+                                  }
+                                >
+                                  <FaTrashAlt />
+                                </Button>
+                              ) : (
+                                <Button
+                                  variant="light"
+                                  size="sm"
+                                  className="quantity-btn"
+                                  onClick={() =>
+                                    handleQuantityChange(
+                                      item.cart_item_id,
+                                      item.quantity - 1
+                                    )
+                                  }
+                                >
+                                  -
+                                </Button>
+                              )}
+                              <span className="quantity-display">
+                                {item.quantity}
+                              </span>
+                              {/* เพิ่มจำนวน: ปิดปุ่มถ้าถึงสต็อกสูงสุด */}
                               <Button
                                 variant="light"
                                 size="sm"
                                 className="quantity-btn"
-                                onClick={() =>
-                                  openRemoveModal(item.cart_item_id)
+                                disabled={
+                                  typeof item.stock_qty === "number" &&
+                                  item.stock_qty >= 0 &&
+                                  item.quantity >= item.stock_qty
                                 }
-                              >
-                                <FaTrashAlt />
-                              </Button>
-                            ) : (
-                              <Button
-                                variant="light"
-                                size="sm"
-                                className="quantity-btn"
                                 onClick={() =>
                                   handleQuantityChange(
                                     item.cart_item_id,
-                                    item.quantity - 1
+                                    item.quantity + 1
                                   )
                                 }
                               >
-                                -
+                                +
                               </Button>
-                            )}
-                            <span className="quantity-display">
-                              {item.quantity}
-                            </span>
-                            <Button
-                              variant="light"
-                              size="sm"
-                              className="quantity-btn"
-                              onClick={() =>
-                                handleQuantityChange(
-                                  item.cart_item_id,
-                                  item.quantity + 1
-                                )
-                              }
-                            >
-                              +
-                            </Button>
+                            </div>
                           </div>
-                        </div>
-                      </Col>
-                    </Row>
-                  </Card.Body>
-                </Card>
-              ))
+                        </Col>
+                      </Row>
+                    </Card.Body>
+                  </Card>
+                );
+              })
             ) : (
               <Alert variant="light">{t("no_available_items")}</Alert>
             )}
@@ -449,7 +546,6 @@ const CartPage = () => {
                   >
                     <Card.Body>
                       <Row className="align-items-center">
-                        {/* ปรับเป็น md=3 ให้รูปภาพใหญ่ขึ้น */}
                         <Col xs={3} md={3}>
                           {imageLoaded[item.cart_item_id] === false ? (
                             <PlaceholderImage />
@@ -474,7 +570,6 @@ const CartPage = () => {
                             />
                           )}
                         </Col>
-                        {/* ปรับเป็น md=6 */}
                         <Col xs={6} md={6}>
                           <h5 className="text-muted">
                             <s>
@@ -487,7 +582,6 @@ const CartPage = () => {
                             {t("quantity")}: {item.quantity}
                           </p>
                         </Col>
-                        {/* คงเดิม md=3 */}
                         <Col xs={3} md={3} className="text-end">
                           <Button
                             variant="outline-secondary"
@@ -538,14 +632,28 @@ const CartPage = () => {
                     {(subtotal + shippingCost).toLocaleString()} {t("baht")}
                   </strong>
                 </div>
+
+                {/* ✅ ปุ่ม Checkout: ปิดเมื่อมีสินค้าเกินสต็อก */}
                 <div className="d-grid mt-4">
                   <Button
                     variant="primary"
                     size="lg"
                     onClick={handleProceedToCheckout}
+                    disabled={hasInsufficient || selectedItems.length === 0}
+                    className={hasInsufficient ? "btn-disabled-shake" : ""}
+                    title={
+                      hasInsufficient
+                        ? "มีจำนวนบางรายการเกินสต็อก โปรดปรับจำนวน"
+                        : undefined
+                    }
                   >
                     {t("proceed_to_checkout")}
                   </Button>
+                  {hasInsufficient && (
+                    <div className="text-danger small mt-2">
+                      ไม่สามารถไปหน้าชำระเงินได้ — โปรดปรับจำนวนให้ไม่เกินสต็อก
+                    </div>
+                  )}
                 </div>
               </Card.Body>
             </Card>
