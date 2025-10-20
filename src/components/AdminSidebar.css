@@ -15,12 +15,10 @@
 .sidebar-header {
   padding: 20px;
   background-color: #34495e;
-  /* --- START: จุดที่แก้ไข --- */
   display: flex;
   align-items: center;
-  justify-content: space-between; /* จัดให้ title กับ button อยู่คนละฝั่ง */
-  height: 68px; /* กำหนดความสูงให้แน่นอน */
-  /* --- END: จุดที่แก้ไข --- */
+  justify-content: space-between;
+  height: 68px;
 }
 
 .sidebar-nav {
@@ -85,7 +83,7 @@
   justify-content: center;
 }
 
-/* 1. สไตล์ปุ่ม Toggle ใหม่ */
+/*  สไตล์ปุ่ม Toggle ใหม่ */
 .sidebar-toggle-btn {
   background: none;
   border: none;
@@ -104,16 +102,15 @@
   background-color: rgba(255, 255, 255, 0.1);
 }
 
-/* 2. จัดตำแหน่งปุ่มเมื่อ Sidebar ถูกย่อ */
+/*  จัดตำแหน่งปุ่มเมื่อ Sidebar ถูกย่อ */
 .admin-sidebar.collapsed .sidebar-header {
   justify-content: center;
 }
 
-/* --- START: โค้ดที่เพิ่มใหม่สำหรับ User Info --- */
 
 .sidebar-footer {
   padding: 20px;
-  border-top: 1px solid #34495e; /* เพิ่มเส้นคั่น */
+  border-top: 1px solid #34495e;
 }
 
 .sidebar-user-info {
@@ -151,7 +148,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 120px; /* ป้องกันชื่อยาวเกินไป */
+  max-width: 120px;
 }
 
 .sidebar-user-email {

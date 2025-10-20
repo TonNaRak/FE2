@@ -59,13 +59,13 @@ const DashboardOverviewPage = () => {
       <div className="d-flex justify-content-between align-items-center mb-3">
         <h4 className="mb-0">ภาพรวม (Overview)</h4>
       </div>
-      <Card className="mb-4">
+      <hr />
+      <Card className="mb-3">
         <Card.Body>
           {/* เปลี่ยนมาใช้ DateRangeSlider */}
           <DateRangeSlider onDateRangeChange={setDateRange} />
         </Card.Body>
       </Card>
-      <hr />
 
       <Row className="g-3 mb-3">
         <Col md={6} lg={3}>

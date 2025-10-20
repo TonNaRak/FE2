@@ -50,12 +50,12 @@ const DashboardCustomersPage = () => {
 
   return (
     <div className="dashboard-page">
-      <div className="dashboard-header mb-4">
-        <h2>ภาพรวมลูกค้า</h2>
+      <div className="dashboard-header mb-3">
+        <h4 className="mb-0">ภาพรวมลูกค้า</h4>
       </div>
-
+      <hr />
       {/* --- Row 1: Cards & Slicer --- */}
-      <Row className="g-3 mb-4">
+      <Row className="g-3 mb-3">
         <Row className="g-3">
           <Col md={3}>
             <SummaryCard

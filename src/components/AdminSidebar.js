@@ -11,7 +11,7 @@ import {
   FaTags,
   FaCashRegister,
   FaBars,
-  FaUserCircle, // เพิ่มไอคอน User
+  FaUserCircle,
   FaChartBar,
 } from "react-icons/fa";
 import "./AdminSidebar.css";
@@ -34,28 +34,33 @@ const AdminSidebar = ({ isCollapsed, toggleSidebar }) => {
         </button>
       </div>
       <ul className="sidebar-nav">
-        <li>
-          <NavLink
-            to="/admin/reports"
-            className={({ isActive }) => (isActive ? "active" : "")}
-          >
-            <FaChartBar /> <span>รายงาน (Reports)</span>
-          </NavLink>
-        </li>
-        <li>
-          <NavLink
-            to="/admin/dashboard"
-            className={({ isActive }) => (isActive ? "active" : "")}
-          >
-            <FaTachometerAlt /> <span>แดชบอร์ด</span>
-          </NavLink>
-        </li>
+        {user && user.role === "admin" && (
+          <>
+            <li>
+              <NavLink
+                to="/admin/dashboard"
+                className={({ isActive }) => (isActive ? "active" : "")}
+              >
+                <FaTachometerAlt /> <span>แดชบอร์ด</span>
+              </NavLink>
+            </li>
+            <li>
+              <NavLink
+                to="/admin/reports"
+                className={({ isActive }) => (isActive ? "active" : "")}
+              >
+                <FaChartBar /> <span>รายงานยอดขาย</span>
+              </NavLink>
+            </li>
+          </>
+        )}
+
         <li>
           <NavLink
             to="/admin/pos"
             className={({ isActive }) => (isActive ? "active" : "")}
           >
-            <FaCashRegister /> <span>ขายหน้าร้าน (POS)</span>
+            <FaCashRegister /> <span>ขายสินค้าหน้าร้าน</span>
           </NavLink>
         </li>
         <li>
@@ -74,22 +79,23 @@ const AdminSidebar = ({ isCollapsed, toggleSidebar }) => {
             <FaClipboardList /> <span>จัดการคำสั่งซื้อ</span>
           </NavLink>
         </li>
-        <li>
-          <NavLink
-            to="/admin/store-settings"
-            className={({ isActive }) => (isActive ? "active" : "")}
-          >
-            <FaCog /> <span>ตั้งค่าร้านค้า</span>
-          </NavLink>
-        </li>
+
         {user && user.role === "admin" && (
           <>
+            <li>
+              <NavLink
+                to="/admin/store-settings"
+                className={({ isActive }) => (isActive ? "active" : "")}
+              >
+                <FaCog /> <span>ตั้งค่าร้านค้า</span>
+              </NavLink>
+            </li>
             <li>
               <NavLink
                 to="/admin/categories"
                 className={({ isActive }) => (isActive ? "active" : "")}
               >
-                <FaTags /> <span>จัดการประเภท</span>
+                <FaTags /> <span>จัดการประเภทสินค้า</span>
               </NavLink>
             </li>
             <li>

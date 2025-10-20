@@ -1,12 +1,14 @@
 import React, { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { Form, Button, Alert } from "react-bootstrap";
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
 import logoImage from "../images/Logo.jpg";
 import { useTranslation } from "react-i18next";
 import { BsEye, BsEyeSlash } from "react-icons/bs";
-import "./LoginForm.css"; // 1. import ไฟล์ CSS ใหม่
+import "./LoginForm.css"; 
+import "../theme-overrides.css";
+
 
 const LoginPage = () => {
   const [username, setUsername] = useState("");
@@ -14,8 +16,11 @@ const LoginPage = () => {
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const { login } = useAuth();
   const { t } = useTranslation();
+
+  const from = location.state?.from || null;
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -34,10 +39,20 @@ const LoginPage = () => {
       const { accessToken, refreshToken } = response.data;
       login(loggedInUser, accessToken, refreshToken);
 
-      if (loggedInUser.role === "admin" || loggedInUser.role === "employee") {
-        navigate("/admin/dashboard");
+      if (from) {
+        // ถ้ามี 'from' (เช่น ถูกส่งมาจาก /admin/orders)
+        // ให้กลับไปที่หน้านั้นทันที
+        navigate(from, { replace: true });
       } else {
-        navigate("/index");
+        // ถ้าไม่มี 'from' (คือเข้า /login มาตรงๆ)
+        // ให้ใช้ตรรกะตาม Role ที่ต้องการ
+        if (loggedInUser.role === "admin") {
+          navigate("/admin/dashboard");
+        } else if (loggedInUser.role === "employee") {
+          navigate("/admin/pos");
+        } else {
+          navigate("/index");
+        }
       }
     } catch (err) {
       setError(
@@ -82,7 +97,7 @@ const LoginPage = () => {
               />
             </Form.Group>
 
-            <Form.Group className="mb-2" controlId="formPassword">
+            <Form.Group className="mb-4" controlId="formPassword">
               <Form.Label>{t("password_label")}</Form.Label>
               <div className="position-relative">
                 <Form.Control

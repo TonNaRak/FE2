@@ -22,6 +22,8 @@ import {
   FaImage,
 } from "react-icons/fa";
 import "./CartPage.css";
+import "../theme-overrides.css";
+
 
 // Placeholder Component
 const PlaceholderImage = () => {

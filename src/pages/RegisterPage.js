@@ -6,6 +6,7 @@ import logoImage from "../images/Logo.jpg";
 import { useTranslation } from "react-i18next";
 import { BsEye, BsEyeSlash } from "react-icons/bs";
 import "./RegisterPage.css";
+import "../theme-overrides.css";
 
 const RegisterPage = () => {
   const [step, setStep] = useState(1); // State สำหรับควบคุมขั้นตอน
@@ -101,7 +102,7 @@ const RegisterPage = () => {
             {step === 1 && (
               <div className="form-step active">
                 <Form.Group className="mb-3" controlId="formUsername">
-                  <Form.Label>{t("username_label")}*</Form.Label>
+                  <Form.Label>{t("username")}*</Form.Label>
                   <Form.Control
                     type="text"
                     name="username"

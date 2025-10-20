@@ -351,6 +351,7 @@
   top: 5%;
   left: 20%;
   z-index: 2;
+  object-position: top;
 }
 
 .image-side1 {
@@ -359,6 +360,7 @@
   top: 0;
   left: 0;
   z-index: 1;
+  object-position: bottom;
 }
 
 .image-side2 {

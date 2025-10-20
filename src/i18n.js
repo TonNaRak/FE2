@@ -152,6 +152,7 @@ i18n.init({
         copied_button: "Copied!",
 
         // --- Login & Register Page ---
+        username:"Username",
         login_title: "Login",
         username_label: "Username or Email",
         password_label: "Password",
@@ -325,6 +326,7 @@ i18n.init({
         copied_button: "คัดลอกแล้ว!",
 
         // --- START: Login & Register Page ---
+        username:"ชื่อผู้ใช้",
         login_title: "เข้าสู่ระบบ",
         username_label: "ชื่อผู้ใช้ หรืออีเมล",
         password_label: "รหัสผ่าน",

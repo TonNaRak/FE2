@@ -1,21 +1,43 @@
+/* --- สไตล์เริ่มต้น (Desktop First) --- */
 .register-page-container {
   min-height: 100vh;
   width: 100%;
   display: flex;
+  flex-direction: row; /* [ปรับ] ให้ row เป็นค่าเริ่มต้น */
   background-color: #fff;
 }
 
 .register-left-panel {
-  display: none;
+  display: flex; /* [ปรับ] ให้ flex เป็นค่าเริ่มต้น */
+  width: 65%;
+  margin: 1%;
+  height: 96vh;
+  background-image: url("../images/pic.jpeg");
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  border-radius: 10px;
+}
+
+.register-left-panel::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
 }
 
 .register-right-panel {
-  width: 100%;
+  width: 35%; /* [ปรับ] ให้ 35% เป็นค่าเริ่มต้น */
+  height: 100vh; /* [เพิ่ม] ความสูงสำหรับ Desktop */
   display: flex;
   justify-content: center;
   align-items: center;
-  /* --- [จุดแก้ไข] ปรับ Padding แนวตั้ง --- */
-  padding: 20px; /* ลด Padding ลงเล็กน้อย */
+  padding: 20px;
+  background: radial-gradient(circle at 100% 0%, #f0f8ff, #ffffff 40%);
 }
 
 .register-form-wrapper {
@@ -76,39 +98,9 @@
   color: #6c757d;
 }
 
-@media (min-width: 768px) {
-  .register-page-container {
-    flex-direction: row;
-  }
-  .register-left-panel {
-    display: flex;
-    width: 65%;
-    margin: 1%;
-    height: 96vh;
-    background-image: url("../images/pic.jpeg");
-    background-size: cover;
-    background-position: center;
-    position: relative;
-    border-radius: 10px;
-  }
-  .register-left-panel::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.3);
-    border-radius: 10px;
-  }
-  .register-right-panel {
-    width: 35%;
-    height: 100vh;
-    /* --- [จุดแก้ไข] เอา overflow ออก --- */
-    /* overflow-y: auto; */
-    background: radial-gradient(circle at 100% 0%, #f0f8ff, #ffffff 40%);
-  }
-}
+/* [ลบ] บล็อก @media (min-width: 768px) เดิม
+  เพราะเราย้ายสไตล์เหล่านั้นไปเป็นค่าเริ่มต้น (Desktop First) แล้ว
+*/
 
 @keyframes fadeIn {
   from {
@@ -118,5 +110,75 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+/* --- [จุดสำคัญ] สไตล์สำหรับจอมือถือ (ทับค่าเดิม) --- */
+@media (max-width: 767px) {
+  /* --- 1. ปรับ Container หลัก --- */
+  .register-page-container {
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    /* text-align: left; (ปล่อยให้เป็นค่า default ของฟอร์ม) */
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* --- 2. เพิ่มพื้นหลังเบลอ (เฉพาะมือถือ) --- */
+  .register-page-container::before {
+    content: "";
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    width: calc(100% + 20px);
+    height: calc(100% + 20px);
+    background-image: url("../images/pic.jpeg");
+    background-size: cover;
+    background-position: center;
+    filter: blur(5px) grayscale(30%); /* ใช้ค่าเบลอเดียวกับ LandingPage */
+    z-index: 1;
+  }
+
+  /* --- 3. เพิ่ม Overlay (เฉพาะมือถือ) --- */
+  .register-page-container::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.3);
+    z-index: 2;
+  }
+
+  /* --- 4. ซ่อน Panel ซ้าย --- */
+  .register-left-panel {
+    display: none;
+  }
+  .register-left-panel::before {
+    display: none;
+  }
+
+  /* --- 5. ปรับ Panel ขวา --- */
+  .register-right-panel {
+    width: 100%;
+    height: auto;
+    display: block;
+    background: none;
+    z-index: 3;
+    padding: 0; /* ลบ padding ของ desktop ออก */
+  }
+
+  /* --- 6. สร้าง "กล่อง" เนื้อหา (เฉพาะมือถือ) --- */
+  .register-form-wrapper {
+    background-color: rgb(255, 255, 255);
+    padding: 2rem 1.5rem; /* เพิ่ม padding ให้กล่อง */
+    border-radius: 15px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    max-width: 450px;
+    margin: 0 auto;
+    animation: none; /* ปิด animation ในมือถือ */
   }
 }

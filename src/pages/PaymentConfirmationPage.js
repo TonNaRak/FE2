@@ -12,6 +12,8 @@ import {
 import { useAuth } from "../context/AuthContext";
 import axios from "axios";
 import { useTranslation } from "react-i18next";
+import "../theme-overrides.css";
+
 
 const PaymentConfirmationPage = () => {
   const { orderId } = useParams();

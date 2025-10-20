@@ -1,13 +1,60 @@
-/* --- สไตล์เริ่มต้น (Mobile First) --- */
+
+/* --- สไตล์เริ่มต้น (Desktop First - ตามไฟล์เดิมของคุณ) --- */
 .landing-page-container {
   display: flex;
-  flex-direction: column;
+  flex-direction: row; /* [ปรับ] ให้ row เป็นค่าเริ่มต้น */
+  padding: 0;
+  min-height: 100vh;
+  background-color: #fff;
+}
+
+/* --- Panel ด้านซ้าย --- */
+.left-panel {
+  width: 65%;
+  margin: 1%;
+  height: 96vh;
+  background-image: url("../images/pic.jpeg");
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  display: block; /* แสดงผลเฉพาะบนจอคอม */
+  border-radius: 10px;
+}
+
+/* Overlay สีเข้ม */
+.left-panel::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.3); /* สีดำโปร่งใส 30% */
+  border-radius: 10px;
+}
+
+/* --- Panel ด้านขวา --- */
+.right-panel {
+  width: 35%;
+  height: 100vh;
+  display: flex;
   justify-content: center;
   align-items: center;
-  text-align: center;
-  min-height: 100vh;
+  position: relative;
+  background: radial-gradient(circle at 100% 0%, #f0f8ff, #ffffff 40%);
+}
+
+.right-panel-content {
+  max-width: 400px;
   padding: 20px;
-  background-color: #fff;
+  animation: fadeIn 1s ease-in-out; /* Animation Fade In */
+}
+
+/* --- ปุ่มเปลี่ยนภาษา (สำหรับ Desktop) --- */
+.landing-language-switcher {
+  position: absolute;
+  top: 25px;
+  right: 25px;
 }
 
 .landing-logo {
@@ -32,7 +79,7 @@
 
 .landing-button,
 .landing-button-outline {
-  border-radius: 50px !important; /* Rounded buttons */
+  border-radius: 50px !important;
   padding: 16px !important;
   font-weight: 600 !important;
   font-size: 1.1rem !important;
@@ -53,7 +100,7 @@
 }
 
 .skip-button {
-  color: #7f8c8d; /* สีเทาอมฟ้า ดูสบายตา */
+  color: #7f8c8d;
   text-decoration: none;
   font-weight: 500;
   transition: color 0.2s;
@@ -61,77 +108,12 @@
 }
 
 .skip-button:hover {
-  color: #2c3e50; /* เมื่อเมาส์ชี้จะสีเข้มขึ้น */
+  color: #2c3e50;
   text-decoration: underline;
 }
 
-.landing-language-switcher-top {
-  position: absolute;
-  top: 25px;
-  right: 25px;
-}
-
-/* --- เริ่มสไตล์สำหรับจอคอมพิวเตอร์ --- */
-@media (min-width: 768px) {
-  .landing-page-container {
-    flex-direction: row;
-    padding: 0;
-  }
-
-  /* --- Panel ด้านซ้าย --- */
-  .left-panel {
-    width: 65%;
-    margin: 1%;
-    height: 96vh;
-    background-image: url("../images/pic.jpeg");
-    background-size: cover;
-    background-position: center;
-    position: relative;
-    display: block; /* แสดงผลเฉพาะบนจอคอม */
-    border-radius: 10px;
-
-  }
-
-  /* Overlay สีเข้ม */
-  .left-panel::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.3); /* สีดำโปร่งใส 30% */
-    border-radius: 10px;
-  }
-
-  /* --- Panel ด้านขวา --- */
-  .right-panel {
-    width: 35%;
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: relative;
-    /* --- [จุดแก้ไข] เพิ่มพื้นหลังแบบไล่ระดับสี --- */
-    background: radial-gradient(circle at 100% 0%, #f0f8ff, #ffffff 40%);
-  }
-
-  .right-panel-content {
-    max-width: 400px;
-    padding: 20px;
-    animation: fadeIn 1s ease-in-out; /* Animation Fade In */
-  }
-
-  /* --- ซ่อน Panel ซ้ายในจอมือถือ --- */
-  @media (max-width: 767px) {
-    .left-panel {
-      display: none;
-    }
-    .right-panel {
-      width: 100%;
-    }
-  }
-}
+/* --- [จุดลบ] ลบ .landing-language-switcher-top (ถ้ามี) --- */
+/* (เราใช้ .landing-language-switcher แทนแล้ว) */
 
 /* --- Keyframe Animation --- */
 @keyframes fadeIn {
@@ -143,4 +125,111 @@
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* --- [จุดสำคัญ] สไตล์สำหรับจอมือถือ (ทับค่าเดิม) --- */
+@media (max-width: 767px) {
+  /* --- 1. ปรับ Container หลัก --- */
+  .landing-page-container {
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+    background: #fff; /* คืนค่าพื้นหลัง (เผื่อไว้) */
+  }
+
+  /* --- 2. เพิ่มพื้นหลังเบลอ (เฉพาะมือถือ) --- */
+  .landing-page-container::before {
+    content: "";
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    width: calc(100% + 20px);
+    height: calc(100% + 20px);
+    background-image: url("../images/pic.jpeg");
+    background-size: cover;
+    background-position: center;
+    filter: blur(5px) grayscale(30%); /* ใช้ค่าเบลอตามที่คุณต้องการ */
+    z-index: 1; /* อยู่หลัง right-panel */
+  }
+
+  /* --- 3. เพิ่ม Overlay (เฉพาะมือถือ) --- */
+  .landing-page-container::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.3);
+    z-index: 2; /* อยู่หน้าพื้นหลังเบลอ */
+  }
+
+  /* --- 4. ซ่อน Panel ซ้าย (เหมือนเดิม) --- */
+  .left-panel {
+    display: none;
+  }
+  /* (ลบ .left-panel::before ออกจากจอมือถือ ไม่จำเป็น) */
+  .left-panel::before {
+    display: none;
+  }
+
+  /* --- 5. ปรับ Panel ขวา --- */
+  .right-panel {
+    width: 100%;
+    height: auto; /* ปรับความสูงอัตโนมัติ */
+    display: block; /* ไม่ต้อง flex */
+    background: none; /* ลบพื้นหลังไล่สีของคอม */
+    z-index: 3; /* อยู่หน้าสุด */
+  }
+
+  /* --- 6. สร้าง "กล่อง" เนื้อหา (เฉพาะมือถือ) --- */
+  .right-panel-content {
+    background-color: rgb(255, 255, 255);
+    padding: 2rem 1.5rem;
+    border-radius: 15px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    width: 100%;
+    max-width: 450px;
+    margin: 0 auto;
+    animation: none; /* ลบ animation fade-in ในมือถือ (ถ้าไม่ต้องการ) */
+  }
+
+  /* --- 7. ปรับปุ่มเปลี่ยนภาษา (เฉพาะมือถือ) --- */
+  .landing-language-switcher {
+    position: static; /* ล้างค่า absolute ของคอม */
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 0.5rem;
+    padding-right: 5px;
+  }
+
+  /* --- 8. ปรับ Logo/Title (ถ้าจำเป็น) --- */
+  .landing-logo {
+    margin-bottom: 1.5rem;
+  }
+}
+
+/* --- เปลี่ยนสีปุ่มหลักเป็น #068fc6 --- */
+.landing-button,
+.btn-primary {
+  background-color: #068fc6 !important;
+  border-color: #068fc6 !important;
+}
+
+/* --- ปุ่มขอบ (outline) ก็ใช้สีเดียวกัน --- */
+.landing-button-outline,
+.btn-outline-primary {
+  color: #068fc6 !important;
+  border-color: #068fc6 !important;
+}
+
+.landing-button-outline:hover,
+.btn-outline-primary:hover {
+  background-color: #068fc6 !important;
+  color: white !important;
 }

@@ -21,6 +21,9 @@ import "./IndexPage.css";
 import myLogo1 from "../images/icon1.png";
 import myLogo2 from "../images/icon2.png";
 import recommendedIcon from "../images/recommended.png";
+import headPic1 from "../images/37ccc7c6-4ddf-4dad-9866-0dcb05ab28af.jpeg"
+import headPic2 from "../images/1755586122179-S__5496840.jpg"
+import headPic3 from "../images/Screenshot 2568-10-20 at 00.26.34.png"
 
 import LanguageSwitcher from "../components/LanguageSwitcher";
 
@@ -48,17 +51,17 @@ const HeroSection = ({ onShopNowClick, scrollY }) => {
       </div>
       <div className="hero-images" style={parallaxStyle}>
         <img
-          src="https://images.pexels.com/photos/4465124/pexels-photo-4465124.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
+          src={headPic1}
           alt="Main skincare model"
           className="image-main"
         />
         <img
-          src="https://images.pexels.com/photos/4041392/pexels-photo-4041392.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
+          src={headPic3}
           alt="Hand with cream"
           className="image-side1"
         />
         <img
-          src="https://images.pexels.com/photos/286951/pexels-photo-286951.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
+          src={headPic2}
           alt="Skincare products"
           className="image-side2"
         />

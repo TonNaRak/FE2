@@ -14,14 +14,13 @@ const LandingPage = () => {
       <div className="left-panel"></div>
 
       <div className="right-panel">
-        {/* --- [จุดแก้ไข] ย้ายปุ่มเปลี่ยนภาษามาไว้ตรงนี้ --- */}
-        {/* ให้เป็นลูกโดยตรงของ right-panel เพื่อไม่ให้โดน Animation */}
-        <div className="landing-language-switcher-top">
-          <LanguageSwitcher />
-        </div>
+        {/* --- [จุดลบ] ลบปุ่มเปลี่ยนภาษาจากตรงนี้ (ถ้ายังมีอยู่) --- */}
 
         <div className="right-panel-content">
-          {/* --- เอาปุ่มเปลี่ยนภาษาออกจากตรงนี้ --- */}
+          {/* --- [จุดย้าย] ย้ายปุ่มเปลี่ยนภาษามาไว้ตรงนี้ --- */}
+          <div className="landing-language-switcher">
+            <LanguageSwitcher />
+          </div>
 
           <Container className="text-center">
             <img src={logoImage} alt="Company Logo" className="landing-logo" />

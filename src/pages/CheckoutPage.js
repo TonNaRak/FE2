@@ -18,6 +18,8 @@ import axios from "axios";
 import "./CheckoutPage.css";
 import { FaEdit, FaArrowLeft } from "react-icons/fa"; 
 import { useTranslation } from "react-i18next";
+import "../theme-overrides.css";
+
 
 const CheckoutPage = () => {
   const location = useLocation();

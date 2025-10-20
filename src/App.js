@@ -79,30 +79,25 @@ const ReportsPage = lazy(() => import("./pages/admin/ReportsPage"));
 const DailyReportPage = lazy(() => import("./pages/admin/DailyReportPage"));
 const MonthlyReportPage = lazy(() => import("./pages/admin/MonthlyReportPage"));
 const YearlyReportPage = lazy(() => import("./pages/admin/YearlyReportPage"));
-// --- [จุดแก้ไขที่ 1] สร้าง Component สำหรับจัดการหน้าแรก ---
+
+// Component สำหรับจัดการหน้าแรก
 const RootRedirect = () => {
   const { user, isLoading } = useAuth();
 
-  // ระหว่างรอเช็คสถานะ ให้แสดงหน้าโหลดข้อมูล
   if (isLoading) {
     return <LoadingFallback />;
   }
 
-  // ถ้ามีข้อมูล user (ล็อกอินอยู่)
   if (user) {
-    // เช็ค role และ redirect ไปยังหน้าที่เหมาะสม
-    if (
-      user.role === "admin" ||
-      user.role === "employee" ||
-      user.role === "staff"
-    ) {
+    if (user.role === "admin") {
       return <Navigate to="/admin/dashboard" replace />;
     }
-    // ถ้าเป็น role อื่น (เช่น customer)
+    if (user.role === "employee") {
+      return <Navigate to="/admin/pos" replace />;
+    }
     return <Navigate to="/index" replace />;
   }
 
-  // ถ้าไม่มี user (ยังไม่ล็อกอิน) ให้แสดงหน้า LandingPage
   return <LandingPage />;
 };
 
@@ -113,7 +108,6 @@ function App() {
         <Suspense fallback={<LoadingFallback />}>
           <Routes>
             {/* Public Routes */}
-            {/* --- [จุดแก้ไขที่ 2] เปลี่ยน Element ของ Route นี้ --- */}
             <Route path="/" element={<RootRedirect />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
@@ -140,41 +134,49 @@ function App() {
               />
             </Route>
 
-            {/* Admin & Employee Protected Routes */}
+            {/* --- Admin & Employee Protected Routes --- */}
             <Route
               element={
                 <RoleProtectedRoute allowedRoles={["admin", "employee"]} />
               }
             >
               <Route element={<AdminLayout />}>
-                <Route path="/admin/dashboard" element={<DashboardPage />}>
-                  <Route index element={<DashboardOverviewPage />} />
-                  <Route path="products" element={<DashboardProductsPage />} />
+                <Route
+                  element={<RoleProtectedRoute allowedRoles={["admin"]} />}
+                >
+                  <Route path="/admin/dashboard" element={<DashboardPage />}>
+                    <Route index element={<DashboardOverviewPage />} />
+                    <Route
+                      path="products"
+                      element={<DashboardProductsPage />}
+                    />
+                    <Route
+                      path="customers"
+                      element={<DashboardCustomersPage />}
+                    />
+                  </Route>{" "}
+                  <Route path="/admin/reports" element={<ReportsPage />}>
+                    <Route index element={<DailyReportPage />} />
+                    <Route path="monthly" element={<MonthlyReportPage />} />
+                    <Route path="yearly" element={<YearlyReportPage />} />
+                  </Route>
                   <Route
-                    path="customers"
-                    element={<DashboardCustomersPage />}
+                    path="/admin/store-settings"
+                    element={<StoreSettingPage />}
                   />
-                </Route>{" "}
-                <Route path="/admin/reports" element={<ReportsPage />}>
-                  <Route index element={<DailyReportPage />} />
-                  <Route path="monthly" element={<MonthlyReportPage />} />
-                  <Route path="yearly" element={<YearlyReportPage />} />
+                  <Route path="/admin/roles" element={<RoleManagementPage />} />
+                  <Route
+                    path="/admin/categories"
+                    element={<CategoryManagementPage />}
+                  />
                 </Route>
+
                 <Route path="/admin/pos" element={<POSPage />} />
                 <Route
                   path="/admin/products"
                   element={<ProductManagementPage />}
                 />
                 <Route path="/admin/orders" element={<OrderManagementPage />} />
-                <Route
-                  path="/admin/store-settings"
-                  element={<StoreSettingPage />}
-                />
-                <Route path="/admin/roles" element={<RoleManagementPage />} />
-                <Route
-                  path="/admin/categories"
-                  element={<CategoryManagementPage />}
-                />
               </Route>
             </Route>
 

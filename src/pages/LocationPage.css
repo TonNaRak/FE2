@@ -102,25 +102,25 @@
 
 /* Facebook Button */
 .social-btn.facebook {
-  background-color: #1877f2;
+  background-color: #1877f2 !important;
   color: #fff;
   border: none;
   transition: all 0.2s ease;
 }
 .social-btn.facebook:hover {
-  background-color: #0d5bd6;
+  background-color: #0d5bd6 !important;
   color: #fff;
 }
 
 /* YouTube Button */
 .social-btn.youtube {
-  background-color: #ff0000;
+  background-color: #ff0000 !important;
   color: #fff;
   border: none;
   transition: all 0.2s ease;
 }
 .social-btn.youtube:hover {
-  background-color: #cc0000;
+  background-color: #cc0000 !important;
   color: #fff;
 }
 

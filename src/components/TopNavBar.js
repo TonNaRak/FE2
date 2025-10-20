@@ -24,6 +24,8 @@ import {
 } from "react-icons/bs";
 import logoImage from "../images/Logo.jpg";
 import "./TopNavBar.css";
+import "../theme-overrides.css";
+
 
 const TopNavBar = () => {
   const { user, logout } = useAuth();

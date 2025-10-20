@@ -7,7 +7,6 @@ import ChartDataLabels from 'chartjs-plugin-datalabels';
 import { Card, Spinner } from 'react-bootstrap';
 import { format } from 'date-fns';
 
-// ลงทะเบียนส่วนประกอบที่จำเป็นทั้งหมด
 ChartJS.register(Tooltip, Legend, TreemapController, TreemapElement, ChartDataLabels);
 
 const CategorySalesTreemap = ({ dateRange }) => {
@@ -56,7 +55,6 @@ const CategorySalesTreemap = ({ dateRange }) => {
         key: 'totalRevenue',
         groups: ['categoryName'],
 
-        // **[แก้ไขตรงนี้]** รวมการแสดงผลทั้งหมดไว้ที่นี่ที่เดียว
         labels: {
             display: true,
             align: 'center',
@@ -65,29 +63,22 @@ const CategorySalesTreemap = ({ dateRange }) => {
                 weight: 'bold',
                 size: 14
             },
-            // formatter จะคืนค่าเป็น Array เพื่อแสดงผลหลายบรรทัด
             formatter: (ctx) => {
                 if (!ctx.raw) return null;
                 const total = ctx.chart.getDatasetMeta(0).total;
 
-                // 1. ชื่อหมวดหมู่
                 const categoryName = ctx.raw.g;
 
-                // 2. ยอดขาย (จัดรูปแบบย่อ)
                 const salesValue = new Intl.NumberFormat('th-TH', {
                     notation: 'compact',
                     compactDisplay: 'short'
                 }).format(ctx.raw.v);
                 
-                // 3. เปอร์เซ็นต์ (ถ้าต้องการ)
                 const percentage = total > 0 ? `(${(ctx.raw.v / total * 100).toFixed(0)}%)` : '';
 
-                // คืนค่าเป็น Array แต่ละค่าจะอยู่คนละบรรทัด
                 return [categoryName, salesValue, percentage];
             }
         },
-        // **[ลบออก]** ไม่ต้องใช้ 'values' block แล้ว
-        // values: { ... }
 
     }],
 });
@@ -116,7 +107,6 @@ const CategorySalesTreemap = ({ dateRange }) => {
                     }
                 }
             },
-            // **[แก้ไข]** เราจะย้ายการตั้งค่า datalabels ไปไว้ใน 'datasets' แทน
             datalabels: {
                 display: false, // ปิดการตั้งค่ากลางที่นี่
             },

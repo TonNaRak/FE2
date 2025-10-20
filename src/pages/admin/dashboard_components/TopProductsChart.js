@@ -162,7 +162,7 @@ const TopProductsChart = ({ dateRange, selectedCategory }) => {
     return (
         <Card className="h-100">
             <Card.Body className="d-flex flex-column">
-                <Card.Title>5 อันดับสินค้าขายดี (ตามจำนวน)</Card.Title>
+                <Card.Title>5 อันดับสินค้าขายดี (ตามจำนวนที่ขายได้)</Card.Title>
                 <div className="flex-grow-1" style={{ position: 'relative', minHeight: '300px' }}>
                     {renderContent()}
                 </div>

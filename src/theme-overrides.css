@@ -1,0 +1,46 @@
+/* ===== Global Bootstrap Theme Overrides ===== */
+:root {
+  --bs-primary: #068fc6;
+  --bs-primary-rgb: 6, 143, 198;
+}
+
+/* ปุ่ม primary */
+.btn-primary,
+.btn-primary:focus,
+.btn-primary:active {
+  background-color: #068fc6 !important;
+  border-color: #068fc6 !important;
+}
+
+/* ปุ่ม outline primary */
+.btn-outline-primary {
+  color: #068fc6 !important;
+  border-color: #068fc6 !important;
+}
+.btn-outline-primary:hover,
+.btn-outline-primary:focus {
+  background-color: #068fc6 !important;
+  color: #fff !important;
+  border-color: #068fc6 !important;
+}
+
+/* ProgressBar สีฟ้าใหม่ */
+.progress-bar {
+  background-color: #068fc6 !important;
+}
+
+/* เผื่อมี navbar/bg/text/border primary ที่ต้องตามธีม */
+.bg-primary { background-color: #068fc6 !important; }
+.text-primary { color: #068fc6 !important; }
+.border-primary { border-color: #068fc6 !important; }
+
+.text-link {
+  color: #068fc6 !important;
+  text-decoration: none !important;
+}
+
+.text-link:hover,
+.text-link:focus {
+  color: #046e99 !important; /* เฉดเข้มขึ้นเล็กน้อยตอน hover */
+  text-decoration: underline !important;
+}

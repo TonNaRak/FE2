@@ -1,10 +1,11 @@
 import React from "react";
 import { useAuth } from "../context/AuthContext";
-import { Navigate, Outlet } from "react-router-dom";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { Spinner, Container } from "react-bootstrap";
 
 const RoleProtectedRoute = ({ allowedRoles }) => {
   const { user, loading } = useAuth();
+  const location = useLocation();
 
   if (loading) {
     return (
@@ -18,7 +19,7 @@ const RoleProtectedRoute = ({ allowedRoles }) => {
   }
 
   if (!user || !user.role) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/login" replace state={{ from: location }} />;
   }
 
   const isAllowed = allowedRoles.includes(user.role);
